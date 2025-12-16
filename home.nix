@@ -170,6 +170,9 @@
         user = "hassio";
         port = 32690;
       };
+      "*" = {
+        addKeysToAgent = "yes";
+      };
     };
   };
 
