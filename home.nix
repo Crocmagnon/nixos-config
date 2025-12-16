@@ -14,6 +14,10 @@
     extraPackages = with pkgs; [
       nil
       nixd
+      gotools
+      gopls
+      delve
+      golangci-lint-langserver
     ];
     settings = {
       theme = "catppuccin_mocha";
@@ -32,6 +36,19 @@
       };
       keys.normal = {
         Z.Z = ":wq";
+      };
+    };
+    languages = {
+      language = [{
+        name = "go";
+        auto-format = true;
+        formatter = {
+          command = "goimports";
+        };
+      }];
+      language-server.gopls.config = {
+        "ui.diagnostic.staticcheck" = true;
+        "formatting.gofumpt" = true;
       };
     };
   };
