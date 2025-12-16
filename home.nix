@@ -151,4 +151,30 @@
     enable = true;
     enableFishIntegration = true;
   };
+
+  programs.ssh = {
+    enable = true;
+    enableDefaultConfig = false;
+    matchBlocks = {
+      ubuntu.user = "gaugendre";
+      vps-2.user = "ubuntu";
+      vps-3.user = "gaugendre";
+      "vps-2 vps-3 ubuntu" = {
+        forwardAgent = true;
+        controlMaster = "auto";
+        controlPath = "~/.ssh/control-%C";
+        controlPersist = "4h";
+      };
+      hass = {
+        hostname = "192.168.0.9";
+        user = "hassio";
+        port = 32690;
+      };
+    };
+  };
+
+  services.ssh-agent = {
+    enable = true;
+    enableFishIntegration = true;
+  };
 }
