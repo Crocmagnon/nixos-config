@@ -43,7 +43,7 @@
             useUserPackages = true;
             users.gaugendre = {
               imports = [
-                ./framework-gab/home.nix
+                ./homeprofile/home.nix
                 catppuccin.homeModules.catppuccin
               ];
             };
