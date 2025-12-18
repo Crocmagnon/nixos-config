@@ -1,4 +1,4 @@
-# nixos-vps
+# nixos-config
 
 ## Update secrets
 ```

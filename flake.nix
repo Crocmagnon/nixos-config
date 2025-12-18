@@ -60,7 +60,7 @@
         disko.nixosModules.disko
         agenix.nixosModules.default
         nixos-facter-modules.nixosModules.facter
-        ./vps/configuration.nix
+        ./vps-3/configuration.nix
       ];
     };
   };

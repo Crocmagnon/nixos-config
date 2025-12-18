@@ -8,8 +8,8 @@ run = "nixos-rebuild switch --flake .#vps-3 --target-host gaugendre@vps-3 --sudo
 
 [tasks.redeploy]
 description = "fully redeploy to server over existing nixos"
-run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps/facter.json --target-host root@vps-3.augendre.info"
+run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps-3/facter.json --target-host root@vps-3.augendre.info"
 
 [tasks.initial-deploy]
 description = "initial deploy to server over debian"
-run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps/facter.json --target-host debian@vps-3.augendre.info"
+run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps-3/facter.json --target-host debian@vps-3.augendre.info"
