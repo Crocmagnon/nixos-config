@@ -142,6 +142,11 @@
   #  tod.driver = pkgs.libfprint-2-tod1-goodix;
   };
 
+  # Fix fprintd recognizing fingerprint after suspend
+  powerManagement.powerDownCommands = ''
+    ${pkgs.systemd}/bin/systemctl stop fprintd.service 2>/dev/null || true
+  '';
+
   services.tailscale = {
     enable = true;
     useRoutingFeatures = "client";
