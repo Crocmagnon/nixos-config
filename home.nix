@@ -58,6 +58,16 @@
     };
   };
 
+  programs.eza = {
+    enable = true;
+    git = true;
+    icons = "auto";
+    extraOptions = [
+      "--header"
+      "--group"
+    ];
+  };
+
   programs.fzf = {
     enable = true;
     enableFishIntegration = false; # disable because conflicts with fzf.fish
