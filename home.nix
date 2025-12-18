@@ -3,6 +3,9 @@
   home.username = "gaugendre";
   home.homeDirectory = "/home/gaugendre";
   home.stateVersion = "25.11";
+  home.packages = with pkgs; [
+    wl-clipboard
+  ];
 
   programs.bash.enable = true;
 
