@@ -16,7 +16,7 @@
     ./test-headers.nix
     ./secrets
     ./facter.nix
-    ./save-disk.nix
+    ../common/save-disk.nix
   ];
   boot.loader.grub = {
     # no need to set devices, disko will add all devices that have a EF02 partition to the list already
