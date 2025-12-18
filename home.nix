@@ -4,6 +4,8 @@
   home.homeDirectory = "/home/gaugendre";
   home.stateVersion = "25.11";
 
+  programs.bash.enable = true;
+
   programs.fish = {
     enable = true;
     interactiveShellInit = (builtins.readFile ./config.fish);
