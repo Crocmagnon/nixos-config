@@ -201,7 +201,7 @@
 
   catppuccin.enable = true;
 
-  home.file."konsole-catppuccin-mocha" = {
+  home.file."konsole-catppuccin-theme" = {
     target = ".local/share/konsole/catppuccin-mocha.colorscheme";
     source = let repo = pkgs.fetchFromGitHub {
       owner = "catppuccin";
@@ -209,6 +209,11 @@
       rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
       sha256 = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
     }; in "${repo}/themes/catppuccin-mocha.colorscheme";
+  };
+
+  home.file."konsole-catppuccin-profile" = {
+    target = ".local/share/konsole/Catppuccin.profile";
+    source = ./konsole-catppuccin.profile;
   };
 
   programs.ssh = {
