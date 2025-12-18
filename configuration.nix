@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   imports =
@@ -13,6 +13,8 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  catppuccin.enable = true;
 
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -125,6 +127,10 @@
     vim
     git
   #  wget
+  ];
+
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
   ];
 
   nix.settings.experimental-features = ["nix-command" "flakes"];

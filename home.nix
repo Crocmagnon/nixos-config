@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   home.username = "gaugendre";
   home.homeDirectory = "/home/gaugendre";
@@ -6,7 +6,39 @@
 
   programs.fish = {
     enable = true;
+    interactiveShellInit = (builtins.readFile ./config.fish);
+    plugins = with pkgs.fishPlugins; [
+      {
+        name = "done";
+        inherit (done) src;
+      }
+      {
+        name = "autopair";
+        inherit (autopair) src;
+      }
+      {
+        name = "fzf";
+        inherit (fzf-fish) src;
+      }
+      {
+        name = "tide";
+        inherit (tide) src;
+      }
+    ];
   };
+
+  home.activation.configure-tide = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      run ${pkgs.fish}/bin/fish -c "tide configure --auto --style=Lean --prompt_colors='16 colors' --show_time=No --lean_prompt_height='Two lines' --prompt_connection=Disconnected --prompt_spacing=Sparse --icons='Many icons' --transient=Yes"
+    '';
+
+  programs.fzf = {
+    enable = true;
+    enableFishIntegration = false; # disable because conflicts with fzf.fish
+  };
+
+  programs.fd.enable = true;
+  programs.mise.enable = true;
+  programs.zoxide.enable = true;
 
   programs.helix = {
     enable = true;
@@ -20,7 +52,6 @@
       golangci-lint-langserver
     ];
     settings = {
-      theme = "catppuccin_mocha";
       editor = {
         line-number = "relative";
         cursorline = true;
@@ -164,9 +195,20 @@
     };
   };
 
-  services.gpg-agent = {
-    enable = true;
-    enableFishIntegration = true;
+  services.gpg-agent.enable = true;
+
+  programs.bat.enable = true;
+
+  catppuccin.enable = true;
+
+  home.file."konsole-catppuccin-mocha" = {
+    target = ".local/share/konsole/catppuccin-mocha.colorscheme";
+    source = let repo = pkgs.fetchFromGitHub {
+      owner = "catppuccin";
+      repo = "konsole";
+      rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
+      sha256 = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
+    }; in "${repo}/themes/catppuccin-mocha.colorscheme";
   };
 
   programs.ssh = {
@@ -193,8 +235,5 @@
     };
   };
 
-  services.ssh-agent = {
-    enable = true;
-    enableFishIntegration = true;
-  };
+  services.ssh-agent.enable = true;
 }
