@@ -34,7 +34,10 @@
   programs.fd.enable = true;
   programs.mise.enable = true;
   programs.zoxide.enable = true;
-  programs.go.enable = true;
+  programs.go = {
+    enable = true;
+    env.CGO_ENABLED = "0";
+  };
 
   programs.helix = {
     enable = true;
