@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   home.username = "gaugendre";
   home.homeDirectory = "/home/gaugendre";
@@ -73,7 +73,15 @@
     enableFishIntegration = false; # disable because conflicts with fzf.fish
   };
 
-  programs.starship.enable = true;
+  programs.starship = {
+    enable = true;
+    settings = lib.mkMerge [
+      (builtins.fromTOML
+        (builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
+      ))
+      {}
+    ];
+  };
   programs.fd.enable = true;
   programs.mise.enable = true;
   programs.zoxide.enable = true;
