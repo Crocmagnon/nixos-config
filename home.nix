@@ -22,16 +22,8 @@
         name = "fzf";
         inherit (fzf-fish) src;
       }
-      #{
-      #  name = "tide";
-      #  inherit (tide) src;
-      #}
     ];
   };
-
-  #home.activation.configure-tide = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  #    run ${pkgs.fish}/bin/fish -c "tide configure --auto --style=Lean --prompt_colors='16 colors' --show_time=No --lean_prompt_height='Two lines' --prompt_connection=Disconnected --prompt_spacing=Sparse --icons='Many icons' --transient=Yes"
-  #  '';
 
   programs.fzf = {
     enable = true;
