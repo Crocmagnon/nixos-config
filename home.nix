@@ -42,6 +42,7 @@
   programs.fd.enable = true;
   programs.mise.enable = true;
   programs.zoxide.enable = true;
+  programs.go.enable = true;
 
   programs.helix = {
     enable = true;
