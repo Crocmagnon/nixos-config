@@ -32,9 +32,9 @@
     ...
   }:
   {
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.framework-gab = nixpkgs.lib.nixosSystem {
       modules = [
-        ./laptop/configuration.nix
+        ./framework-gab/configuration.nix
         catppuccin.nixosModules.catppuccin
         home-manager.nixosModules.home-manager
         {
@@ -43,7 +43,7 @@
             useUserPackages = true;
             users.gaugendre = {
               imports = [
-                ./laptop/home.nix
+                ./framework-gab/home.nix
                 catppuccin.homeModules.catppuccin
               ];
             };
