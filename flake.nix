@@ -61,6 +61,20 @@
         agenix.nixosModules.default
         nixos-facter-modules.nixosModules.facter
         ./vps-3/configuration.nix
+        home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            users.gaugendre = {
+              imports = [
+                ./homeprofile/home.nix
+                catppuccin.homeModules.catppuccin
+              ];
+            };
+            backupFileExtension = "hm-bkp";
+          };
+        }
       ];
     };
   };
