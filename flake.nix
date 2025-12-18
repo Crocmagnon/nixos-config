@@ -1,22 +1,40 @@
 {
-  description = "A simple NixOS flake";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    catppuccin.url = "github:catppuccin/nix/release-25.05";
-    catppuccin.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    catppuccin = {
+      url = "github:catppuccin/nix/release-25.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.darwin.follows = "";
+    };
+
   };
 
-  outputs = { nixpkgs, home-manager, catppuccin, ... }:
+  outputs = {
+    nixpkgs,
+    nixos-facter-modules,
+    disko,
+    agenix,
+    home-manager,
+    catppuccin,
+    ...
+  }:
   {
-    # Please replace my-nixos with your hostname
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       modules = [
-        # Import the previous configuration.nix we used,
-        # so the old configuration file still takes effect
-        ./configuration.nix
+        ./laptop/configuration.nix
         catppuccin.nixosModules.catppuccin
         home-manager.nixosModules.home-manager
         {
@@ -25,13 +43,24 @@
             useUserPackages = true;
             users.gaugendre = {
               imports = [
-                ./home.nix
+                ./laptop/home.nix
                 catppuccin.homeModules.catppuccin
               ];
             };
             backupFileExtension = "hm-bkp";
           };
         }
+      ];
+    };
+
+    # nixos-anywhere --flake .#vps-3 --generate-hardware-config nixos-facter facter.json <hostname>
+    nixosConfigurations.vps-3 = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        disko.nixosModules.disko
+        agenix.nixosModules.default
+        nixos-facter-modules.nixosModules.facter
+        ./vps/configuration.nix
       ];
     };
   };
