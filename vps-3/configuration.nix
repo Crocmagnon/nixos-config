@@ -30,6 +30,7 @@
     hostName = "vps-3";
     firewall.allowedTCPPorts = [80 443];
   };
+  services.fail2ban.enable = true;
 
   # check first here if a package has options : https://search.nixos.org/options
   # before adding to systemPackages.
