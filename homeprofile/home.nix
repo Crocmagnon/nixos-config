@@ -7,7 +7,13 @@
     wl-clipboard
     terraform
     git-crypt
+    tlrc
   ];
+
+  services.tldr-update = {
+    enable = true;
+    package = pkgs.tlrc;
+  };
 
   programs.bash.enable = true;
 
