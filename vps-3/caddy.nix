@@ -50,9 +50,15 @@
       "g4b.ovh".extraConfig = ''
         redir /carloni https://pizzacarloni.fr/wp-content/uploads/2024/06/MENU.pdf
         redir /mailcarrare https://framalistes.org/sympa/info/carrare
-        redir /potain3 https://static.augendre.info/potain3/
-        redir /potain5 https://static.augendre.info/potain05/
-        redir /anniv_lois https://static.augendre.info/anniv_lois/
+        redir /potain3 https://potain.augendre.info/potain03/
+        redir /potain5 https://potain.augendre.info/potain05/
+      '';
+
+      "static.augendre.info".extraConfig = ''
+        redir /potain3/ https://potain.augendre.info/potain03/
+        redir /potain05/ https://potain.augendre.info/potain05/
+        redir /doses/ https://doses.augendre.info/
+        redir /qrcode-web/ https://qr.augendre.info/
       '';
 
       "augendre.info".extraConfig = ''
