@@ -16,7 +16,7 @@
     ./test-headers.nix
     ./secrets
     ./facter.nix
-    ./syslog.nix
+    ./filebeat.nix
     ../common/save-disk.nix
   ];
   boot.loader.grub = {
