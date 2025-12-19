@@ -128,6 +128,7 @@
     vim
     git
     ripgrep
+    bind # dig, among other
   #  wget
   ];
 
