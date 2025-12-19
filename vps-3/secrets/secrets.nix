@@ -13,4 +13,5 @@ in {
   "ovh-keys.age".publicKeys = allUsers ++ [systems.vps-3];
   "miniflux-db.age".publicKeys = allUsers ++ [systems.vps-3];
   "ovh-ldp-token.age".publicKeys = allUsers ++ [systems.vps-3];
+  "wallabag-env.age".publicKeys = allUsers ++ [systems.vps-3];
 }

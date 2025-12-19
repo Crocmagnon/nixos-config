@@ -5,7 +5,7 @@
     adminCredentialsFile = config.age.secrets."miniflux-db".path;
     config = {
       POLLING_FREQUENCY=2;
-      LISTEN_ADDR="127.0.0.1:8008";
+      LISTEN_ADDR="127.0.0.1:8001";
       LOG_DATE_TIME=1;
       LOG_FORMAT="text";
       LOG_FILE="stdout";

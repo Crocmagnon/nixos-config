@@ -68,7 +68,17 @@
 
       "reader.augendre.info".extraConfig = ''
         import common_headers
-        reverse_proxy localhost:8008
+        reverse_proxy localhost:8001
+      '';
+
+      "wallabag.augendre.info".extraConfig = ''
+        import common_headers
+        reverse_proxy localhost:8002
+      '';
+
+      "test.augendre.info".extraConfig = ''
+        import common_headers
+        redir localhost:9001
       '';
 
       "mariage.augendre.info".extraConfig = ''

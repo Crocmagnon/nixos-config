@@ -16,6 +16,7 @@ in {
     ./miniflux.nix
     ./users.nix
     ./test-headers.nix
+    ./wallabag.nix
     ./secrets
     ./facter.nix
     ./filebeat.nix
