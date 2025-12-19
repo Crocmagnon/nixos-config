@@ -27,6 +27,14 @@ destination ovhPaaSLogs {
 
 @include "${config.age.secrets."ovh-ldp-token".path}"
 
+# you can use this destination for debugging purpose
+destination debugfile {
+    file("/var/log/debugpaaslogs.log"
+      flags(syslog-protocol)
+    );
+};
+
+log { source(s_src); rewrite(ovh-token); destination(debugfile); };
 log { source(s_src); rewrite(ovh-token); destination(ovhPaaSLogs); };
 '';
   };
