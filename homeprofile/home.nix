@@ -5,6 +5,8 @@
   home.stateVersion = "25.11";
   home.packages = with pkgs; [
     wl-clipboard
+    terraform
+    git-crypt
   ];
 
   programs.bash.enable = true;
