@@ -111,6 +111,7 @@
       gopls
       delve
       golangci-lint-langserver
+      terraform-ls
     ];
     settings = {
       editor = {
