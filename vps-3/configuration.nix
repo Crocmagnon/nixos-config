@@ -1,11 +1,13 @@
 {
-  inputs,
   modulesPath,
   lib,
   pkgs,
-  config,
   ...
-} : {
+} : let
+  ipv6 = "2001:41d0:305:2100::a8ac";
+  ipv6gw = "2001:41d0:305:2100::1";
+  interface = "ens3";
+in {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
@@ -28,7 +30,17 @@
   services.openssh.enable = true;
   networking = {
     hostName = "vps-3";
-    firewall.allowedTCPPorts = [80 443];
+    enableIPv6 = true;
+    useNetworkd = lib.mkDefault true;
+    firewall = {
+      allowedTCPPorts = [80 443];
+      trustedInterfaces = ["tailscale0"];
+    };
+    interfaces."${interface}".ipv6 = {
+      addresses = [{ address = ipv6; prefixLength = 128; }];
+      routes = [{ address = ipv6gw; prefixLength = 64; }];
+    };
+    defaultGateway6 = { address = ipv6gw; interface = interface; };
   };
   services.fail2ban.enable = true;
 
