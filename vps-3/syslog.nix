@@ -2,9 +2,6 @@
   services.syslog-ng = {
     enable = true;
     extraConfig = ''
-@version: 4.3
-@include "scl.conf"
-
 options { chain_hostnames(off); flush_lines(0); use_dns(no); use_fqdn(no);
 	  dns_cache(no); owner("root"); group("adm"); perm(0640);
 	  stats(freq(0)); bad_hostname("^gconfd$");
@@ -13,10 +10,6 @@ options { chain_hostnames(off); flush_lines(0); use_dns(no); use_fqdn(no);
 source s_src {
        system();
        internal();
-};
-
-rewrite ovh-token {
-    set("{{ ldp_ovh_token }}", value(".SDATA.token@29084.X-OVH-TOKEN"));
 };
 
 destination ovhPaaSLogs {
