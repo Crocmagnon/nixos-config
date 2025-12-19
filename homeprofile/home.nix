@@ -116,6 +116,7 @@
     settings = {
       editor = {
         line-number = "relative";
+        bufferline = "multiple";
         cursorline = true;
         color-modes = true;
         cursor-shape = {
