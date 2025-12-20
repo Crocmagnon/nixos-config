@@ -9,10 +9,11 @@
     git-crypt
     tlrc
     git-toolbelt
-    htop
-    btop
     pre-commit
   ];
+
+  programs.htop.enable = true;
+  programs.btop.enable = true;
 
   services.tldr-update = {
     enable = true;
