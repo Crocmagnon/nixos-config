@@ -8,6 +8,7 @@
     terraform
     git-crypt
     tlrc
+    git-toolbelt
   ];
 
   services.tldr-update = {
