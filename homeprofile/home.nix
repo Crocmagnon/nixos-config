@@ -9,6 +9,8 @@
     git-crypt
     tlrc
     git-toolbelt
+    htop
+    btop
   ];
 
   services.tldr-update = {
