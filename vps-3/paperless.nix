@@ -18,7 +18,20 @@
     port = 9002;
     dataDir = "/mnt/paperless";
     domain = domain;
-    exporter.enable = true;
+    exporter = {
+      enable = true;
+      settings = {
+        # default
+        compare-checksums = true;
+        delete = true;
+        no-color = true;
+        no-progress-bar = true;
+        # custom
+        no-archive = true;
+        no-thumbnail = true;
+        split-manifest = true;
+      };
+    };
     environmentFile = config.age.secrets."paperless-env".path;
     settings = {
       PAPERLESS_USE_X_FORWARD_HOST = true;
