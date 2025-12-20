@@ -69,6 +69,7 @@
             users.gaugendre = {
               imports = [
                 ./homeprofile/home.nix
+                ./vps-3/home.nix
                 catppuccin.homeModules.catppuccin
               ];
             };
