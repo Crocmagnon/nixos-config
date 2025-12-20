@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-release.url = "github:nixos/nixpkgs/release-25.11";
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -24,6 +25,7 @@
 
   outputs = {
     nixpkgs,
+    nixpkgs-release,
     nixos-facter-modules,
     disko,
     agenix,
@@ -56,6 +58,14 @@
     # nixos-anywhere --flake .#vps-3 --generate-hardware-config nixos-facter facter.json <hostname>
     nixosConfigurations.vps-3 = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      specialArgs = let
+        system = "x86_64-linux";
+      in {
+        pkgs-release = import nixpkgs-release {
+          inherit system;
+          config.allowUnfree = true;
+        };
+      };
       modules = [
         disko.nixosModules.disko
         agenix.nixosModules.default

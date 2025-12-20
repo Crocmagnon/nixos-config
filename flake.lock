@@ -51,11 +51,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1765794845,
-        "narHash": "sha256-YD5QWlGnusNbZCqR3pxG8tRxx9yUXayLZfAJRWspq2s=",
+        "lastModified": 1766150702,
+        "narHash": "sha256-P0kM+5o+DKnB6raXgFEk3azw8Wqg5FL6wyl9jD+G5a4=",
         "owner": "nix-community",
         "repo": "disko",
-        "rev": "7194cfe5b7a3660726b0fe7296070eaef601cae9",
+        "rev": "916506443ecd0d0b4a0f4cf9d40a3c22ce39b378",
         "type": "github"
       },
       "original": {
@@ -137,6 +137,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-release": {
+      "locked": {
+        "lastModified": 1766260448,
+        "narHash": "sha256-FKEAV97/zYNuGfFByHbyJr8dqlCs3ELO4kiSn4TkV18=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "15795623c1957d10bfcc81f7ef3604c51abf7184",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "release-25.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -144,7 +160,8 @@
         "disko": "disko",
         "home-manager": "home-manager_2",
         "nixos-facter-modules": "nixos-facter-modules",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-release": "nixpkgs-release"
       }
     },
     "systems": {

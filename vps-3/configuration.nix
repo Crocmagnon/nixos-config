@@ -20,6 +20,7 @@ in {
     ./secrets
     ./facter.nix
     ./filebeat.nix
+    ./paperless.nix
     ../common/save-disk.nix
   ];
   boot.loader.grub = {
@@ -29,6 +30,7 @@ in {
     efiInstallAsRemovable = true;
   };
   services.openssh.enable = true;
+  time.timeZone = "Europe/Paris";
   networking = {
     hostName = "vps-3";
     enableIPv6 = true;

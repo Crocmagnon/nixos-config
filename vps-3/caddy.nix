@@ -78,7 +78,14 @@
 
       "test.augendre.info".extraConfig = ''
         import common_headers
+        import internal
         redir localhost:9001
+      '';
+
+      "paperless.augendre.info paperless3.augendre.info".extraConfig = ''
+        import common_headers
+        import internal
+        reverse_proxy localhost:9002
       '';
 
       "mariage.augendre.info".extraConfig = ''
