@@ -1,4 +1,11 @@
-{lib, ...}:
+{ lib , ... }:
+let
+  secrets = lib.mapAttrs' (
+    name: value: lib.nameValuePair (lib.strings.removeSuffix ".age" name) {file = ./${name};}
+  ) (import ./secrets.nix);
+in
 {
-  age.secrets = lib.mapAttrs' (name: value: lib.nameValuePair (lib.strings.removeSuffix ".age" name) ({file = ./${name};})) (import ./secrets.nix);
+  age.secrets = lib.attrsets.recursiveUpdate secrets {
+    paperless-env.owner = "paperless";
+  };
 }
