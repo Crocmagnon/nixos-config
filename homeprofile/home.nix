@@ -294,6 +294,11 @@
     target = ".local/share/konsole/catppuccin-latte.profile";
     source = ./konsole-catppuccin-latte.profile;
   };
+
+  home.file."nix-config" = {
+    target = ".config/nixpkgs/config.nix";
+    source = ./config.nix;
+  };
   
   programs.ssh = {
     enable = true;
