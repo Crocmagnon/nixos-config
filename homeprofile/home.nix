@@ -11,6 +11,7 @@
     git-toolbelt
     htop
     btop
+    pre-commit
   ];
 
   services.tldr-update = {
