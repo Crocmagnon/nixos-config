@@ -1,23 +1,10 @@
-{ config, pkgs, pkgs-release, ... }:
+{ config, ... }:
 {
-  environment.systemPackages = with pkgs; [
-    s3fs
-  ];
-  fileSystems."s3-paperless" = {
-    device = "paperless-gaugendre";
-    mountPoint = "/mnt/paperless";
-    fsType = "fuse./run/current-system/sw/bin/s3fs";
-    noCheck = true;
-    options = [ "_netdev" "allow_other" "use_path_request_style" "url=https://s3.gra.io.cloud.ovh.net/" "passwd_file=${config.age.secrets."paperless-s3-creds".path}" ];
-  };
-  services.paperless = let
-    domain = "paperless.augendre.info";
-  in {
+  services.paperless = {
     enable = true;
-    package = pkgs-release.paperless-ngx; # https://github.com/NixOS/nixpkgs/issues/472792
     port = 9002;
-    dataDir = "/mnt/paperless";
-    domain = domain;
+    dataDir = "/var/lib/paperless";
+    domain = "paperless.augendre.info";
     exporter = {
       enable = true;
       settings = {
