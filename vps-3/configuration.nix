@@ -2,6 +2,7 @@
   modulesPath,
   lib,
   pkgs,
+  config,
   ...
 } : let
   ipv6 = "2001:41d0:305:2100::a8ac";
@@ -65,6 +66,28 @@ in {
     useRoutingFeatures = "server";
   };
 
+  services.restic.backups = {
+    local = {
+      initialize = true;
+      createWrapper = true;
+      environmentFile = config.age.secrets."paperless-s3-creds".path;
+      passwordFile = config.age.secrets."restic-password".path;
+      paths = [
+        "/var/lib/paperless/export"
+      ];
+      repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-vps-3-gaugendre";
+      pruneOpts = [
+        "--keep-within-hourly 1d"
+        "--keep-within-daily 7d"
+        "--keep-within-weekly 1m"
+      ];
+      timerConfig = {
+        OnCalendar = "hourly";
+        Persistent = true;
+      };
+    };
+  };
+  
   nixpkgs.config.allowUnfree = true;
 
   system.stateVersion = "25.11";

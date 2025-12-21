@@ -16,4 +16,5 @@ in {
   "wallabag-env.age".publicKeys = allUsers ++ [systems.vps-3];
   "paperless-s3-creds.age".publicKeys = allUsers ++ [systems.vps-3];
   "paperless-env.age".publicKeys = allUsers ++ [systems.vps-3];
+  "restic-password.age".publicKeys = allUsers ++ [systems.vps-3];
 }
