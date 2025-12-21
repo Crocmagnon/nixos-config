@@ -4,6 +4,7 @@
     enable = true;
     port = 9002;
     dataDir = "/var/lib/paperless";
+    consumptionDirIsPublic = true; # this is required for syncthing to write
     domain = "paperless.augendre.info";
     exporter = {
       enable = true;
@@ -34,6 +35,22 @@
       PAPERLESS_FILENAME_FORMAT="{{ created_year }}/{{ correspondent }}/{{ title }}";
       PAPERLESS_IGNORE_DATES="1995-10-24,1995-10-16";
       PAPERLESS_CONVERT_MEMORY_LIMIT=32;
+    };
+  };
+
+  services.syncthing = {
+    enable = true;
+    guiPasswordFile = config.age.secrets."syncthing-gui-password".path;
+    guiAddress = "100.82.177.24:8384";
+    settings.devices.ubuntu = {
+      id = "OCM3L3Y-S32GASE-V2GENIK-VH4K4GN-R22IADT-L6G4EKJ-QEVATXM-I6SH3QE";
+    };
+    settings.options.urAccepted = -1;
+    settings.folders.paperless = {
+      id = "ktdnd-aoxva";
+      type = "sendreceive";
+      path = "/var/lib/paperless/consume";
+      devices = ["ubuntu"];
     };
   };
 }

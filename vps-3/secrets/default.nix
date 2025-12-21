@@ -7,5 +7,6 @@ in
 {
   age.secrets = lib.attrsets.recursiveUpdate secrets {
     paperless-env.owner = "paperless";
+    syncthing-gui-password.owner = "syncthing";
   };
 }
