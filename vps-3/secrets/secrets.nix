@@ -17,4 +17,5 @@ in {
   "paperless-env.age".publicKeys = allUsers ++ [systems.vps-3];
   "restic-password.age".publicKeys = allUsers ++ [systems.vps-3];
   "syncthing-gui-password.age".publicKeys = allUsers ++ [systems.vps-3];
+  "downloader-creds-env.age".publicKeys = allUsers ++ [systems.vps-3];
 }

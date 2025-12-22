@@ -1,5 +1,24 @@
-{ config, ... }:
+{ config, pkgs, lib, pkgs-pw, ... }:
+let
+  downloader = pkgs.buildGoModule {
+    pname = "downloader-go";
+    version = "latest";
+    src = pkgs.fetchFromGitea {
+      domain = "codeberg.org";
+      owner = "Crocmagnon";
+      repo = "downloader-go";
+      rev = "54c93d7df746549b4c0f2d0af6949b2335916dd3";
+      hash = "sha256-nRxkmIzo4Qfo7qV/YANjic2gs/CAn4IebRbzZbEWisc=";
+    };
+    vendorHash = "sha256-6n0QsQVxZXD33wMIxbgnduoQiW+elvIUYnCWhCRmQl4=";
+  };
+in
 {
+  environment.systemPackages = [
+    downloader
+    pkgs-pw.playwright-driver.browsers
+    pkgs-pw.playwright-driver
+  ];
   services.paperless = {
     enable = true;
     port = 9002;
@@ -51,6 +70,46 @@
       type = "sendreceive";
       path = "/var/lib/paperless/consume";
       devices = ["ubuntu"];
+    };
+  };
+
+  systemd.timers = {
+    download-shiva = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*-*-10 13:00";
+        Persistent = true;
+      };
+    };
+  };
+
+  systemd.tmpfiles.settings."downloader-cache"."${config.services.paperless.dataDir}/.cache/downloader".d = {
+    inherit (config.services.paperless) user;
+    inherit (config.users.users.${config.services.paperless.user}) group;
+  };
+
+  systemd.services = {
+    download-shiva = {
+      # path = [ downloader ];
+      restartIfChanged = false;
+      # startAt = "*-*-10 13:00";
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+      environment = {
+        PLAYWRIGHT_BROWSERS_PATH = pkgs-pw.playwright-driver.browsers;
+        PLAYWRIGHT_DRIVER_PATH = pkgs-pw.playwright-driver;
+        PLAYWRIGHT_NODEJS_PATH = "${pkgs.nodejs}/bin/node";
+        PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "1";
+      };
+      serviceConfig = {
+        WorkingDirectory = config.services.paperless.dataDir+"/.cache/downloader";
+        Type = "oneshot";
+        User = config.services.paperless.user;
+        EnvironmentFile = config.age.secrets."downloader-creds-env".path;
+        ExecStart = ''
+          ${downloader}/bin/downloader-go shiva --headless -o ${config.services.paperless.consumptionDir} -u $SHIVA_USERNAME -p $SHIVA_PASSWORD
+        '';
+      };
     };
   };
 }
