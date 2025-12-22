@@ -103,7 +103,7 @@
         builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
       ))
       {
-        format = "$all$fill$cmd_duration$username$hostname$time$line_break$character";
+        format = "$all$fill$cmd_duration$time$line_break$character";
         fill.symbol = " ";
         time = {
           disabled = false;
