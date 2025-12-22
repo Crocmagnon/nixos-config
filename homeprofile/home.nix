@@ -115,6 +115,24 @@
         hostname.style = "dimmed yellow";
         username.format = "[$user]($style)";
         username.style_user = "dimmed yellow";
+        git_branch = {
+          format = "[$symbol$branch(:$remote_branch)]($style) ";
+          style = "green";
+        };
+        git_status = {
+          format = "[$all_status$ahead_behind]($style)";
+          style = "yellow";
+          conflicted = "=$count ";
+          ahead = "⇡$count ";
+          behind = "⇣$count ";
+          diverged = "⇡$ahead_count ⇣$behind_count ";
+          untracked = "?$count ";
+          stashed = "\$$count ";
+          modified = "!$count ";
+          staged = "+$count ";
+          renamed = "»$count ";
+          deleted = "✘$count ";
+        };
       }
     ];
   };
