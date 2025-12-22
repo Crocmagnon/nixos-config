@@ -10,6 +10,7 @@
     tlrc
     git-toolbelt
     pre-commit
+    watchexec
   ];
 
   programs.htop.enable = true;
@@ -115,6 +116,7 @@
       nixd
       gotools
       gopls
+      golangci-lint
       delve
       golangci-lint-langserver
       terraform-ls
