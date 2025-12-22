@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   home.username = "gaugendre";
   home.homeDirectory = "/home/gaugendre";
@@ -51,7 +56,7 @@
       ansible-encrypt-to-clipboard = ''
         read -s val
         ansible-vault encrypt_string -- "$val" | grep -v Encryption | pbcopy
-        '';
+      '';
       cat = {
         wraps = "bat";
         body = ''
@@ -60,7 +65,7 @@
           else
             command cat $argv
           end
-          '';
+        '';
       };
       pbcopy = ''
         set cmd command pbcopy
@@ -71,7 +76,7 @@
           set cmd wl-copy
         end
         $cmd
-        '';
+      '';
       showcert = "openssl s_client -connect $argv[1]:443 -servername $argv[1] -showcerts < /dev/null";
     };
   };
@@ -94,10 +99,10 @@
   programs.starship = {
     enable = true;
     settings = lib.mkMerge [
-      (builtins.fromTOML
-        (builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
+      (builtins.fromTOML (
+        builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
       ))
-      {}
+      { }
     ];
   };
   programs.fd.enable = true;
@@ -114,6 +119,7 @@
     extraPackages = with pkgs; [
       nil
       nixd
+      nixfmt
       gotools
       gopls
       golangci-lint
@@ -141,13 +147,20 @@
       };
     };
     languages = {
-      language = [{
-        name = "go";
-        auto-format = true;
-        formatter = {
-          command = "goimports";
-        };
-      }];
+      language = [
+        {
+          name = "go";
+          auto-format = true;
+          formatter = {
+            command = "goimports";
+          };
+        }
+        {
+          name = "nix";
+          auto-format = true;
+          formatter.command = "nixfmt";
+        }
+      ];
       language-server.gopls.config = {
         "ui.diagnostic.staticcheck" = true;
         "formatting.gofumpt" = true;
@@ -157,7 +170,7 @@
 
   programs.git = {
     enable = true;
-    attributes = ["go.sum merge=union"];
+    attributes = [ "go.sum merge=union" ];
     ignores = [
       ".local"
 
@@ -274,22 +287,30 @@
 
   home.file."konsole-catppuccin-mocha-theme" = {
     target = ".local/share/konsole/catppuccin-mocha.colorscheme";
-    source = let repo = pkgs.fetchFromGitHub {
-      owner = "catppuccin";
-      repo = "konsole";
-      rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
-      sha256 = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
-    }; in "${repo}/themes/catppuccin-mocha.colorscheme";
+    source =
+      let
+        repo = pkgs.fetchFromGitHub {
+          owner = "catppuccin";
+          repo = "konsole";
+          rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
+          sha256 = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
+        };
+      in
+      "${repo}/themes/catppuccin-mocha.colorscheme";
   };
 
   home.file."konsole-catppuccin-latte-theme" = {
     target = ".local/share/konsole/catppuccin-latte.colorscheme";
-    source = let repo = pkgs.fetchFromGitHub {
-      owner = "catppuccin";
-      repo = "konsole";
-      rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
-      sha256 = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
-    }; in "${repo}/themes/catppuccin-latte.colorscheme";
+    source =
+      let
+        repo = pkgs.fetchFromGitHub {
+          owner = "catppuccin";
+          repo = "konsole";
+          rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
+          sha256 = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
+        };
+      in
+      "${repo}/themes/catppuccin-latte.colorscheme";
   };
 
   home.file."konsole-catppuccin-mocha-profile" = {
@@ -306,7 +327,7 @@
     target = ".config/nixpkgs/config.nix";
     source = ./config.nix;
   };
-  
+
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
