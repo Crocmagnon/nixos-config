@@ -105,16 +105,29 @@
       {
         format = "$all$fill$cmd_duration$username$hostname$time$line_break$character";
         fill.symbol = " ";
-        time.disabled = false;
-        time.style = "black";
-        time.format = "[$time]($style) ";
-        cmd_duration.min_time = 5000;
-        cmd_duration.style = "black";
-        cmd_duration.format = "[ $duration]($style) ";
-        hostname.format = "[@$hostname]($style) ";
-        hostname.style = "dimmed yellow";
-        username.format = "[$user]($style)";
-        username.style_user = "dimmed yellow";
+        time = {
+          disabled = false;
+          style = "black";
+          format = "[$time]($style) ";
+        };
+        cmd_duration = {
+          min_time = 5000;
+          style = "black";
+          format = "[ $duration]($style) ";
+        };
+        hostname = {
+          format = "[@$hostname]($style) ";
+          style = "dimmed yellow";
+        };
+        username = {
+          format = "[$user]($style)";
+          style_user = "dimmed yellow";
+        };
+        directory = {
+          fish_style_pwd_dir_length = 1;
+          before_repo_root_style = "cyan";
+          repo_root_style = "bold cyan";
+        };
         git_branch = {
           format = "[$symbol$branch(:$remote_branch)]($style) ";
           style = "green";
