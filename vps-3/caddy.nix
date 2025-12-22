@@ -1,4 +1,5 @@
-{pkgs, config, ...} : {
+{ pkgs, config, ... }:
+{
   services.caddy = {
     enable = true;
     package = pkgs.caddy.withPlugins {
@@ -10,41 +11,41 @@
       format console
     '';
     globalConfig = ''
-    dns ovh {
-      endpoint ovh-eu
-      application_key {$OVH_APP_KEY}
-      application_secret {$OVH_APP_SECRET}
-      consumer_key {$OVH_CONSUMER_KEY}
-    }
+      dns ovh {
+        endpoint ovh-eu
+        application_key {$OVH_APP_KEY}
+        application_secret {$OVH_APP_SECRET}
+        consumer_key {$OVH_CONSUMER_KEY}
+      }
 
-    acme_dns ovh {
-      endpoint ovh-eu
-      application_key {$OVH_APP_KEY}
-      application_secret {$OVH_APP_SECRET}
-      consumer_key {$OVH_CONSUMER_KEY}
-    }
+      acme_dns ovh {
+        endpoint ovh-eu
+        application_key {$OVH_APP_KEY}
+        application_secret {$OVH_APP_SECRET}
+        consumer_key {$OVH_CONSUMER_KEY}
+      }
     '';
     extraConfig = ''
-    (common_headers) {
-      header * -Server
-      header * -X-Powered-By
-      header * Permissions-Policy interest-cohort=()
-      header * ?Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-      header * ?Referrer-Policy "strict-origin-when-cross-origin"
-      header * ?X-Content-Type-Options "nosniff"
-      header * ?X-Frame-Options "DENY"
-      header * ?X-XSS-Protection "1; mode=block"
-    }
+      (common_headers) {
+        header * -Server
+        header * -X-Powered-By
+        header * Permissions-Policy interest-cohort=()
+        header * ?Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        header * ?Referrer-Policy "strict-origin-when-cross-origin"
+        header * ?X-Content-Type-Options "nosniff"
+        header * ?X-Frame-Options "DENY"
+        header * ?X-XSS-Protection "1; mode=block"
+      }
 
-    (internal) {
-      @blocked not client_ip private_ranges 2a01:e0a:325:a1c0::/64 fd7a:115c:a1e0::/48 100.0.0.0/8
-      respond @blocked "Access denied" 403 {
-        close
+      (internal) {
+        @blocked not client_ip private_ranges 2a01:e0a:325:a1c0::/64 fd7a:115c:a1e0::/48 100.0.0.0/8
+        respond @blocked "Access denied" 403 {
+          close
+        }
+        tls {
+          resolvers 1.1.1.1 1.0.0.1
+        }
       }
-      tls {
-        resolvers 1.1.1.1 1.0.0.1
-      }
-    }
     '';
     virtualHosts = {
       "g4b.ovh".extraConfig = ''
@@ -108,5 +109,5 @@
       '';
     };
   };
-  systemd.services.caddy.serviceConfig.EnvironmentFile = [config.age.secrets."ovh-keys".path];
+  systemd.services.caddy.serviceConfig.EnvironmentFile = [ config.age.secrets."ovh-keys".path ];
 }

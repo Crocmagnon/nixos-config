@@ -4,11 +4,13 @@
   pkgs,
   config,
   ...
-} : let
+}:
+let
   ipv6 = "2001:41d0:305:2100::a8ac";
   ipv6gw = "2001:41d0:305:2100::1";
   interface = "ens3";
-in {
+in
+{
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
@@ -37,14 +39,30 @@ in {
     enableIPv6 = true;
     useNetworkd = lib.mkDefault true;
     firewall = {
-      allowedTCPPorts = [80 443];
-      trustedInterfaces = ["tailscale0"];
+      allowedTCPPorts = [
+        80
+        443
+      ];
+      trustedInterfaces = [ "tailscale0" ];
     };
     interfaces."${interface}".ipv6 = {
-      addresses = [{ address = ipv6; prefixLength = 128; }];
-      routes = [{ address = ipv6gw; prefixLength = 64; }];
+      addresses = [
+        {
+          address = ipv6;
+          prefixLength = 128;
+        }
+      ];
+      routes = [
+        {
+          address = ipv6gw;
+          prefixLength = 64;
+        }
+      ];
     };
-    defaultGateway6 = { address = ipv6gw; interface = interface; };
+    defaultGateway6 = {
+      address = ipv6gw;
+      interface = interface;
+    };
   };
   services.fail2ban.enable = true;
 
@@ -87,7 +105,7 @@ in {
       };
     };
   };
-  
+
   nixpkgs.config.allowUnfree = true;
 
   system.stateVersion = "25.11";

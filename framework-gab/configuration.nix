@@ -5,11 +5,11 @@
 { pkgs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ../common/save-disk.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    ../common/save-disk.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -91,11 +91,14 @@
   users.users.gaugendre = {
     isNormalUser = true;
     description = "Gabriel";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
     shell = pkgs.fish;
     packages = with pkgs; [
       kdePackages.kate
-    #  thunderbird
+      #  thunderbird
     ];
   };
 
@@ -105,16 +108,20 @@
   };
 
   # passwordless sudo
-  security.sudo.extraRules = [{
-    users = [ "gaugendre" ];
-    commands = [
-      {
-        command = "ALL";
-        options = [ "SETENV" "NOPASSWD" ];
-      }
-    ];
-  }];
-
+  security.sudo.extraRules = [
+    {
+      users = [ "gaugendre" ];
+      commands = [
+        {
+          command = "ALL";
+          options = [
+            "SETENV"
+            "NOPASSWD"
+          ];
+        }
+      ];
+    }
+  ];
 
   # Install firefox.
   programs.firefox.enable = true;
@@ -129,19 +136,22 @@
     git
     ripgrep
     bind # dig, among other
-  #  wget
+    #  wget
   ];
 
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
   ];
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   services.fprintd = {
     enable = true;
-  #  tod.enable = true;
-  #  tod.driver = pkgs.libfprint-2-tod1-goodix;
+    #  tod.enable = true;
+    #  tod.driver = pkgs.libfprint-2-tod1-goodix;
   };
 
   # Fix fprintd recognizing fingerprint after suspend

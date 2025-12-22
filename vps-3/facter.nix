@@ -1,4 +1,4 @@
-{config, ...}:
+{ config, ... }:
 {
   config.facter.reportPath =
     if builtins.pathExists ./facter.json then

@@ -1,4 +1,5 @@
-{ config, ...} : {
+{ config, ... }:
+{
   virtualisation.oci-containers.containers = {
     wallabag = {
       image = "wallabag/wallabag:latest";
@@ -6,7 +7,7 @@
       volumes = [
         "images:/var/www/wallabag/web/assets/images"
       ];
-      ports = ["127.0.0.1:8002:80"];
+      ports = [ "127.0.0.1:8002:80" ];
     };
   };
 }

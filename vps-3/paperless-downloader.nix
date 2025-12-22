@@ -19,24 +19,32 @@ let
     vendorHash = "sha256-6n0QsQVxZXD33wMIxbgnduoQiW+elvIUYnCWhCRmQl4=";
   };
   downloads = {
-    shiva = {      calendar = "*-*-10 13:00";      subcommand = "shiva";      var = "$SHIVA";    };
+    shiva = {
+      calendar = "*-*-10 13:00";
+      subcommand = "shiva";
+      var = "$SHIVA";
+    };
   };
-in {
-  systemd.tmpfiles.settings."downloader-cache"."${config.services.paperless.dataDir}/.cache/downloader".d = {
-    inherit (config.services.paperless) user;
-    inherit (config.users.users.${config.services.paperless.user}) group;
-  };
+in
+{
+  systemd.tmpfiles.settings."downloader-cache"."${config.services.paperless.dataDir}/.cache/downloader".d =
+    {
+      inherit (config.services.paperless) user;
+      inherit (config.users.users.${config.services.paperless.user}) group;
+    };
 
   systemd.timers = lib.mapAttrs' (
-      name: value: lib.nameValuePair "download-${name}" {
-        wantedBy = [ "timers.target" ];
-        timerConfig.OnCalendar = value.calendar;
-        timerConfig.Persistent = true;
-      }
-    ) downloads;
+    name: value:
+    lib.nameValuePair "download-${name}" {
+      wantedBy = [ "timers.target" ];
+      timerConfig.OnCalendar = value.calendar;
+      timerConfig.Persistent = true;
+    }
+  ) downloads;
 
   systemd.services = lib.mapAttrs' (
-    name: value: lib.nameValuePair "download-${name}" {
+    name: value:
+    lib.nameValuePair "download-${name}" {
       restartIfChanged = false;
       wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
@@ -46,7 +54,7 @@ in {
         PLAYWRIGHT_NODEJS_PATH = "${pkgs.nodejs}/bin/node";
       };
       serviceConfig = {
-        WorkingDirectory = config.services.paperless.dataDir+"/.cache/downloader";
+        WorkingDirectory = config.services.paperless.dataDir + "/.cache/downloader";
         Type = "oneshot";
         User = config.services.paperless.user;
         EnvironmentFile = config.age.secrets."downloader-creds-env".path;
@@ -54,5 +62,6 @@ in {
           ${downloader}/bin/downloader-go ${value.subcommand} --no-interaction --headless -o ${config.services.paperless.consumptionDir} -u ${value.var}_USERNAME -p ${value.var}_PASSWORD
         '';
       };
-  }) downloads;
+    }
+  ) downloads;
 }
