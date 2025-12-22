@@ -103,10 +103,18 @@
         builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
       ))
       {
-        format = "$all$fill$cmd_duration$time$line_break$character";
+        format = "$all$fill$cmd_duration$username$hostname$time$line_break$character";
         fill.symbol = " ";
         time.disabled = false;
+        time.style = "black";
+        time.format = "[$time]($style) ";
         cmd_duration.min_time = 5000;
+        cmd_duration.style = "black";
+        cmd_duration.format = "[ $duration]($style) ";
+        hostname.format = "[@$hostname]($style) ";
+        hostname.style = "dimmed yellow";
+        username.format = "[$user]($style)";
+        username.style_user = "dimmed yellow";
       }
     ];
   };
