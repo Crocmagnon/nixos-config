@@ -102,7 +102,12 @@
       (builtins.fromTOML (
         builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
       ))
-      { }
+      {
+        format = "$all$fill$cmd_duration$time$line_break$character";
+        fill.symbol = " ";
+        time.disabled = false;
+        cmd_duration.min_time = 5000;
+      }
     ];
   };
   programs.fd.enable = true;
