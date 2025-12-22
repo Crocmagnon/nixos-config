@@ -24,6 +24,31 @@ let
       subcommand = "shiva";
       var = "$SHIVA";
     };
+    eau-du-grand-lyon = {
+      calendar = "*-6,12-13 13:00";
+      subcommand = "eau-du-grand-lyon";
+      var = "$EDG";
+    };
+    free-mobile = {
+      calendar = "*-*-2 13:00";
+      subcommand = "free-mobile";
+      var = "$FREEMOBILE";
+    };
+    freebox = {
+      calendar = "*-*-5 13:00";
+      subcommand = "freebox";
+      var = "$FREEBOX";
+    };
+    lcl = {
+      calendar = "*-*-10 13:00";
+      subcommand = "lcl";
+      var = "$LCL";
+    };
+    # octopus = {
+    #   calendar = "";
+    #   subcommand = "octopus-energy-address";
+    #   var = "$OCTOPUS";
+    # };
   };
 in
 {
