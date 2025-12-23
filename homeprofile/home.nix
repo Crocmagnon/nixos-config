@@ -10,12 +10,12 @@
   home.stateVersion = "25.11";
   home.packages = with pkgs; [
     wl-clipboard
-    terraform
     git-crypt
-    tlrc
+    tlrc # tldr provider
     git-toolbelt
     pre-commit
-    watchexec
+    watchexec # used by mise watch
+    amber # like find | sed but easier (ambr before after)
   ];
 
   programs.htop.enable = true;
