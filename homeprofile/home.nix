@@ -22,6 +22,12 @@
   programs.btop.enable = true;
   programs.tmux.enable = true;
 
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+    silent = true;
+  };
+
   services.tldr-update = {
     enable = true;
     package = pkgs.tlrc;
@@ -225,7 +231,6 @@
       # specific
       ".idea"
       ".tool-versions"
-      ".envrc"
       ".direnv"
       ".rtx.toml"
       ".mise.toml"
