@@ -11,16 +11,9 @@ run = [
 
 [tasks.localhost]
 description = "deploy to local machine"
-run = "sudo nixos-rebuild switch"
+run = "sudo nixos-rebuild -I nixos-config=./framework-gab/configuration.nix switch"
 
 [tasks.vps-3]
 description = "deploy flake to server"
-run = "nixos-rebuild switch --flake .#vps-3 --target-host gaugendre@vps-3 --sudo"
+run = "nixos-rebuild switch -I nixos-config=./vps-3/configuration.nix --target-host gaugendre@vps-3 --sudo"
 
-[tasks.re-vps-3]
-description = "fully redeploy to server over existing nixos"
-run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps-3/facter.json --target-host root@vps-3.augendre.info"
-
-[tasks.initial-vps-3]
-description = "initial deploy to server over debian"
-run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps-3/facter.json --target-host debian@vps-3.augendre.info"

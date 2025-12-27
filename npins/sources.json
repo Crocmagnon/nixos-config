@@ -1,0 +1,92 @@
+{
+  "pins": {
+    "agenix": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "ryantm",
+        "repo": "agenix"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "fcdea223397448d35d9b31f798479227e80183f6",
+      "url": "https://github.com/ryantm/agenix/archive/fcdea223397448d35d9b31f798479227e80183f6.tar.gz",
+      "hash": "1d4m7hsq727q7ndjqmgyl8vkbkqjwps962ygmv2mcc5dbqzgn963"
+    },
+    "catppuccin": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "catppuccin",
+        "repo": "nix"
+      },
+      "branch": "release-25.05",
+      "submodules": false,
+      "revision": "5375a9d80c4b2a835c7203920f997f3ea4224423",
+      "url": "https://github.com/catppuccin/nix/archive/5375a9d80c4b2a835c7203920f997f3ea4224423.tar.gz",
+      "hash": "1x178xi0czpprhvqpr0m9mp837iqk674cylf0cxjmd3v0prx4i49"
+    },
+    "disko": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "disko"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "916506443ecd0d0b4a0f4cf9d40a3c22ce39b378",
+      "url": "https://github.com/nix-community/disko/archive/916506443ecd0d0b4a0f4cf9d40a3c22ce39b378.tar.gz",
+      "hash": "1bp5hqzqqz99qgx55r50dbqz1b6x4i8q15xnxb0sj31ykbxhqj9z"
+    },
+    "home-manager": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "home-manager"
+      },
+      "branch": "release-25.11",
+      "submodules": false,
+      "revision": "0999ed8f965bbbd991437ad9c5ed3434cecbc30e",
+      "url": "https://github.com/nix-community/home-manager/archive/0999ed8f965bbbd991437ad9c5ed3434cecbc30e.tar.gz",
+      "hash": "1rzgy9qmrvh9l3jrcjv14kva8sj3imzrpm2vmwcfzp40bk9wdfb5"
+    },
+    "nixos-facter-modules": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "numtide",
+        "repo": "nixos-facter-modules"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "e796d536e3d83de74267069e179dc620a608ed7d",
+      "url": "https://github.com/numtide/nixos-facter-modules/archive/e796d536e3d83de74267069e179dc620a608ed7d.tar.gz",
+      "hash": "1srnmn3mdsqcqcacqs7z0605j3d7ih6lk2gc2v0q1cjgsvinzpsi"
+    },
+    "nixpkgs": {
+      "type": "Channel",
+      "name": "nixos-25.11",
+      "url": "https://releases.nixos.org/nixos/25.11/nixos-25.11.2561.f560ccec6b11/nixexprs.tar.xz",
+      "hash": "18phslg2hpd9ph6wwl3vyyxfq0xw0b42zyrsd1kahg8jbkpjp83g"
+    },
+    "playwright-web-flake": {
+      "type": "GitRelease",
+      "repository": {
+        "type": "GitHub",
+        "owner": "pietdevries94",
+        "repo": "playwright-web-flake"
+      },
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
+      "submodules": false,
+      "version": "1.52.0",
+      "revision": "1f32a70613672d5c0e240b57294893cbcfc29049",
+      "url": "https://api.github.com/repos/pietdevries94/playwright-web-flake/tarball/1.52.0",
+      "hash": "09pl04ic2lz4ikd8l1yra74gdw625wgmpbvgm5bgidsdqzrk8whq"
+    }
+  },
+  "version": 5
+}

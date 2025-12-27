@@ -1,19 +1,40 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ pkgs, ... }:
-
+{ ... }:
+let
+  sources = import ../npins;
+  pkgs = import sources.nixpkgs { };
+  home-manager = sources.home-manager;
+in
 {
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../common/save-disk.nix
+    (sources.catppuccin + "/modules/nixos")
+    (import "${home-manager}/nixos")
   ];
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users.gaugendre = {
+      imports = [
+        ../homeprofile/home.nix
+        (sources.catppuccin + "/modules/home-manager")
+      ];
+    };
+    backupFileExtension = "hm-bkp";
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  nix.channel.enable = false;
+  nix.nixPath = [ "nixpkgs=/etc/nixos/nixpkgs" ];
+
+  environment.etc = {
+    "nixos/nixpkgs".source = builtins.storePath pkgs.path;
+  };
 
   catppuccin.enable = true;
 
@@ -136,6 +157,7 @@
     git
     ripgrep
     bind # dig, among other
+    npins
     #  wget
   ];
 

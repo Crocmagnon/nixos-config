@@ -1,17 +1,27 @@
 {
   modulesPath,
   lib,
-  pkgs,
   config,
   ...
 }:
 let
+  sources = import ../npins;
+  pkgs = import sources.nixpkgs { overlays = [ overlay ]; };
+  playwright = sources.playwright-web-flake;
+  home-manager = sources.home-manager;
+  overlay = final: prev: {
+    inherit (playwright.packages.x86_64-linux) playwright-test playwright-driver;
+  };
   ipv6 = "2001:41d0:305:2100::a8ac";
   ipv6gw = "2001:41d0:305:2100::1";
   interface = "ens3";
 in
 {
   imports = [
+    (sources.disko + "/module.nix")
+    (sources.agenix + "/modules/age.nix")
+    (sources.catppuccin + "/modules/nixos")
+    (import "${home-manager}/nixos")
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ./disk-config.nix
@@ -21,17 +31,38 @@ in
     ./test-headers.nix
     ./wallabag.nix
     ./secrets
-    ./facter.nix
     ./filebeat.nix
     ./paperless.nix
     ../common/save-disk.nix
   ];
+
+  hardware.facter.reportPath = ./facter.json;
   boot.loader.grub = {
     # no need to set devices, disko will add all devices that have a EF02 partition to the list already
     # devices = [ ];
     efiSupport = true;
     efiInstallAsRemovable = true;
   };
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users.gaugendre = {
+      imports = [
+        ../homeprofile/home.nix
+        (sources.catppuccin + "/modules/home-manager")
+      ];
+    };
+    backupFileExtension = "hm-bkp";
+  };
+
+  nix.channel.enable = false;
+  nix.nixPath = [ "nixpkgs=/etc/nixos/nixpkgs" ];
+
+  environment.etc = {
+    "nixos/nixpkgs".source = builtins.storePath pkgs.path;
+  };
+
   services.openssh.enable = true;
   time.timeZone = "Europe/Paris";
   networking = {
@@ -75,6 +106,7 @@ in
     pkgs.gitMinimal
     pkgs.helix
     pkgs.wget
+    pkgs.npins
   ];
 
   programs.fish.enable = true;
