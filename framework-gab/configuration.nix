@@ -17,6 +17,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
 
   catppuccin.enable = true;
+  catppuccin.sddm.enable = false;
 
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
