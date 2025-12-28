@@ -8,7 +8,6 @@ let
   sources = import ../npins;
   pkgs = import sources.nixpkgs { overlays = [ overlay ]; };
   playwright = sources.playwright-web-flake;
-  home-manager = sources.home-manager;
   overlay = final: prev: {
     inherit (playwright.packages.x86_64-linux) playwright-test playwright-driver;
   };
@@ -21,7 +20,7 @@ in
     (sources.disko + "/module.nix")
     (sources.agenix + "/modules/age.nix")
     (sources.catppuccin + "/modules/nixos")
-    (import "${home-manager}/nixos")
+    (import ../homeprofile/homemanager.nix "gaugendre" sources)
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ./disk-config.nix
@@ -42,18 +41,6 @@ in
     # devices = [ ];
     efiSupport = true;
     efiInstallAsRemovable = true;
-  };
-
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    users.gaugendre = {
-      imports = [
-        ../homeprofile/home.nix
-        (sources.catppuccin + "/modules/home-manager")
-      ];
-    };
-    backupFileExtension = "hm-bkp";
   };
 
   nix.channel.enable = false;

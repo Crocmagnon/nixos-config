@@ -2,7 +2,6 @@
 let
   sources = import ../npins;
   pkgs = import sources.nixpkgs { };
-  home-manager = sources.home-manager;
 in
 {
   imports = [
@@ -10,20 +9,8 @@ in
     ./hardware-configuration.nix
     ../common/save-disk.nix
     (sources.catppuccin + "/modules/nixos")
-    (import "${home-manager}/nixos")
+    (import ../homeprofile/homemanager.nix "gaugendre" sources)
   ];
-
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    users.gaugendre = {
-      imports = [
-        ../homeprofile/home.nix
-        (sources.catppuccin + "/modules/home-manager")
-      ];
-    };
-    backupFileExtension = "hm-bkp";
-  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
