@@ -33,21 +33,13 @@ in
     ./filebeat.nix
     ./paperless.nix
     ../common/save-disk.nix
+    ../common/pin-nixpkgs.nix
   ];
 
   hardware.facter.reportPath = ./facter.json;
   boot.loader.grub = {
-    # no need to set devices, disko will add all devices that have a EF02 partition to the list already
-    # devices = [ ];
     efiSupport = true;
     efiInstallAsRemovable = true;
-  };
-
-  nix.channel.enable = false;
-  nix.nixPath = [ "nixpkgs=/etc/nixos/nixpkgs" ];
-
-  environment.etc = {
-    "nixos/nixpkgs".source = builtins.storePath pkgs.path;
   };
 
   services.openssh.enable = true;
@@ -84,10 +76,6 @@ in
   };
   services.fail2ban.enable = true;
 
-  # check first here if a package has options : https://search.nixos.org/options
-  # before adding to systemPackages.
-  # systemPackages barely installs a package, enabling with options if available
-  # handles more things (completions for fish for example, or systemd units, etc)
   environment.systemPackages = map lib.lowPrio [
     pkgs.curl
     pkgs.gitMinimal
