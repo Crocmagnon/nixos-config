@@ -1,6 +1,5 @@
 {
   pkgs,
-  pkgs-pw,
   config,
   lib,
   ...
@@ -74,8 +73,8 @@ in
       wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
       environment = {
-        PLAYWRIGHT_BROWSERS_PATH = pkgs-pw.playwright-driver.browsers;
-        PLAYWRIGHT_DRIVER_PATH = pkgs-pw.playwright-driver;
+        PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
+        PLAYWRIGHT_DRIVER_PATH = pkgs.playwright-driver;
         PLAYWRIGHT_NODEJS_PATH = "${pkgs.nodejs}/bin/node";
       };
       serviceConfig = {

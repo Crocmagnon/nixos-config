@@ -11,7 +11,7 @@ run = [
 
 [tasks.localhost]
 description = "deploy to local machine"
-run = "sudo nixos-rebuild switch"
+run = "sudo nixos-rebuild switch --flake .#"
 
 [tasks.vps-3]
 description = "deploy flake to server"
