@@ -21,17 +21,17 @@ in
     ./test-headers.nix
     ./wallabag.nix
     ./secrets
-    ./facter.nix
     ./filebeat.nix
     ./paperless.nix
     ../common/save-disk.nix
   ];
+
+  hardware.facter.reportPath = ./facter.json;
   boot.loader.grub = {
-    # no need to set devices, disko will add all devices that have a EF02 partition to the list already
-    # devices = [ ];
     efiSupport = true;
     efiInstallAsRemovable = true;
   };
+
   services.openssh.enable = true;
   time.timeZone = "Europe/Paris";
   networking = {
@@ -66,10 +66,6 @@ in
   };
   services.fail2ban.enable = true;
 
-  # check first here if a package has options : https://search.nixos.org/options
-  # before adding to systemPackages.
-  # systemPackages barely installs a package, enabling with options if available
-  # handles more things (completions for fish for example, or systemd units, etc)
   environment.systemPackages = map lib.lowPrio [
     pkgs.curl
     pkgs.gitMinimal
