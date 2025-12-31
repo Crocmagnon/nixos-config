@@ -19,4 +19,5 @@ in
   "restic-password.age".publicKeys = allUsers ++ [ systems.vps-3 ];
   "syncthing-gui-password.age".publicKeys = allUsers ++ [ systems.vps-3 ];
   "downloader-creds-env.age".publicKeys = allUsers ++ [ systems.vps-3 ];
+  "healthchecks-api-key.age".publicKeys = allUsers ++ [ systems.vps-3 ];
 }
