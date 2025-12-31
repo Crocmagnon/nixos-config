@@ -5,18 +5,6 @@
   ...
 }:
 let
-  downloader = pkgs.buildGoModule {
-    pname = "downloader-go";
-    version = "latest";
-    src = pkgs.fetchFromGitea {
-      domain = "codeberg.org";
-      owner = "Crocmagnon";
-      repo = "downloader-go";
-      rev = "54c93d7df746549b4c0f2d0af6949b2335916dd3";
-      hash = "sha256-nRxkmIzo4Qfo7qV/YANjic2gs/CAn4IebRbzZbEWisc=";
-    };
-    vendorHash = "sha256-6n0QsQVxZXD33wMIxbgnduoQiW+elvIUYnCWhCRmQl4=";
-  };
   downloads = {
     shiva = {
       calendar = "*-*-10 13:00";
@@ -83,7 +71,7 @@ in
         User = config.services.paperless.user;
         EnvironmentFile = config.age.secrets."downloader-creds-env".path;
         ExecStart = ''
-          ${downloader}/bin/downloader-go ${value.subcommand} --no-interaction --headless -o ${config.services.paperless.consumptionDir} -u ${value.var}_USERNAME -p ${value.var}_PASSWORD
+          ${pkgs.downloader-go}/bin/downloader-go ${value.subcommand} --no-interaction --headless -o ${config.services.paperless.consumptionDir} -u ${value.var}_USERNAME -p ${value.var}_PASSWORD
         '';
       };
     }

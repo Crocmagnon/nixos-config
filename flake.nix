@@ -22,7 +22,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.darwin.follows = "";
     };
-
+    downloader = {
+      url = "git+https://codeberg.org/Crocmagnon/downloader-go";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.playwright.follows = "playwright";
+    };
   };
 
   outputs =
@@ -33,6 +37,7 @@
       agenix,
       home-manager,
       catppuccin,
+      downloader,
       ...
     }:
     {
@@ -82,6 +87,7 @@
             nixpkgs.overlays = [
               (final: prev: {
                 inherit (playwright.packages.x86_64-linux) playwright-driver;
+                inherit (downloader.packages.x86_64-linux) downloader-go;
               })
             ];
           }

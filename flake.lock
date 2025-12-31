@@ -64,6 +64,29 @@
         "type": "github"
       }
     },
+    "downloader": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "playwright": [
+          "playwright"
+        ]
+      },
+      "locked": {
+        "lastModified": 1767041375,
+        "narHash": "sha256-BHE8Ycqwjy5xCG7mAWhZ7KkjTY9g9oQwYDC/QZbH7Bc=",
+        "ref": "refs/heads/master",
+        "rev": "e57af2ff0d74025a46faf69d9ed80228915dd3fd",
+        "revCount": 36,
+        "type": "git",
+        "url": "https://codeberg.org/Crocmagnon/downloader-go"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://codeberg.org/Crocmagnon/downloader-go"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems_2"
@@ -167,6 +190,7 @@
         "agenix": "agenix",
         "catppuccin": "catppuccin",
         "disko": "disko",
+        "downloader": "downloader",
         "home-manager": "home-manager_2",
         "nixpkgs": "nixpkgs",
         "playwright": "playwright"
