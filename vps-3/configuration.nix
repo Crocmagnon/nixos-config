@@ -92,12 +92,11 @@ in
       ];
       repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-vps-3-gaugendre";
       pruneOpts = [
-        "--keep-within-hourly 1d"
         "--keep-within-daily 7d"
         "--keep-within-weekly 1m"
       ];
       timerConfig = {
-        OnCalendar = "hourly";
+        OnCalendar = "02:00";
         Persistent = true;
       };
     };

@@ -12,6 +12,7 @@
     domain = "paperless.augendre.info";
     exporter = {
       enable = true;
+      onCalendar = "01:30";
       settings = {
         # default
         compare-checksums = true;
