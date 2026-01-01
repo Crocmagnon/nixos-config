@@ -23,6 +23,7 @@ in
     ./secrets
     ./filebeat.nix
     ./paperless.nix
+    ./healthchecks.nix
     ../common/save-disk.nix
   ];
 
