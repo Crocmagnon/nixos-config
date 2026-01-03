@@ -44,8 +44,8 @@
 
   # Configure keymap in X11
   services.xserver.xkb = {
-    layout = "fr";
-    variant = "azerty";
+    layout = "fr,fr";
+    variant = "azerty,ergol";
   };
 
   # Configure console keymap
