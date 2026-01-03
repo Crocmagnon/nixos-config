@@ -30,7 +30,8 @@
       PAPERLESS_USE_X_FORWARD_HOST = true;
       PAPERLESS_USE_X_FORWARD_PORT = true;
       PAPERLESS_TIME_ZONE = "Europe/Paris";
-      PAPERLESS_OCR_LANGUAGE = "fra";
+      # Not setting this, so tesseract (and ocrmypdf, and paperless) gets downloaded from cache instead of built from source.
+      # PAPERLESS_OCR_LANGUAGE = "fra";
       PAPERLESS_CONSUMER_ENABLE_BARCODES = true;
       PAPERLESS_CONSUMER_BARCODE_STRING = "PATCHT";
       PAPERLESS_TASK_WORKERS = 1;
