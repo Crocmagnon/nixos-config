@@ -228,7 +228,6 @@
       ".tox"
       ".venv"
 
-      # specific
       ".idea"
       ".tool-versions"
       ".direnv"
@@ -236,6 +235,7 @@
       ".mise.toml"
       "mise.local.toml"
       ".vscode"
+      ".claude/settings.local.json"
     ];
     lfs.enable = true;
     settings = {
