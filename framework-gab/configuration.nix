@@ -81,6 +81,7 @@
     shell = pkgs.fish;
     packages = with pkgs; [
       kdePackages.kate
+      prusa-slicer
     ];
   };
 
