@@ -5,7 +5,6 @@
     ../common/save-disk.nix
   ];
 
-  # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
@@ -14,16 +13,13 @@
   catppuccin.enable = true;
   catppuccin.sddm.enable = false;
 
-  # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "framework-gab"; # Define your hostname.
+  networking.hostName = "framework-gab";
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
   time.timeZone = "Europe/Paris";
 
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
@@ -38,23 +34,19 @@
     LC_TIME = "fr_FR.UTF-8";
   };
 
-  # Enable the KDE Plasma Desktop Environment.
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
-  # Configure keymap in X11
+  # Configure keymap
   services.xserver.xkb = {
     layout = "fr,fr";
     variant = "azerty,ergol";
   };
-
-  # Configure console keymap
   console.keyMap = "fr";
 
-  # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound with pipewire.
+  # Sound
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -70,7 +62,6 @@
     #media-session.enable = true;
   };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.gaugendre = {
     isNormalUser = true;
     description = "Gabriel";
@@ -106,20 +97,15 @@
     }
   ];
 
-  # Install firefox.
   programs.firefox.enable = true;
 
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim
     git
     ripgrep
     bind # dig, among other
-    #  wget
   ];
 
   fonts.packages = with pkgs; [
@@ -154,5 +140,4 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "25.11"; # Did you read the comment?
-
 }
