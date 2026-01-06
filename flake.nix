@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     playwright = {
       url = "github:pietdevries94/playwright-web-flake/1.52.0";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -32,6 +33,7 @@
   outputs =
     {
       nixpkgs,
+      nixos-hardware,
       playwright,
       disko,
       agenix,
@@ -44,6 +46,7 @@
       nixosConfigurations.framework-gab = nixpkgs.lib.nixosSystem {
         modules = [
           ./framework-gab/configuration.nix
+          nixos-hardware.nixosModules.framework-amd-ai-300-series
           catppuccin.nixosModules.catppuccin
           home-manager.nixosModules.home-manager
           {
