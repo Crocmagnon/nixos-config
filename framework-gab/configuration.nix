@@ -37,6 +37,9 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
+  # https://github.com/NixOS/nixpkgs/issues/239770
+  security.pam.services.login.fprintAuth = false;
+
   # Configure keymap
   services.xserver.xkb = {
     layout = "fr,fr";
