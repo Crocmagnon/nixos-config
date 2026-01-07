@@ -12,7 +12,7 @@
     ./helix.nix
     ./konsole
   ];
-  
+
   home.username = "gaugendre";
   home.homeDirectory = "/home/gaugendre";
   home.stateVersion = "25.11";
@@ -94,9 +94,8 @@
     enableDefaultConfig = false;
     matchBlocks = {
       ubuntu.user = "gaugendre";
-      vps-2.user = "ubuntu";
       vps-3.user = "gaugendre";
-      "vps-2 vps-3 ubuntu" = {
+      "vps-3 ubuntu" = {
         forwardAgent = true;
         controlMaster = "auto";
         controlPath = "~/.ssh/control-%C";
