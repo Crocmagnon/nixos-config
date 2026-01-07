@@ -75,6 +75,7 @@ in
   ];
 
   programs.fish.enable = true;
+  documentation.man.generateCaches = false; # speeds up rebuild by skiping "building man-cache", enabled by default by fish
 
   services.tailscale = {
     enable = true;
