@@ -56,6 +56,7 @@
               users.gaugendre = {
                 imports = [
                   ./homeprofile/home.nix
+                  ./homeprofile/krunner-autostart.nix
                   catppuccin.homeModules.catppuccin
                 ];
               };
