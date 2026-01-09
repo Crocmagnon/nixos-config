@@ -24,6 +24,7 @@ in
     ./filebeat.nix
     ./paperless.nix
     ./healthchecks.nix
+    ./pcloud-sync.nix
     ../common/save-disk.nix
   ];
 
@@ -67,12 +68,14 @@ in
   };
   services.fail2ban.enable = true;
 
-  environment.systemPackages = map lib.lowPrio [
-    pkgs.curl
-    pkgs.gitMinimal
-    pkgs.helix
-    pkgs.wget
-  ];
+  environment.systemPackages =
+    with pkgs;
+    map lib.lowPrio [
+      curl
+      gitMinimal
+      helix
+      wget
+    ];
 
   programs.fish.enable = true;
   documentation.man.generateCaches = false; # speeds up rebuild by skiping "building man-cache", enabled by default by fish

@@ -21,4 +21,5 @@ in
   "downloader-creds-env.age".publicKeys = allUsers ++ [ systems.vps-3 ];
   "healthchecks-api-key.age".publicKeys = allUsers ++ [ systems.vps-3 ];
   "tailscale-auth-key.age".publicKeys = allUsers ++ [ systems.vps-3 ];
+  "rclone-config.age".publicKeys = allUsers ++ [ systems.vps-3 ];
 }
