@@ -74,11 +74,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1767041375,
-        "narHash": "sha256-BHE8Ycqwjy5xCG7mAWhZ7KkjTY9g9oQwYDC/QZbH7Bc=",
+        "lastModified": 1768147788,
+        "narHash": "sha256-jPkfeQ/sdM5Ezs6efYZO5lCPrCls6g/nZmhLOHtTqY4=",
         "ref": "refs/heads/master",
-        "rev": "e57af2ff0d74025a46faf69d9ed80228915dd3fd",
-        "revCount": 36,
+        "rev": "5f0e0700163aeb3158653f1c6b9c5c64e86ad37e",
+        "revCount": 39,
         "type": "git",
         "url": "https://codeberg.org/Crocmagnon/downloader-go"
       },
