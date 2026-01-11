@@ -28,7 +28,7 @@ let
     };
     lcl = {
       calendar = "*-*-10 13:00";
-      subcommand = "lcl";
+      subcommand = "lcl-checking";
       var = "$LCL";
     };
     # octopus = {
