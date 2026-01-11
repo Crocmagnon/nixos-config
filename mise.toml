@@ -15,7 +15,7 @@ run = "sudo nixos-rebuild switch --flake .#"
 
 [tasks.vps-3]
 description = "deploy flake to server"
-run = "nixos-rebuild switch --flake .#vps-3 --target-host gaugendre@vps-3 --sudo"
+run = "nixos-rebuild switch --flake .#vps-3 --target-host gaugendre@vps-3 --sudo --build-host gaugendre@vps-3"
 
 [tasks.re-vps-3]
 description = "fully redeploy to server over existing nixos"
