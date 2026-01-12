@@ -25,6 +25,7 @@ in
     ./paperless.nix
     ./healthchecks.nix
     ./pcloud-sync.nix
+    ./servarr.nix
     ../common/save-disk.nix
   ];
 
