@@ -11,11 +11,11 @@ run = [
 
 [tasks.localhost]
 description = "deploy to local machine"
-run = "sudo nixos-rebuild switch --flake .#"
+run = "nh os switch .# --ask"
 
 [tasks.vps-3]
 description = "deploy flake to server"
-run = "nixos-rebuild switch --flake .#vps-3 --target-host gaugendre@vps-3 --sudo --build-host gaugendre@vps-3"
+run = "nh os switch .# --ask --hostname vps-3 --target-host gaugendre@vps-3 --build-host gaugendre@vps-3"
 
 [tasks.re-vps-3]
 description = "fully redeploy to server over existing nixos"

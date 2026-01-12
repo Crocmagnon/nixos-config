@@ -122,6 +122,10 @@
     "flakes"
   ];
 
+  programs.nh = {
+    enable = true;
+  };
+
   services.fprintd = {
     enable = true;
     #  tod.enable = true;

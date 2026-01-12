@@ -118,5 +118,14 @@ in
 
   nixpkgs.config.allowUnfree = true;
 
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
+  programs.nh = {
+    enable = true;
+  };
+
   system.stateVersion = "25.11";
 }
