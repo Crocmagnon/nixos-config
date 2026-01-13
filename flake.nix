@@ -57,6 +57,7 @@
                 imports = [
                   ./homeprofile/home.nix
                   ./homeprofile/krunner-autostart.nix
+                  ./framework-gab/email.nix
                   catppuccin.homeModules.catppuccin
                 ];
               };
