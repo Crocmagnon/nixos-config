@@ -22,4 +22,5 @@ in
   "healthchecks-api-key.age".publicKeys = allUsers ++ [ systems.vps-3 ];
   "tailscale-auth-key.age".publicKeys = allUsers ++ [ systems.vps-3 ];
   "rclone-config.age".publicKeys = allUsers ++ [ systems.vps-3 ];
+  "transmission-credentials.age".publicKeys = allUsers ++ [ systems.vps-3 ];
 }
