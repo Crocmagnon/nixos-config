@@ -4,6 +4,12 @@
     ./paperless-downloader.nix
   ];
 
+  services.caddy.virtualHosts."paperless.augendre.info".extraConfig = ''
+    import common_headers
+    import internal
+    reverse_proxy localhost:9002
+  '';
+
   services.paperless = {
     enable = true;
     port = 9002;

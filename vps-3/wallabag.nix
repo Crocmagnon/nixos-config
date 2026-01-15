@@ -1,5 +1,10 @@
 { config, ... }:
 {
+  services.caddy.virtualHosts."wallabag.augendre.info".extraConfig = ''
+    import common_headers
+    reverse_proxy localhost:8002
+  '';
+
   virtualisation.oci-containers.containers = {
     wallabag = {
       image = "wallabag/wallabag:latest";

@@ -1,5 +1,10 @@
 { config, ... }:
 {
+  services.caddy.virtualHosts."reader.augendre.info".extraConfig = ''
+    import common_headers
+    reverse_proxy localhost:8001
+  '';
+
   services.miniflux = {
     enable = true;
     createDatabaseLocally = false;
