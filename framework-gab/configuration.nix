@@ -76,6 +76,7 @@
     packages = with pkgs; [
       kdePackages.kate
       prusa-slicer
+      libreoffice
     ];
   };
 
