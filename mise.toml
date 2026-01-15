@@ -7,6 +7,7 @@ description = "deploy to all machines"
 run = [
   { task = "localhost" },
   { task = "vps-3" },
+  { task = "srv-1" },
 ]
 
 [tasks.localhost]
@@ -17,6 +18,10 @@ run = "nh os switch .# --ask"
 description = "deploy flake to server"
 run = "nh os switch .# --ask --hostname vps-3 --target-host gaugendre@vps-3 --build-host gaugendre@vps-3"
 
+[tasks.srv-1]
+description = "deploy flake to server"
+run = "nh os switch .# --ask --hostname srv-1 --target-host gaugendre@srv-1 --build-host gaugendre@srv-1"
+
 [tasks.re-vps-3]
 description = "fully redeploy to server over existing nixos"
 run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps-3/facter.json --target-host root@vps-3.augendre.info"
@@ -24,3 +29,7 @@ run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate
 [tasks.initial-vps-3]
 description = "initial deploy to server over debian"
 run = "nix run github:nix-community/nixos-anywhere -- --flake .#vps-3 --generate-hardware-config nixos-facter ./vps-3/facter.json --target-host debian@vps-3.augendre.info"
+
+[tasks.initial-srv-1]
+description = "initial deploy to server over debian"
+run = "nix run github:nix-community/nixos-anywhere -- --flake .#srv-1 --generate-hardware-config nixos-generate-config ./srv-1/hardware-configuration.nix --target-host debian@54.36.111.79"

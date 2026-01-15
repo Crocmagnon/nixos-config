@@ -99,5 +99,37 @@
           }
         ];
       };
+
+      # nixos-anywhere --flake .#srv-1 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix <hostname>
+      nixosConfigurations.srv-1 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          agenix.nixosModules.default
+          ./srv-1/configuration.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.gaugendre = {
+                imports = [
+                  ./homeprofile/home.nix
+                  catppuccin.homeModules.catppuccin
+                ];
+              };
+              backupFileExtension = "hm-bkp";
+            };
+          }
+          {
+            nixpkgs.overlays = [
+              (final: prev: {
+                inherit (playwright.packages.x86_64-linux) playwright-driver;
+                inherit (downloader.packages.x86_64-linux) downloader-go;
+              })
+            ];
+          }
+        ];
+      };
     };
 }
