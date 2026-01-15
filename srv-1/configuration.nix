@@ -1,5 +1,4 @@
 {
-  modulesPath,
   lib,
   pkgs,
   ...
@@ -11,7 +10,6 @@ let
 in
 {
   imports = [
-    # (modulesPath + "/profiles/qemu-guest.nix")
     ./disk-config.nix
     ./users.nix
     ./hardware-configuration.nix
