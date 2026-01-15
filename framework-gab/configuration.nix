@@ -77,6 +77,7 @@
       kdePackages.kate
       prusa-slicer
       libreoffice
+      rustdesk
     ];
   };
 
