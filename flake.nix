@@ -58,6 +58,7 @@
                   ./homeprofile/home.nix
                   ./homeprofile/krunner-autostart.nix
                   ./framework-gab/email.nix
+                  ./framework-gab/ai-agents.nix
                   catppuccin.homeModules.catppuccin
                 ];
               };
