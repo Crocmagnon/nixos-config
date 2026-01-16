@@ -90,6 +90,9 @@ in
       dht-enabled = false;
       lpd-enabled = false;
       pex-enabled = false;
+
+      blocklist-enabled = true;
+      blocklist-url = "https://github.com/Naunter/BT_BlockLists/raw/master/bt_blocklists.gz";
     };
   };
 
