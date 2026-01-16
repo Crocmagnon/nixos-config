@@ -11,6 +11,7 @@ in
 {
   imports = [
     ./disk-config.nix
+    ./raid.nix
     ./users.nix
     ./hardware-configuration.nix
     ./caddy.nix
