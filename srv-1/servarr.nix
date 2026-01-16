@@ -55,6 +55,7 @@ in
     # Expected JSON format: {"rpc-password": "your-password"}
     # The rpc-username defaults to "transmission" in settings below
     credentialsFile = transmissionCredFile;
+    openFirewall = true;
 
     settings = {
       # Download directories
