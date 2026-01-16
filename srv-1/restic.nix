@@ -9,6 +9,12 @@
       passwordFile = config.age.secrets."restic-password".path;
       paths = [
         "/var/lib/paperless/export"
+        "/var/lib/radarr"
+        "/var/lib/sonarr"
+        "/var/lib/prowlarr"
+        "/var/lib/transmission"
+        "/var/lib/syncthing"
+        "/var/lib/jellyfin"
       ];
       repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-srv-1-gaugendre";
       pruneOpts = [
