@@ -74,8 +74,10 @@ in
       # Performance settings
       download-queue-enabled = true;
       download-queue-size = 5;
-      speed-limit-up-enabled = false;
-      speed-limit-down-enabled = false;
+      speed-limit-up = 20000;
+      speed-limit-up-enabled = true;
+      speed-limit-down = 20000;
+      speed-limit-down-enabled = true;
 
       # Peer settings
       peer-port = 51413;
