@@ -1,85 +1,68 @@
 {
+  # After first boot, SSH in and run:
+  # btrfs device add -f /dev/sdb2 /
+  # btrfs balance start -dconvert=raid1 -mconvert=raid1 /
+  #
+  # then check with:
+  # btrfs filesystem df /
+  # expected: Data, System and Metadata "RAID1"
+  #
+  # check balance status if long:
+  # btrfs balance status /
   disko.devices = {
     disk = {
-      one = {
+      disk1 = {
         type = "disk";
         device = "/dev/sda";
         content = {
           type = "gpt";
           partitions = {
-            BOOT = {
-              size = "1M";
-              type = "EF02"; # for grub MBR
-            };
-            ESP = {
-              size = "500M";
+            boot = {
+              size = "1G";
               type = "EF00";
               content = {
-                type = "mdraid";
-                name = "boot";
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot";
               };
             };
-            mdadm = {
+            root = {
               size = "100%";
               content = {
-                type = "mdraid";
-                name = "raid1";
+                type = "btrfs";
+                extraArgs = [ "-f" ];
+                subvolumes = {
+                  "/" = {
+                    mountpoint = "/";
+                    mountOptions = [ "noatime" ];
+                  };
+                };
               };
             };
           };
         };
       };
-      two = {
+      disk2 = {
         type = "disk";
         device = "/dev/sdb";
         content = {
           type = "gpt";
           partitions = {
             boot = {
-              size = "1M";
-              type = "EF02"; # for grub MBR
-            };
-            ESP = {
-              size = "500M";
+              size = "1G";
               type = "EF00";
               content = {
-                type = "mdraid";
-                name = "boot";
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot-fallback";
               };
             };
-            mdadm = {
+            root = {
               size = "100%";
               content = {
-                type = "mdraid";
-                name = "raid1";
+                type = "btrfs";
+                extraArgs = [ "-f" ];
               };
-            };
-          };
-        };
-      };
-    };
-    mdadm = {
-      boot = {
-        type = "mdadm";
-        level = 1;
-        metadata = "1.0";
-        content = {
-          type = "filesystem";
-          format = "vfat";
-          mountpoint = "/boot";
-        };
-      };
-      raid1 = {
-        type = "mdadm";
-        level = 1;
-        content = {
-          type = "gpt";
-          partitions.primary = {
-            size = "100%";
-            content = {
-              type = "filesystem";
-              format = "ext4";
-              mountpoint = "/";
             };
           };
         };

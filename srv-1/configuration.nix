@@ -11,7 +11,6 @@ in
 {
   imports = [
     ./disk-config.nix
-    ./raid.nix
     ./users.nix
     ./hardware-configuration.nix
     ./caddy.nix
@@ -29,9 +28,39 @@ in
     ../common/save-disk.nix
   ];
 
-  boot.loader.grub = {
-    efiSupport = true;
-    efiInstallAsRemovable = true;
+  boot = {
+    supportedFilesystems = [ "btrfs" ];
+
+    loader = {
+      grub = {
+        enable = true;
+        efiSupport = true;
+        efiInstallAsRemovable = true;
+        device = "nodev";
+
+        mirroredBoots = [
+          {
+            devices = [ "nodev" ];
+            path = "/boot";
+            efiSysMountPoint = "/boot";
+          }
+          {
+            devices = [ "nodev" ];
+            path = "/boot-fallback";
+            efiSysMountPoint = "/boot-fallback";
+          }
+        ];
+      };
+
+      # efi.canTouchEfiVariables = true;
+    };
+  };
+
+  # Enable periodic scrubbing to check for data corruption
+  services.btrfs.autoScrub = {
+    enable = true;
+    interval = "monthly";
+    fileSystems = [ "/" ];
   };
 
   services.openssh.enable = true;
