@@ -55,7 +55,7 @@
   services.syncthing = {
     enable = true;
     guiPasswordFile = config.age.secrets."syncthing-gui-password".path;
-    guiAddress = "100.90.33.70:8384";
+    guiAddress = "100.108.113.85:8384";
     settings.devices = {
       ubuntu.id = "OCM3L3Y-S32GASE-V2GENIK-VH4K4GN-R22IADT-L6G4EKJ-QEVATXM-I6SH3QE";
       homeassistant.id = "HEN7R55-TZMLMQR-UM7FHFP-ZRWX6WQ-T3H573V-7DR23CR-3A44GAA-ZNRIHQB";
