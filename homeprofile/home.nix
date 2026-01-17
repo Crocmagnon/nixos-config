@@ -93,9 +93,8 @@
     enable = true;
     enableDefaultConfig = false;
     matchBlocks = {
-      ubuntu.user = "gaugendre";
-      vps-3.user = "gaugendre";
-      "vps-3 ubuntu" = {
+      "ubuntu srv-1" = {
+        user = "gaugendre";
         forwardAgent = true;
         controlMaster = "auto";
         controlPath = "~/.ssh/control-%C";
