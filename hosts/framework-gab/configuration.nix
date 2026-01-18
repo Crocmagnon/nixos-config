@@ -2,7 +2,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/nixos/save-disk.nix
+    ../../modules/nixos/common.nix
     ./home
   ];
 
@@ -18,8 +18,6 @@
 
   networking.hostName = "framework-gab";
   networking.networkmanager.enable = true;
-
-  time.timeZone = "Europe/Paris";
 
   i18n.defaultLocale = "en_US.UTF-8";
 
@@ -82,8 +80,6 @@
     ];
   };
 
-  programs.fish.enable = true;
-  documentation.man.generateCaches = false; # speeds up rebuild by skiping "building man-cache", enabled by default by fish
 
   programs.gnupg.agent = {
     enable = true;
@@ -107,8 +103,6 @@
 
   programs.firefox.enable = true;
 
-  nixpkgs.config.allowUnfree = true;
-
   environment.systemPackages = with pkgs; [
     vim
     git
@@ -119,15 +113,6 @@
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
   ];
-
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-
-  programs.nh = {
-    enable = true;
-  };
 
   services.fprintd = {
     enable = true;

@@ -26,7 +26,7 @@ in
     ./services/servarr.nix
     ./services/restic.nix
     ./services/tailscale.nix
-    ../../modules/nixos/save-disk.nix
+    ../../modules/nixos/common.nix
     ./home
   ];
 
@@ -66,7 +66,7 @@ in
   };
 
   services.openssh.enable = true;
-  time.timeZone = "Europe/Paris";
+
   networking = {
     hostName = "srv-1";
     enableIPv6 = true;
@@ -109,19 +109,6 @@ in
     wget
   ];
 
-  programs.fish.enable = true;
-  documentation.man.generateCaches = false; # speeds up rebuild by skiping "building man-cache", enabled by default by fish
-
-  nixpkgs.config.allowUnfree = true;
-
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-
-  programs.nh = {
-    enable = true;
-  };
 
   system.stateVersion = "25.11";
 }
