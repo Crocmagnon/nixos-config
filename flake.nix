@@ -46,6 +46,7 @@
     }@inputs:
     {
       nixosConfigurations.framework-gab = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
           ./hosts/framework-gab/configuration.nix
@@ -66,19 +67,8 @@
           home-manager.nixosModules.home-manager
           {
             nixpkgs.overlays = [
-              (final: prev: {
-                inherit (playwright.packages.x86_64-linux) playwright-driver;
-                inherit (downloader.packages.x86_64-linux) downloader-go;
-              })
-              (final: prev: {
-                inherit
-                  (import nixpkgs-unstable {
-                    system = final.system;
-                    config.allowUnfree = true;
-                  })
-                  btop
-                  ;
-              })
+              (import ./overlays/playwright-downloader.nix { inherit playwright downloader; })
+              (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
             ];
           }
         ];
