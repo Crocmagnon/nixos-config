@@ -13,19 +13,19 @@ in
     ./disk-config.nix
     ./users.nix
     ./hardware-configuration.nix
-    ./caddy.nix
-    ./miniflux.nix
-    ./test-headers.nix
-    ./wallabag.nix
+    ./services/caddy.nix
+    ./services/miniflux.nix
+    ./services/test-headers.nix
+    ./services/wallabag.nix
     ./secrets
-    ./filebeat.nix
-    ./paperless.nix
-    ./healthchecks.nix
-    ./pcloud-sync.nix
-    ./servarr.nix
-    ./restic.nix
-    ./tailscale.nix
-    ../common/save-disk.nix
+    ./services/filebeat.nix
+    ./services/paperless.nix
+    ./services/healthchecks.nix
+    ./services/pcloud-sync.nix
+    ./services/servarr.nix
+    ./services/restic.nix
+    ./services/tailscale.nix
+    ../../modules/nixos/save-disk.nix
   ];
 
   boot = {

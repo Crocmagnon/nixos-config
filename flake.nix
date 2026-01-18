@@ -47,7 +47,7 @@
     {
       nixosConfigurations.framework-gab = nixpkgs.lib.nixosSystem {
         modules = [
-          ./framework-gab/configuration.nix
+          ./hosts/framework-gab/configuration.nix
           nixos-hardware.nixosModules.framework-amd-ai-300-series
           catppuccin.nixosModules.catppuccin
           home-manager.nixosModules.home-manager
@@ -57,10 +57,10 @@
               useUserPackages = true;
               users.gaugendre = {
                 imports = [
-                  ./homeprofile/home.nix
-                  ./homeprofile/krunner-autostart.nix
-                  ./framework-gab/email.nix
-                  ./framework-gab/ai-agents.nix
+                  ./home/gaugendre/home.nix
+                  ./home/gaugendre/krunner-autostart.nix
+                  ./hosts/framework-gab/email.nix
+                  ./hosts/framework-gab/ai-agents.nix
                   catppuccin.homeModules.catppuccin
                 ];
               };
@@ -76,7 +76,7 @@
         modules = [
           disko.nixosModules.disko
           agenix.nixosModules.default
-          ./srv-1/configuration.nix
+          ./hosts/srv-1/configuration.nix
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -84,7 +84,7 @@
               useUserPackages = true;
               users.gaugendre = {
                 imports = [
-                  ./homeprofile/home.nix
+                  ./home/gaugendre/home.nix
                   catppuccin.homeModules.catppuccin
                 ];
               };

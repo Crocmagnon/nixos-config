@@ -2,7 +2,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../common/save-disk.nix
+    ../../modules/nixos/save-disk.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
