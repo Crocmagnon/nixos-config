@@ -2,6 +2,7 @@
 {
   imports = [
     ./save-disk.nix
+    ./home-manager.nix
   ];
 
   time.timeZone = "Europe/Paris";
