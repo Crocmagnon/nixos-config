@@ -3,6 +3,9 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/common.nix
+    ../../modules/nixos/locale.nix
+    ../../modules/nixos/fonts.nix
+    ../../modules/nixos/audio.nix
     ./home
   ];
 
@@ -19,19 +22,7 @@
   networking.hostName = "framework-gab";
   networking.networkmanager.enable = true;
 
-  i18n.defaultLocale = "en_US.UTF-8";
 
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "fr_FR.UTF-8";
-    LC_IDENTIFICATION = "fr_FR.UTF-8";
-    LC_MEASUREMENT = "fr_FR.UTF-8";
-    LC_MONETARY = "fr_FR.UTF-8";
-    LC_NAME = "fr_FR.UTF-8";
-    LC_NUMERIC = "fr_FR.UTF-8";
-    LC_PAPER = "fr_FR.UTF-8";
-    LC_TELEPHONE = "fr_FR.UTF-8";
-    LC_TIME = "fr_FR.UTF-8";
-  };
 
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
@@ -39,30 +30,12 @@
   # https://github.com/NixOS/nixpkgs/issues/239770
   security.pam.services.login.fprintAuth = false;
 
-  # Configure keymap
-  services.xserver.xkb = {
-    layout = "fr,fr";
-    variant = "azerty,ergol";
-  };
-  console.keyMap = "fr";
+
 
   services.printing.enable = true;
 
-  # Sound
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
+  # Sound needs to be enabled for some apps to work
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
 
   users.users.gaugendre = {
     isNormalUser = true;
@@ -104,15 +77,11 @@
   programs.firefox.enable = true;
 
   environment.systemPackages = with pkgs; [
-    vim
-    git
-    ripgrep
+
     bind # dig, among other
   ];
 
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
-  ];
+
 
   services.fprintd = {
     enable = true;

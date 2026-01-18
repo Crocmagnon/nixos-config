@@ -104,7 +104,6 @@ in
 
   environment.systemPackages = with pkgs; [
     curl
-    gitMinimal
     helix
     wget
   ];

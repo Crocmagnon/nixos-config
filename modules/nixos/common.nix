@@ -1,8 +1,14 @@
-{ ... }:
+{ pkgs, ... }:
 {
   imports = [
     ./save-disk.nix
     ./home-manager.nix
+  ];
+
+  environment.systemPackages = with pkgs; [
+    vim
+    git
+    ripgrep
   ];
 
   time.timeZone = "Europe/Paris";
