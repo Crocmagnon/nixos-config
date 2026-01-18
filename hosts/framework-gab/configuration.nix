@@ -1,8 +1,9 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/save-disk.nix
+    ./home
   ];
 
   boot.loader.systemd-boot.enable = true;

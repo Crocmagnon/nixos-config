@@ -1,6 +1,7 @@
 {
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -26,6 +27,7 @@ in
     ./services/restic.nix
     ./services/tailscale.nix
     ../../modules/nixos/save-disk.nix
+    ./home
   ];
 
   boot = {

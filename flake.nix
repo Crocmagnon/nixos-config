@@ -43,54 +43,27 @@
       catppuccin,
       downloader,
       ...
-    }:
+    }@inputs:
     {
       nixosConfigurations.framework-gab = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
         modules = [
           ./hosts/framework-gab/configuration.nix
           nixos-hardware.nixosModules.framework-amd-ai-300-series
           catppuccin.nixosModules.catppuccin
           home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.gaugendre = {
-                imports = [
-                  ./home/gaugendre/home.nix
-                  ./home/gaugendre/krunner-autostart.nix
-                  ./hosts/framework-gab/email.nix
-                  ./hosts/framework-gab/ai-agents.nix
-                  catppuccin.homeModules.catppuccin
-                ];
-              };
-              backupFileExtension = "hm-bkp";
-            };
-          }
         ];
       };
 
       # nixos-anywhere --flake .#srv-1 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix <hostname>
       nixosConfigurations.srv-1 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
         modules = [
           disko.nixosModules.disko
           agenix.nixosModules.default
           ./hosts/srv-1/configuration.nix
           home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.gaugendre = {
-                imports = [
-                  ./home/gaugendre/home.nix
-                  catppuccin.homeModules.catppuccin
-                ];
-              };
-              backupFileExtension = "hm-bkp";
-            };
-          }
           {
             nixpkgs.overlays = [
               (final: prev: {
