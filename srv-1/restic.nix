@@ -28,6 +28,12 @@
         Persistent = true;
       };
       progressFps = 0.01; # every 100s
+      backupPrepareCommand = ''
+        systemctl stop paperless-consumer.service paperless-scheduler.service paperless-task-queue.service paperless-web.service
+      '';
+      backupCleanupCommand = ''
+        systemctl start paperless-consumer.service paperless-scheduler.service paperless-task-queue.service paperless-web.service
+      '';
     };
   };
 
