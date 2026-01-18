@@ -16,7 +16,7 @@
         "/var/lib/transmission"
         "/var/lib/syncthing"
         "/var/lib/jellyfin"
-        "/var/lib/media"
+        # "/var/lib/media"
       ];
       repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-srv-1-gaugendre";
       pruneOpts = [
