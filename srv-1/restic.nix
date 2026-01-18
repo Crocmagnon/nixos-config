@@ -12,6 +12,7 @@
         "/var/lib/radarr"
         "/var/lib/sonarr"
         "/var/lib/prowlarr"
+        "/var/lib/private" # contains prowlarr data
         "/var/lib/transmission"
         "/var/lib/syncthing"
         "/var/lib/jellyfin"
