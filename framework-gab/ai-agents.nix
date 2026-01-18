@@ -1,5 +1,8 @@
-{ ... }:
+{ pkgs, ... }:
 {
+  home.packages = with pkgs; [
+    amp-cli
+  ];
   programs.gemini-cli = {
     enable = true;
   };
