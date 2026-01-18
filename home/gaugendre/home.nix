@@ -1,15 +1,15 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }:
 {
   imports = [
     ./git.nix
-    ./fish.nix
-    ./starship.nix
-    ./helix.nix
+    ../shared/fish.nix
+    ../shared/starship.nix
+    ../shared/helix.nix
+    ../shared/eza.nix
     ./konsole
   ];
 
@@ -43,21 +43,6 @@
 
   programs.bash.enable = true;
 
-  programs.eza = {
-    enable = true;
-    git = true;
-    icons = "auto";
-    extraOptions = [
-      "--header"
-      "--group"
-    ];
-  };
-
-  programs.fzf = {
-    enable = true;
-    enableFishIntegration = false; # disable because conflicts with fzf.fish
-  };
-
   programs.fd.enable = true;
   programs.mise.enable = true;
   programs.zoxide.enable = true;
@@ -79,8 +64,6 @@
     defaultCacheTtl = 86400;
     maxCacheTtl = 86400 * 7;
   };
-
-  programs.bat.enable = true;
 
   catppuccin.enable = true;
 

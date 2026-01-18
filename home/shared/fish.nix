@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 {
@@ -56,4 +54,11 @@
       showcert = "openssl s_client -connect $argv[1]:443 -servername $argv[1] -showcerts < /dev/null";
     };
   };
+
+  programs.fzf = {
+    enable = true;
+    enableFishIntegration = false; # disable because conflicts with fzf.fish which is nicer
+  };
+
+  programs.bat.enable = true; # Required for MANPAGER in config.fish
 }
