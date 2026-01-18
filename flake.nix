@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     playwright = {
       url = "github:pietdevries94/playwright-web-flake/1.52.0";
@@ -33,6 +34,7 @@
   outputs =
     {
       nixpkgs,
+      nixpkgs-unstable,
       nixos-hardware,
       playwright,
       disko,
@@ -126,6 +128,15 @@
               (final: prev: {
                 inherit (playwright.packages.x86_64-linux) playwright-driver;
                 inherit (downloader.packages.x86_64-linux) downloader-go;
+              })
+              (final: prev: {
+                inherit
+                  (import nixpkgs-unstable {
+                    system = final.system;
+                    config.allowUnfree = true;
+                  })
+                  btop
+                  ;
               })
             ];
           }
