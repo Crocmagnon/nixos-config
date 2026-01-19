@@ -54,6 +54,7 @@
 
   services.syncthing = {
     enable = true;
+    settings.gui.user = "gaugendre";
     guiPasswordFile = config.age.secrets."syncthing-gui-password".path;
     guiAddress = "100.108.113.85:8384";
     settings.devices = {
