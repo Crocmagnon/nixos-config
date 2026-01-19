@@ -1,4 +1,20 @@
 { config, ... }:
+let
+  servicesToStop = [
+    # Paperless
+    "paperless-consumer.service"
+    "paperless-scheduler.service"
+    "paperless-task-queue.service"
+    "paperless-web.service"
+    "syncthing.service"
+    # Servarr
+    "jellyfin.service"
+    "prowlarr.service"
+    "sonarr.service"
+    "radarr.service"
+    "transmission.service"
+  ];
+in
 {
 
   services.restic.backups = {
@@ -28,13 +44,20 @@
         Persistent = true;
       };
       progressFps = 0.01; # every 100s
-      backupPrepareCommand = ''
-        systemctl stop paperless-consumer.service paperless-scheduler.service paperless-task-queue.service paperless-web.service
-      '';
+
+      # Services are stopped via systemd conflicts (see below)
+
       backupCleanupCommand = ''
-        systemctl start paperless-consumer.service paperless-scheduler.service paperless-task-queue.service paperless-web.service
+        # Restart services after backup
+        systemctl start ${builtins.concatStringsSep " " servicesToStop}
       '';
     };
+  };
+
+  # Extend the systemd service to stop conflicting services during backup
+  systemd.services.restic-backups-local = {
+    conflicts = servicesToStop;
+    after = servicesToStop;
   };
 
 }
