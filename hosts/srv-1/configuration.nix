@@ -27,7 +27,6 @@ in
     ./services/restic.nix
     ./services/tailscale.nix
     ../../modules/nixos/common.nix
-    ./home
   ];
 
   boot = {
