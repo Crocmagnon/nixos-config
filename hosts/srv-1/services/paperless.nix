@@ -14,7 +14,7 @@
     enable = true;
     port = 9002;
     dataDir = "/var/lib/paperless";
-    consumptionDirIsPublic = true; # this is required for syncthing to write
+    consumptionDirIsPublic = true; # this is required for others to write in
     domain = "paperless.augendre.info";
     exporter = {
       enable = true;
@@ -49,25 +49,6 @@
       PAPERLESS_FILENAME_FORMAT = "{{ created_year }}/{{ correspondent }}/{{ title }}";
       PAPERLESS_IGNORE_DATES = "1995-10-24,1995-10-16";
       PAPERLESS_CONVERT_MEMORY_LIMIT = 32;
-    };
-  };
-
-  services.syncthing = {
-    enable = true;
-    settings.gui.user = "gaugendre";
-    guiPasswordFile = config.age.secrets."syncthing-gui-password".path;
-    guiAddress = "100.108.113.85:8384";
-    settings.devices = {
-      homeassistant.id = "HEN7R55-TZMLMQR-UM7FHFP-ZRWX6WQ-T3H573V-7DR23CR-3A44GAA-ZNRIHQB";
-    };
-    settings.options.urAccepted = -1;
-    settings.folders.paperless = {
-      id = "ktdnd-aoxva";
-      type = "sendreceive";
-      path = config.services.paperless.consumptionDir;
-      devices = [
-        "homeassistant"
-      ];
     };
   };
 }

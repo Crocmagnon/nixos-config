@@ -6,7 +6,6 @@ let
     "paperless-scheduler.service"
     "paperless-task-queue.service"
     "paperless-web.service"
-    "syncthing.service"
     # Servarr
     "jellyfin.service"
     "prowlarr.service"
@@ -30,7 +29,6 @@ in
         "/var/lib/prowlarr"
         "/var/lib/private" # contains prowlarr data
         "/var/lib/transmission"
-        "/var/lib/syncthing"
         "/var/lib/jellyfin"
         # "/var/lib/media"
       ];

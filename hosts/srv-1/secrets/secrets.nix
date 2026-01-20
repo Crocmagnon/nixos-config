@@ -17,7 +17,6 @@ in
   "s3-restic-srv-1-creds.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "paperless-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "restic-password.age".publicKeys = allUsers ++ [ systems.srv-1 ];
-  "syncthing-gui-password.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "downloader-creds-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "healthchecks-api-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "tailscale-auth-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
