@@ -24,6 +24,10 @@
         application_secret {$OVH_APP_SECRET}
         consumer_key {$OVH_CONSUMER_KEY}
       }
+
+      cert_issuer acme {
+        profile shortlived
+      }
     '';
     extraConfig = ''
       (common_headers) {

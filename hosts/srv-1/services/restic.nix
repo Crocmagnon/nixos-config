@@ -15,7 +15,6 @@ let
   ];
 in
 {
-
   services.restic.backups = {
     local = {
       initialize = true;
