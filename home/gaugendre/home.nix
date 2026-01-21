@@ -48,6 +48,7 @@
   programs.zoxide.enable = true;
   programs.go = {
     enable = true;
+    telemetry.mode = "on";
     env.CGO_ENABLED = "0";
   };
 
