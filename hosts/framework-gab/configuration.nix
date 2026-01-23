@@ -22,20 +22,15 @@
   networking.hostName = "framework-gab";
   networking.networkmanager.enable = true;
 
-
-
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
   # https://github.com/NixOS/nixpkgs/issues/239770
   security.pam.services.login.fprintAuth = false;
 
-
-
   services.printing.enable = true;
 
   # Sound needs to be enabled for some apps to work
-
 
   users.users.gaugendre = {
     isNormalUser = true;
@@ -52,7 +47,6 @@
       rustdesk
     ];
   };
-
 
   programs.gnupg.agent = {
     enable = true;
@@ -80,8 +74,6 @@
 
     bind # dig, among other
   ];
-
-
 
   services.fprintd = {
     enable = true;
