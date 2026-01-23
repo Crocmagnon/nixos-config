@@ -8,8 +8,10 @@ let
   ipv6 = "2001:41d0:700:114f::1";
   ipv6gw = "2001:41d0:0700:11ff:00ff:00ff:00ff:00ff";
   interface = "eno1";
+  tailscaleIp = "100.108.113.85 [fd7a:115c:a1e0::2501:7166]";
 in
 {
+  _module.args.tailscaleIp = tailscaleIp;
   imports = [
     ./disk-config.nix
     ./users.nix
@@ -106,7 +108,6 @@ in
     helix
     wget
   ];
-
 
   system.stateVersion = "25.11";
 }
