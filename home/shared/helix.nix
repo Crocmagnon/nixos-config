@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 {
@@ -18,6 +16,7 @@
       delve
       golangci-lint-langserver
       terraform-ls
+      vscode-json-languageserver
     ];
     settings = {
       editor = {
