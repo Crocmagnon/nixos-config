@@ -11,7 +11,7 @@ run = [
 
 [tasks.localhost]
 description = "deploy to local machine"
-run = "nh os switch .# --ask"
+run = "nh os switch .#"
 
 [tasks.srv-1]
 description = "deploy flake to server"
