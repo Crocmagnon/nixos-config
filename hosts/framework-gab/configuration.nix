@@ -47,6 +47,7 @@
       # using rustdesk-flutter instead of rustdesk because rustdesk requires a full rebuild from source
       # https://discourse.nixos.org/t/poor-install-performance-for-rustdesk-on-nixos/48829/4
       rustdesk-flutter
+      pcloud
     ];
   };
 
