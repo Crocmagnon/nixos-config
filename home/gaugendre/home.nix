@@ -5,11 +5,8 @@
 }:
 {
   imports = [
+    ../shared
     ./git.nix
-    ../shared/fish.nix
-    ../shared/starship.nix
-    ../shared/helix.nix
-    ../shared/eza.nix
     ./konsole
   ];
 

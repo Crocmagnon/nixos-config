@@ -3,10 +3,7 @@
 }:
 {
   imports = [
-    ../shared/fish.nix
-    ../shared/starship.nix
-    ../shared/helix.nix
-    ../shared/eza.nix
+    ../shared
   ];
 
   home.username = "root";

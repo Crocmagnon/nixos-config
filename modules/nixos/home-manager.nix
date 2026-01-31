@@ -9,6 +9,7 @@
       imports = [
         ../../home/gaugendre/home.nix
         inputs.catppuccin.homeModules.catppuccin
+        inputs.nix-index-database.homeModules.default
       ];
     };
 
@@ -16,6 +17,7 @@
       imports = [
         ../../home/root/home.nix
         inputs.catppuccin.homeModules.catppuccin
+        inputs.nix-index-database.homeModules.default
       ];
     };
   };

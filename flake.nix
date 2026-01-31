@@ -29,6 +29,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.playwright.follows = "playwright";
     };
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -42,6 +46,7 @@
       home-manager,
       catppuccin,
       downloader,
+      nix-index-database,
       ...
     }@inputs:
     {
