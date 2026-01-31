@@ -52,9 +52,15 @@
           formatter.command = "nixfmt";
         }
       ];
-      language-server.gopls.config = {
-        "ui.diagnostic.staticcheck" = true;
-        "formatting.gofumpt" = true;
+      language-server = {
+        gopls.config = {
+          "ui.diagnostic.staticcheck" = true;
+          "formatting.gofumpt" = true;
+        };
+        rust-analyzer.config = {
+          check.command = "clippy";
+          # cargo.features = "all";
+        };
       };
     };
   };
