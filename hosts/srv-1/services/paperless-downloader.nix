@@ -37,13 +37,13 @@ let
     #   var = "$OCTOPUS";
     # };
   };
+  cacheDir = "${config.services.paperless.dataDir}/.cache/downloader";
 in
 {
-  systemd.tmpfiles.settings."downloader-cache"."${config.services.paperless.dataDir}/.cache/downloader".d =
-    {
-      inherit (config.services.paperless) user;
-      inherit (config.users.users.${config.services.paperless.user}) group;
-    };
+  systemd.tmpfiles.settings."downloader-cache"."${cacheDir}".d = {
+    inherit (config.services.paperless) user;
+    inherit (config.users.users.${config.services.paperless.user}) group;
+  };
 
   systemd.timers = lib.mapAttrs' (
     name: value:
@@ -71,7 +71,7 @@ in
         PLAYWRIGHT_NODEJS_PATH = "${pkgs.nodejs}/bin/node";
       };
       serviceConfig = {
-        WorkingDirectory = config.services.paperless.dataDir + "/.cache/downloader";
+        WorkingDirectory = cacheDir;
         Type = "oneshot";
         User = config.services.paperless.user;
         EnvironmentFile = config.age.secrets."downloader-creds-env".path;
