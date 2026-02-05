@@ -49,6 +49,7 @@
       rustdesk-flutter
       pcloud
       bottles
+      signal-desktop
     ];
   };
 
