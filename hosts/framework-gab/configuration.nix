@@ -50,6 +50,7 @@
       pcloud
       bottles
       signal-desktop
+      openscad-unstable
     ];
   };
 
