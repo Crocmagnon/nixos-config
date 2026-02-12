@@ -1,10 +1,15 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 {
   services.caddy = {
     enable = true;
     package = pkgs.caddy.withPlugins {
       plugins = [ "github.com/caddy-dns/ovh@v1.1.0" ];
-      hash = "sha256-2ui9UoRLd+vvHB/yejVJe+ciU1Zc02f4BWbPsFKS7aM=";
+      hash = "sha256-5r2bWfrPImxFwco0egPEUajC47iUrWpisSB2c7HsaSk=";
     };
     email = "gabriel@augendre.info";
     logFormat = ''
