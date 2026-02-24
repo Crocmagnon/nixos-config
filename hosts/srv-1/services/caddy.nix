@@ -39,7 +39,7 @@
         header * -Server
         header * -X-Powered-By
         header * Permissions-Policy interest-cohort=()
-        header * ?Strict-Transport-Security "max-age=31536000"
+        header * ?Strict-Transport-Security "max-age=0"
         header * ?Referrer-Policy "strict-origin-when-cross-origin"
         header * ?X-Content-Type-Options "nosniff"
         header * ?X-Frame-Options "DENY"
