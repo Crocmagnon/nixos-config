@@ -28,6 +28,7 @@ in
     ./services/servarr.nix
     ./services/restic.nix
     ./services/tailscale.nix
+    # ./services/jitsi.nix
     # ./services/ftp.nix
     ../../modules/nixos/common.nix
   ];
