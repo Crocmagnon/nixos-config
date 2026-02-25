@@ -5,6 +5,7 @@
       ./krunner-autostart.nix
       ./email.nix
       ./ai-agents.nix
+      ./zed.nix
     ];
   };
 }
