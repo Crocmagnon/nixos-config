@@ -51,6 +51,7 @@
       bottles
       signal-desktop
       openscad-unstable
+      freecad
     ];
   };
 
