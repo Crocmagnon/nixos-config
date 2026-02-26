@@ -29,8 +29,6 @@ in
     ./services/restic.nix
     ./services/tailscale.nix
     ./services/galene.nix
-    # ./services/lasuite.nix
-    # ./services/jitsi.nix
     # ./services/ftp.nix
     ../../modules/nixos/common.nix
   ];
