@@ -52,6 +52,7 @@
       signal-desktop
       openscad-unstable
       freecad
+      solvespace
     ];
   };
 
