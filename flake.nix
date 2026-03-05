@@ -3,10 +3,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    playwright = {
-      url = "github:pietdevries94/playwright-web-flake/1.52.0";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -27,7 +23,6 @@
     downloader = {
       url = "git+https://codeberg.org/Crocmagnon/downloader-go";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.playwright.follows = "playwright";
     };
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
@@ -40,7 +35,6 @@
       nixpkgs,
       nixpkgs-unstable,
       nixos-hardware,
-      playwright,
       disko,
       agenix,
       home-manager,
@@ -72,7 +66,7 @@
           home-manager.nixosModules.home-manager
           {
             nixpkgs.overlays = [
-              (import ./overlays/playwright-downloader.nix { inherit playwright downloader; })
+              (import ./overlays/playwright-downloader.nix { inherit downloader; })
               (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
             ];
           }

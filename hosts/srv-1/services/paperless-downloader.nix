@@ -27,7 +27,7 @@ let
       var = "$FREEBOX";
     };
     lcl = {
-      calendar = "*-*-10 13:00";
+      calendar = "*-*-10 13:05";
       subcommand = "lcl-checking";
       var = "$LCL";
     };
@@ -56,27 +56,26 @@ in
 
   systemd.services = lib.mapAttrs' (
     name: value:
-    lib.nameValuePair "download-${name}" {
+    let
+      downloaderName = "download-${name}";
+    in
+    lib.nameValuePair downloaderName {
       restartIfChanged = false;
       wants = [
         "network-online.target"
-        "healthchecks@download-${name}:start.service"
+        "healthchecks@${downloaderName}:start.service"
       ];
       after = [ "network-online.target" ];
-      onSuccess = [ "healthchecks@download-${name}:success.service" ];
-      onFailure = [ "healthchecks@download-${name}:failure.service" ];
-      environment = {
-        PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
-        PLAYWRIGHT_DRIVER_PATH = pkgs.playwright-driver;
-        PLAYWRIGHT_NODEJS_PATH = "${pkgs.nodejs}/bin/node";
-      };
+      onSuccess = [ "healthchecks@${downloaderName}:success.service" ];
+      onFailure = [ "healthchecks@${downloaderName}:failure.service" ];
+      environment = { };
       serviceConfig = {
         WorkingDirectory = cacheDir;
         Type = "oneshot";
         User = config.services.paperless.user;
         EnvironmentFile = config.age.secrets."downloader-creds-env".path;
         ExecStart = ''
-          ${pkgs.downloader-go}/bin/downloader-go ${value.subcommand} --no-interaction --headless -o ${config.services.paperless.consumptionDir} -u ${value.var}_USERNAME -p ${value.var}_PASSWORD
+          ${pkgs.downloader-go}/bin/downloader-go ${value.subcommand} --no-interaction --headless -o ${config.services.paperless.consumptionDir} -u "${value.var}_USERNAME" -p "${value.var}_PASSWORD"
         '';
       };
     }
