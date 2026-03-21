@@ -6,6 +6,7 @@
     ../../modules/nixos/locale.nix
     ../../modules/nixos/fonts.nix
     ../../modules/nixos/audio.nix
+    ./system
     ./home
   ];
 
@@ -74,7 +75,6 @@
   programs.firefox.enable = true;
   programs.steam.enable = true;
 
-  programs.coolercontrol.enable = true;
   services.hardware.openrgb.enable = true;
 
   environment.systemPackages = with pkgs; [
