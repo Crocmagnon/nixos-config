@@ -74,6 +74,9 @@
   programs.firefox.enable = true;
   programs.steam.enable = true;
 
+  programs.coolercontrol.enable = true;
+  services.hardware.openrgb.enable = true;
+
   environment.systemPackages = with pkgs; [
     bind # dig, among other
   ];
