@@ -55,6 +55,17 @@
         ];
       };
 
+      nixosConfigurations.desktop-gab = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/desktop-gab/configuration.nix
+          nixos-hardware.nixosModules.gigabyte-b650
+          catppuccin.nixosModules.catppuccin
+          home-manager.nixosModules.home-manager
+        ];
+      };
+
       # nixos-anywhere --flake .#srv-1 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix <hostname>
       nixosConfigurations.srv-1 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
