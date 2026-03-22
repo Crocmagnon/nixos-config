@@ -1,11 +1,8 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/nixos/common.nix
-    ../../modules/nixos/locale.nix
-    ../../modules/nixos/fonts.nix
-    ../../modules/nixos/audio.nix
+    ../../modules/nixos/common-desktop.nix
     ./home
   ];
 
