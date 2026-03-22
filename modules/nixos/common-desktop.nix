@@ -8,4 +8,6 @@
     ./iphone.nix
     ./boot.nix
   ];
+
+  services.fwupd.enable = true;
 }
