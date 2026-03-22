@@ -3,6 +3,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/common-desktop.nix
+    ../../modules/nixos/virt.nix
     ./system
     ./home
   ];
