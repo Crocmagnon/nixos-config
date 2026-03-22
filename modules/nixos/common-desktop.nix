@@ -6,5 +6,6 @@
     ./fonts.nix
     ./audio.nix
     ./iphone.nix
+    ./boot.nix
   ];
 }
