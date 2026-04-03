@@ -29,6 +29,7 @@ in
     ./services/restic.nix
     ./services/tailscale.nix
     ./services/galene.nix
+    ./services/stirling-pdf.nix
     # ./services/ftp.nix
     ../../modules/nixos/common.nix
   ];
