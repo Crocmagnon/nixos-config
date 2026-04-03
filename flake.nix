@@ -52,6 +52,11 @@
           nixos-hardware.nixosModules.framework-amd-ai-300-series
           catppuccin.nixosModules.catppuccin
           home-manager.nixosModules.home-manager
+          {
+            nixpkgs.overlays = [
+              (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
+            ];
+          }
         ];
       };
 
@@ -63,6 +68,11 @@
           nixos-hardware.nixosModules.gigabyte-b650
           catppuccin.nixosModules.catppuccin
           home-manager.nixosModules.home-manager
+          {
+            nixpkgs.overlays = [
+              (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
+            ];
+          }
         ];
       };
 

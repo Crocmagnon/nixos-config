@@ -6,5 +6,6 @@ final: prev: {
       config.allowUnfree = true;
     })
     btop
+    amp-cli
     ;
 }
