@@ -2,6 +2,7 @@
 {
   imports = [
     ./paperless-downloader.nix
+    ./paperless-hass-sync.nix
   ];
 
   services.caddy.virtualHosts."paperless.augendre.info".extraConfig = ''
