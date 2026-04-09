@@ -47,6 +47,7 @@
       openscad-unstable
       freecad
       solvespace
+      jetbrains.goland
     ];
   };
 

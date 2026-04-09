@@ -7,5 +7,6 @@ final: prev: {
     })
     btop
     amp-cli
+    jetbrains
     ;
 }
