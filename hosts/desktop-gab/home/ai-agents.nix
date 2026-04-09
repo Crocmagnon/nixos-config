@@ -6,6 +6,9 @@
   programs.gemini-cli = {
     enable = true;
   };
+  programs.claude-code = {
+    enable = true;
+  };
   programs.opencode = {
     enable = true;
     settings = {
