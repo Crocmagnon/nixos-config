@@ -83,7 +83,7 @@
       };
       hass = {
         hostname = "192.168.0.9";
-        user = "hassio";
+        user = "root";
         port = 32690;
       };
       "*" = {
