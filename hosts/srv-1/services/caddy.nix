@@ -9,7 +9,7 @@
     enable = true;
     package = pkgs.caddy.withPlugins {
       plugins = [ "github.com/caddy-dns/ovh@v1.1.0" ];
-      hash = "sha256-pNTP4tzDsqn9C6DE9tJqz24x4lSjqga+jNgTNqKdKYQ=";
+      hash = "sha256-VbOupg6fDzk2CRknLmdgP+BpgBMDJ/kUr0V46smIM8U=";
     };
     email = "gabriel@augendre.info";
     logFormat = ''
