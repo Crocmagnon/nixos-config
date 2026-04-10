@@ -6,5 +6,7 @@
       ./email.nix
       ./zed.nix
     ];
+
+    programs.vscode.enable = true;
   };
 }
