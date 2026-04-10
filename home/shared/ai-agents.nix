@@ -1,9 +1,14 @@
 { pkgs, ... }:
 {
+  home.packages = [
+    pkgs.sox
+  ];
   programs.claude-code = {
     enable = true;
     settings = {
       theme = "catppuccin-mocha";
+      voiceEnabled = true;
+      language = "french";
       permissions = {
         allow = [
           "Bash(git status:*)"
