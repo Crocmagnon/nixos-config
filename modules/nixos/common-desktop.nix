@@ -7,6 +7,7 @@
     ./audio.nix
     ./iphone.nix
     ./boot.nix
+    ./docker.nix
   ];
 
   services.fwupd.enable = true;
