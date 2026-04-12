@@ -56,3 +56,12 @@ This is a NixOS flake configuration for three machines:
 - Catppuccin theming is enabled globally (`catppuccin.enable = true`)
 - Unstable packages available via overlay as `pkgs.unstable.<package>`
 - `nh os switch .` is the preferred rebuild command (wraps nixos-rebuild with niceties)
+
+### Caddy Internal Access (srv-1)
+
+To restrict a Caddy virtualHost to internal/Tailscale access, **both** of these are required:
+
+1. `import internal` in the virtualHost's `extraConfig` (IP-based access control)
+2. `bind ${tailscaleIp}` in the virtualHost's `extraConfig` (listen only on Tailscale interface)
+
+The module must also accept `tailscaleIp` as a function argument. Without `bind`, Caddy still listens on all interfaces even though `import internal` rejects external requests.
