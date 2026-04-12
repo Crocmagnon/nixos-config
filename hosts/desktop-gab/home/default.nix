@@ -7,6 +7,11 @@
       ./zed.nix
     ];
 
-    programs.vscode.enable = true;
+    programs.vscode = {
+      enable = true;
+      userSettings = {
+        "python.analysis.typeCheckingMode" = "standard";
+      };
+    };
   };
 }

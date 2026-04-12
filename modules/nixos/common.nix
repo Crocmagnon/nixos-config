@@ -11,6 +11,8 @@
     ripgrep
   ];
 
+  environment.localBinInPath = true;
+
   time.timeZone = "Europe/Paris";
 
   programs.fish.enable = true;
