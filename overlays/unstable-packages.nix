@@ -7,6 +7,7 @@ final: prev: {
     })
     btop
     amp-cli
+    gokrazy
     jetbrains
     ;
 }

@@ -1,5 +1,9 @@
-{ ... }:
+{ pkgs, ... }:
 {
+  environment.systemPackages = with pkgs; [
+    gokrazy
+  ];
+
   imports = [
     ./common.nix
     ./locale.nix
