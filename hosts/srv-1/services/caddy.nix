@@ -96,5 +96,9 @@
       '';
     };
   };
-  systemd.services.caddy.serviceConfig.EnvironmentFile = [ config.age.secrets."ovh-keys".path ];
+  systemd.services.caddy = {
+    after = [ "tailscaled.service" ];
+    wants = [ "tailscaled.service" ];
+    serviceConfig.EnvironmentFile = [ config.age.secrets."ovh-keys".path ];
+  };
 }
