@@ -11,6 +11,7 @@
       enable = true;
       userSettings = {
         "python.analysis.typeCheckingMode" = "standard";
+        "claudeCode.preferredLocation" = "panel";
       };
     };
   };
