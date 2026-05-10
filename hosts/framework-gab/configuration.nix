@@ -50,6 +50,7 @@
       openscad-unstable
       freecad
       solvespace
+      jetbrains.pycharm
     ];
   };
 
