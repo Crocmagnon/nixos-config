@@ -9,7 +9,7 @@
 
     programs.vscode = {
       enable = true;
-      userSettings = {
+      profiles.default.userSettings = {
         "python.analysis.typeCheckingMode" = "standard";
         "claudeCode.preferredLocation" = "panel";
       };
