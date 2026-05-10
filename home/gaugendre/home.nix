@@ -44,7 +44,11 @@
   programs.mise.enable = true;
   programs.zoxide.enable = true;
 
-  programs.uv.enable = true;
+  programs.uv = {
+    enable = true;
+    package = pkgs.uv;
+  };
+
   programs.go = {
     enable = true;
     telemetry.mode = "on";

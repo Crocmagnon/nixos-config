@@ -9,5 +9,6 @@ final: prev: {
     amp-cli
     gokrazy
     jetbrains
+    uv
     ;
 }
