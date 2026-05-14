@@ -51,6 +51,7 @@
       freecad
       solvespace
       jetbrains.pycharm
+      jetbrains.goland
     ];
   };
 
