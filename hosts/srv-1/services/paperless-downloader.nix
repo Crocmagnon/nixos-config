@@ -31,6 +31,11 @@ let
       subcommand = "lcl-checking";
       var = "$LCL";
     };
+    zeplug = {
+      calendar = "*-*-15 13:00";
+      subcommand = "zeplug";
+      var = "$ZEPLUG";
+    };
     # octopus = {
     #   calendar = "";
     #   subcommand = "octopus-energy-address";
