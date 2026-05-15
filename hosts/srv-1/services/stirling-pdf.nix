@@ -1,4 +1,4 @@
-{ config, network, ... }:
+{ config, ... }:
 {
   services.stirling-pdf = {
     enable = true;
@@ -13,7 +13,7 @@
   };
 
   services.caddy.virtualHosts."pdf.srv-1.augendre.info".extraConfig = ''
-    bind ${network.tailscaleIp}
+    bind ${config.host.network.tailscaleIp}
     import common_headers
     import internal
     reverse_proxy localhost:8004

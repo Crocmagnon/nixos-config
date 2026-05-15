@@ -1,27 +1,7 @@
+{ pkgs, ... }:
 {
-  lib,
-  pkgs,
-  inputs,
-  ...
-}:
-let
-  ipv6 = "2001:41d0:700:114f::1";
-  ipv6gw = "2001:41d0:0700:11ff:00ff:00ff:00ff:00ff";
-  interface = "eno1";
-  tailscaleIp = "100.108.113.85 [fd7a:115c:a1e0::2501:7166]";
-in
-{
-  _module.args = {
-    network = {
-      inherit
-        ipv6
-        ipv6gw
-        interface
-        tailscaleIp
-        ;
-    };
-  };
   imports = [
+    ./network-vars.nix
     ./disk-config.nix
     ./hardware-configuration.nix
     ./boot.nix

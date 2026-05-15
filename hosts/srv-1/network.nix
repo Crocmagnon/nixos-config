@@ -1,4 +1,7 @@
-{ lib, network, ... }:
+{ lib, config, ... }:
+let
+  net = config.host.network;
+in
 {
   services.openssh.enable = true;
 
@@ -13,26 +16,26 @@
       ];
       trustedInterfaces = [ "tailscale0" ];
     };
-    interfaces."${network.interface}" = {
+    interfaces."${net.interface}" = {
       useDHCP = true;
       ipv6 = {
         addresses = [
           {
-            address = network.ipv6;
+            address = net.ipv6;
             prefixLength = 128;
           }
         ];
         routes = [
           {
-            address = network.ipv6gw;
+            address = net.ipv6gw;
             prefixLength = 64;
           }
         ];
       };
     };
     defaultGateway6 = {
-      address = network.ipv6gw;
-      interface = network.interface;
+      address = net.ipv6gw;
+      interface = net.interface;
     };
   };
   services.fail2ban.enable = true;
