@@ -18,6 +18,9 @@
     git-toolbelt
     pre-commit
     prek
+    nil
+    nixd
+    nixfmt
     watchexec # used by mise watch
     amber # like find | sed but easier (ambr before after)
   ];

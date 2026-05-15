@@ -7,9 +7,6 @@
     enable = true;
     defaultEditor = true;
     extraPackages = with pkgs; [
-      nil
-      nixd
-      nixfmt
       gotools
       gopls
       golangci-lint
