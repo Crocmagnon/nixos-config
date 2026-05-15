@@ -3,6 +3,7 @@
   imports = [
     ./save-disk.nix
     ./home-manager.nix
+    ./users.nix
   ];
 
   environment.systemPackages = with pkgs; [
@@ -26,6 +27,10 @@
   ];
 
   programs.nh = {
+    enable = true;
+  };
+
+  programs.gnupg.agent = {
     enable = true;
   };
 }

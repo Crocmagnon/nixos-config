@@ -1,4 +1,4 @@
-{ tailscaleIp, ... }:
+{ config, network, ... }:
 {
   virtualisation.oci-containers.containers = {
     test = {
@@ -15,7 +15,7 @@
   };
 
   services.caddy.virtualHosts."test.augendre.info".extraConfig = ''
-    bind ${tailscaleIp}
+    bind ${network.tailscaleIp}
     import common_headers
     import internal
     redir localhost:9001

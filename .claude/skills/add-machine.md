@@ -11,12 +11,12 @@ The user wants to add a new NixOS machine to the configuration.
 
 1. Ask the user for:
    - Machine hostname
-   - Machine type: **desktop** (imports `modules/nixos/desktop`) or **server** (imports `modules/nixos/common` only)
+   - Machine type: **desktop** (imports `modules/nixos/common` + `modules/nixos/desktop`) or **server** (imports `modules/nixos/common` only)
    - Any hardware-specific nixos-hardware module (check https://github.com/NixOS/nixos-hardware)
    - Any host-specific features to configure
 
 2. Create `hosts/<hostname>/configuration.nix`:
-   - **Desktop**: import `../../modules/nixos/desktop` — this brings in everything (Plasma, home-manager desktop, user, packages, audio, fonts, etc.)
+   - **Desktop**: import both `../../modules/nixos/common` and `../../modules/nixos/desktop` — common provides base config, desktop adds Plasma, home-manager desktop, user packages, audio, fonts, etc.
    - **Server**: import `../../modules/nixos/common` — base only, no desktop config
    - Set `networking.hostName`
    - Set `system.stateVersion` to the current NixOS version
@@ -34,15 +34,17 @@ The user wants to add a new NixOS machine to the configuration.
 ## Key Files Reference
 
 - `modules/nixos/common/` — Base config for ALL machines
-  - `default.nix` — Entry point (imports save-disk + home-manager)
+  - `default.nix` — Entry point (imports save-disk, home-manager, users)
+  - `users.nix` — Common user definition (gaugendre + root), SSH keys, passwordless sudo
   - `home-manager.nix` — Base HM config for gaugendre + root
   - `save-disk.nix` — Garbage collection, store optimization
-- `modules/nixos/desktop/` — Desktop machines (imports common + all desktop features)
-  - `default.nix` — Entry point (imports common + locale, fonts, audio, boot, docker, plasma, user, vpn, uv-python, desktop HM)
-  - `user.nix` — Desktop user definition, packages, sudo, Firefox, Steam, KDE Connect
-  - `home-manager.nix` — Desktop HM additions (imports `home/desktop/`)
+- `modules/nixos/desktop/` — Desktop machines (does NOT import common, hosts import both)
+  - `default.nix` — Entry point (imports locale, fonts, audio, boot, docker, plasma, users, vpn, uv-python, desktop HM)
+  - `users.nix` — Desktop user packages (Kate, JetBrains, etc.), Firefox, Steam, KDE Connect
+  - `home-manager.nix` — Desktop HM additions (imports `modules/home/gaugendre/desktop/`)
   - `plasma.nix` — Plasma/SDDM desktop environment
   - `virt.nix` — Virtualization (KVM/libvirt) — NOT imported by default, host must import explicitly
-- `home/shared/` — CLI tools for all machines (fish, helix, starship, eza, ai-agents)
-- `home/desktop/` — Desktop home-manager (konsole, email, zed, vscode, krunner)
-- `home/gaugendre/home.nix` — Base user config (all machines)
+- `modules/home/shared/` — CLI tools for all machines (fish, helix, starship, eza, ai-agents)
+- `modules/home/gaugendre/desktop/` — Desktop home-manager (konsole, email, zed, vscode, krunner)
+- `modules/home/gaugendre/home.nix` — Base user config (all machines)
+- `modules/home/root/home.nix` — Root user HM config

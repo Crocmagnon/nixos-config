@@ -4,12 +4,12 @@
 
 - **`hosts/`**: Machine-specific configurations. Each subdirectory corresponds to a hostname (e.g., `framework-gab`, `srv-1`) and contains the entry point (`configuration.nix`) for that system.
 - **`modules/`**:
-    - **`modules/nixos/common/`**: Base config for **all** machines (nix settings, fish, basic packages, home-manager setup)
-    - **`modules/nixos/desktop/`**: Config for **desktop machines only** (imports common + Plasma, user, audio, fonts, locale, boot, docker, vpn, uv-python, desktop home-manager)
-- **`home/`**: Home Manager configurations.
-    - **`home/<user>/`**: User-specific configuration entry points.
-    - **`home/shared/`**: Reusable Home Manager modules shared across **all** machines (shell, editor, prompt).
-    - **`home/desktop/`**: Home Manager modules for **desktop machines only** (email, zed, vscode, krunner).
+    - **`modules/nixos/common/`**: Base config for **all** machines (nix settings, fish, basic packages, users, home-manager setup)
+    - **`modules/nixos/desktop/`**: Config for **desktop machines only** (Plasma, audio, fonts, locale, boot, docker, vpn, uv-python, desktop users, desktop home-manager)
+    - **`modules/home/gaugendre/`**: User-specific Home Manager configuration entry point.
+    - **`modules/home/gaugendre/desktop/`**: Home Manager modules for **desktop machines only** (konsole, email, zed, vscode, krunner).
+    - **`modules/home/shared/`**: Reusable Home Manager modules shared across **all** machines (shell, editor, prompt).
+    - **`modules/home/root/`**: Root user Home Manager configuration.
 - **`overlays/`**: Custom Nixpkgs overlays to modify or extend packages.
 
 ## Module Hierarchy
@@ -17,20 +17,21 @@
 ### All machines
 ```
 modules/nixos/common/
-  default.nix → save-disk.nix, home-manager.nix
-                                → home/gaugendre/home.nix (base: CLI tools, git, ssh, gpg)
-                                → home/shared/ (fish, helix, starship, eza, ai-agents)
-                                → home/root/home.nix
+  default.nix → save-disk.nix, home-manager.nix, users.nix
+                                → modules/home/gaugendre/home.nix (base: CLI tools, git, ssh, gpg)
+                                → modules/home/shared/ (fish, helix, starship, eza, ai-agents)
+                                → modules/home/root/home.nix
 ```
 
 ### Desktop machines (framework-gab, desktop-gab)
 ```
+hosts import both modules/nixos/common and modules/nixos/desktop
+
 modules/nixos/desktop/
-  default.nix → common/ (above)
-              → locale, fonts, audio, boot, iphone, docker, plasma, vpn, uv-python
-              → user.nix (user packages, sudo, Firefox, Steam, KDE Connect...)
+  default.nix → locale, fonts, audio, boot, iphone, docker, plasma, vpn, uv-python
+              → users.nix (desktop user packages, Firefox, Steam, KDE Connect...)
               → home-manager.nix
-                  → home/desktop/ (konsole, email, zed, vscode, krunner)
+                  → modules/home/gaugendre/desktop/ (konsole, email, zed, vscode, krunner)
 ```
 
 ### Server (srv-1)
@@ -49,6 +50,7 @@ modules/nixos/common/ only → no desktop config leaks in
     {
       imports = [
         ./hardware-configuration.nix
+        ../../modules/nixos/common
         ../../modules/nixos/desktop
       ];
       networking.hostName = "<hostname>";

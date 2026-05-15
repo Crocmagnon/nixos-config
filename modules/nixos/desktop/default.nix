@@ -9,7 +9,7 @@
     ./docker.nix
     ./plasma.nix
     ./home-manager.nix
-    ./user.nix
+    ./users.nix
     ./vpn.nix
     ./uv-python.nix
   ];

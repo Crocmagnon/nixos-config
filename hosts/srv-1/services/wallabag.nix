@@ -1,7 +1,7 @@
-{ config, tailscaleIp, ... }:
+{ config, network, ... }:
 {
   services.caddy.virtualHosts."wallabag.augendre.info".extraConfig = ''
-    bind ${tailscaleIp}
+    bind ${network.tailscaleIp}
     import common_headers
     import internal
     reverse_proxy localhost:8002

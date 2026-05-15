@@ -40,25 +40,27 @@ This is a NixOS flake configuration for three machines:
 
 **System-level** (`modules/nixos/`):
 - `common/` → Base config for **all** machines (nix settings, fish, basic packages, home-manager setup)
-  - `default.nix` → Entry point, imports `save-disk.nix` + `home-manager.nix`
+  - `default.nix` → Entry point, imports `save-disk.nix`, `home-manager.nix`, `users.nix`
+  - `users.nix` → Common user definition (gaugendre + root), SSH keys, passwordless sudo
   - `home-manager.nix` → Base HM config for gaugendre + root
-- `desktop/` → Config for **desktop machines only** (imports common + all desktop features)
-  - `default.nix` → Entry point, imports common + locale, fonts, audio, boot, docker, plasma, user, vpn, uv-python, desktop HM
-  - `user.nix` → Desktop user definition, packages, sudo, Firefox, Steam, KDE Connect
+- `desktop/` → Config for **desktop machines only** (desktop-specific features, does NOT import common)
+  - `default.nix` → Entry point, imports locale, fonts, audio, boot, docker, plasma, users, vpn, uv-python, desktop HM
+  - `users.nix` → Desktop-specific user packages (Kate, PrusaSlicer, JetBrains, etc.), Firefox, Steam, KDE Connect
   - `home-manager.nix` → Desktop-only HM additions (konsole, email, zed, vscode, krunner)
   - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `virt.nix`
 
-**Home-manager** (`home/`):
-- `home/gaugendre/home.nix` → Base user config for all machines (imports `home/shared/` + git)
-- `home/shared/` → Reusable modules across all machines (fish, helix, starship, eza, ai-agents)
-- `home/desktop/` → Desktop-only HM modules (konsole, email, zed, vscode, krunner)
+**Home-manager** (`modules/home/`):
+- `gaugendre/home.nix` → Base user config for all machines (imports `shared/` + git)
+- `gaugendre/desktop/` → Desktop-only HM modules (konsole, email, zed, vscode, krunner)
+- `shared/` → Reusable modules across all machines (fish, helix, starship, eza, ai-agents)
+- `root/home.nix` → Root user HM config
 
 **Host-specific** (`hosts/<hostname>/`):
-- `configuration.nix` → Entry point, imports hardware + `modules/nixos/desktop` or `modules/nixos/common`
+- `configuration.nix` → Entry point, imports hardware + `modules/nixos/common` + `modules/nixos/desktop` (desktops) or `modules/nixos/common` only (servers)
 
 ### Key Patterns
 
-- Desktops import `modules/nixos/desktop` (which includes common). Servers import `modules/nixos/common` only.
+- Desktops import both `modules/nixos/common` and `modules/nixos/desktop`. Servers import `modules/nixos/common` only.
 - Home-manager is configured via `modules/nixos/common/home-manager.nix` with `useGlobalPkgs = true`
 - Desktop HM additions are in `modules/nixos/desktop/home-manager.nix`
 - Catppuccin theming is enabled globally (`catppuccin.enable = true`)

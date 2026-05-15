@@ -1,4 +1,4 @@
-{ config, tailscaleIp, ... }:
+{ config, network, ... }:
 {
   imports = [
     ./paperless-downloader.nix
@@ -6,7 +6,7 @@
   ];
 
   services.caddy.virtualHosts."paperless.augendre.info".extraConfig = ''
-    bind ${tailscaleIp}
+    bind ${network.tailscaleIp}
     import common_headers
     import internal
     reverse_proxy localhost:9002

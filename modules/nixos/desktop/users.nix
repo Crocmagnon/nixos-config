@@ -1,14 +1,8 @@
 { pkgs, ... }:
 {
-
   users.users.gaugendre = {
-    isNormalUser = true;
-    description = "Gabriel";
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-    ];
-    shell = pkgs.fish;
+  extraGroups = [
+      "networkmanager"];
     packages = with pkgs; [
       kdePackages.kate
       prusa-slicer
@@ -25,26 +19,6 @@
       jetbrains.pycharm
       jetbrains.goland
     ];
-  };
-
-  # passwordless sudo
-  security.sudo.extraRules = [
-    {
-      users = [ "gaugendre" ];
-      commands = [
-        {
-          command = "ALL";
-          options = [
-            "SETENV"
-            "NOPASSWD"
-          ];
-        }
-      ];
-    }
-  ];
-
-  programs.gnupg.agent = {
-    enable = true;
   };
 
   programs.firefox.enable = true;
