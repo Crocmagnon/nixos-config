@@ -11,5 +11,6 @@ final: prev: {
     jetbrains
     uv
     claude-code
+    prek
     ;
 }

@@ -17,6 +17,7 @@
     tlrc # tldr provider
     git-toolbelt
     pre-commit
+    prek
     watchexec # used by mise watch
     amber # like find | sed but easier (ambr before after)
   ];
