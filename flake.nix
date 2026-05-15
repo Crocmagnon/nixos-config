@@ -48,55 +48,56 @@
       nix-index-database,
       ...
     }@inputs:
+    let
+      mkHost =
+        {
+          extraModules ? [ ],
+          extraOverlays ? [ ],
+        }:
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            home-manager.nixosModules.home-manager
+            {
+              nixpkgs.overlays = [
+                (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
+              ]
+              ++ extraOverlays;
+            }
+          ]
+          ++ extraModules;
+        };
+    in
     {
-      nixosConfigurations.framework-gab = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
-        modules = [
-          ./hosts/framework-gab/configuration.nix
-          nixos-hardware.nixosModules.framework-amd-ai-300-series
-          catppuccin.nixosModules.catppuccin
-          home-manager.nixosModules.home-manager
-          {
-            nixpkgs.overlays = [
-              (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
-            ];
-          }
-        ];
-      };
+      nixosConfigurations = {
+        framework-gab = mkHost {
+          extraModules = [
+            ./hosts/framework-gab/configuration.nix
+            nixos-hardware.nixosModules.framework-amd-ai-300-series
+            catppuccin.nixosModules.catppuccin
+          ];
+        };
 
-      nixosConfigurations.desktop-gab = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
-        modules = [
-          ./hosts/desktop-gab/configuration.nix
-          nixos-hardware.nixosModules.gigabyte-b650
-          catppuccin.nixosModules.catppuccin
-          home-manager.nixosModules.home-manager
-          {
-            nixpkgs.overlays = [
-              (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
-            ];
-          }
-        ];
-      };
+        desktop-gab = mkHost {
+          extraModules = [
+            ./hosts/desktop-gab/configuration.nix
+            nixos-hardware.nixosModules.gigabyte-b650
+            catppuccin.nixosModules.catppuccin
+          ];
+        };
 
-      # nixos-anywhere --flake .#srv-1 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix <hostname>
-      nixosConfigurations.srv-1 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
-        modules = [
-          disko.nixosModules.disko
-          agenix.nixosModules.default
-          ./hosts/srv-1/configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            nixpkgs.overlays = [
-              (import ./overlays/playwright-downloader.nix { inherit downloader; })
-              (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
-            ];
-          }
-        ];
+        # nixos-anywhere --flake .#srv-1 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix <hostname>
+        srv-1 = mkHost {
+          extraModules = [
+            disko.nixosModules.disko
+            agenix.nixosModules.default
+            ./hosts/srv-1/configuration.nix
+          ];
+          extraOverlays = [
+            (import ./overlays/playwright-downloader.nix { inherit downloader; })
+          ];
+        };
       };
     };
 }
