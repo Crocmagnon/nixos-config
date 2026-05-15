@@ -4,7 +4,14 @@
 }:
 {
   boot = {
-    loader.systemd-boot.consoleMode = "max";
+    loader = {
+        systemd-boot.consoleMode = "max";
+        systemd-boot.enable = true;
+        efi.canTouchEfiVariables = true;
+    };
+
+    kernelPackages = pkgs.linuxPackages_latest;
+
     # silence first boot output
     consoleLogLevel = 3;
     initrd.verbose = false;

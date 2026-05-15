@@ -31,7 +31,7 @@ in
     ./services/galene.nix
     ./services/stirling-pdf.nix
     # ./services/ftp.nix
-    ../../modules/nixos/common.nix
+    ../../modules/nixos/common
   ];
 
   boot = {

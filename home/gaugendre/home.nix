@@ -7,14 +7,12 @@
   imports = [
     ../shared
     ./git.nix
-    ./konsole
   ];
 
   home.username = "gaugendre";
   home.homeDirectory = "/home/gaugendre";
   home.stateVersion = "25.11";
   home.packages = with pkgs; [
-    wl-clipboard
     git-crypt
     tlrc # tldr provider
     git-toolbelt
