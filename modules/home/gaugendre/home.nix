@@ -6,6 +6,7 @@
 {
   imports = [
     ../shared
+    ./ai-agents.nix
     ./git.nix
   ];
 
