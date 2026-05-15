@@ -102,3 +102,17 @@ modules/nixos/common/ only → no desktop config leaks in
 cd hosts/srv-1/secrets
 nix run github:ryantm/agenix -- -e miniflux-db.age
 ```
+
+## Pre-commit hooks
+
+Nix files are auto-formatted with `nixfmt` via a [prek](https://github.com/j178/prek) hook (drop-in replacement for `pre-commit`). After cloning, install the git hook once:
+
+```
+prek install
+```
+
+Run the hooks manually on all files:
+
+```
+prek run --all-files
+```
