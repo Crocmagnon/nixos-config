@@ -28,21 +28,7 @@ in
     ./network.nix
     ../../modules/nixos/common
     ./secrets
-
-    ./services/caddy.nix
-    ./services/miniflux.nix
-    ./services/test-headers.nix
-    ./services/wallabag.nix
-    ./services/filebeat.nix
-    ./services/paperless.nix
-    ./services/healthchecks.nix
-    ./services/pcloud-sync.nix
-    ./services/servarr.nix
-    ./services/restic.nix
-    ./services/tailscale.nix
-    ./services/galene.nix
-    ./services/stirling-pdf.nix
-    # ./services/ftp.nix
+    ./services
   ];
 
   # Enable periodic scrubbing to check for data corruption
