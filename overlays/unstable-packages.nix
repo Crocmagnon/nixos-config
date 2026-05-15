@@ -10,5 +10,6 @@ final: prev: {
     gokrazy
     jetbrains
     uv
+    claude-code
     ;
 }

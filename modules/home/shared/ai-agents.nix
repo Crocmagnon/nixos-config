@@ -5,8 +5,9 @@
   ];
   programs.claude-code = {
     enable = true;
+    package = pkgs.claude-code;
     settings = {
-      theme = "catppuccin-mocha";
+      theme = "auto";
       voiceEnabled = true;
       language = "french";
       permissions = {
