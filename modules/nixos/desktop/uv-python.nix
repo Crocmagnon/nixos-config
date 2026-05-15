@@ -1,4 +1,5 @@
-{...}:{
+{ ... }:
+{
   # workarounds for uv python
   programs.nix-ld = {
     enable = true;

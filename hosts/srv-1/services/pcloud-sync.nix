@@ -21,7 +21,7 @@
     serviceConfig = {
       Type = "oneshot";
       ExecStart = [
-        ''${pkgs.rclone}/bin/rclone sync --stats=30m --stats-log-level=NOTICE --transfers=10 --checksum pcloud-gab:/ ovh-pcloud-sync:pcloud-sync-gaugendre/gabriel/''
+        "${pkgs.rclone}/bin/rclone sync --stats=30m --stats-log-level=NOTICE --transfers=10 --checksum pcloud-gab:/ ovh-pcloud-sync:pcloud-sync-gaugendre/gabriel/"
         ''${pkgs.rclone}/bin/rclone sync --stats=30m --stats-log-level=NOTICE --transfers=10 --checksum pcloud-claire:/ ovh-pcloud-sync:pcloud-sync-gaugendre/claire/ --exclude "/Photos en commun/**" --exclude "/Partage Claire Gab/**"''
       ];
     };

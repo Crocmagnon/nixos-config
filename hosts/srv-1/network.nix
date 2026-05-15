@@ -1,5 +1,6 @@
-{ lib, network, ...}: {
-services.openssh.enable = true;
+{ lib, network, ... }:
+{
+  services.openssh.enable = true;
 
   networking = {
     hostName = "srv-1";

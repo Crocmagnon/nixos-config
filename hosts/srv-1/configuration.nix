@@ -12,9 +12,14 @@ let
 in
 {
   _module.args = {
-      network = {
-        inherit ipv6 ipv6gw interface tailscaleIp;
-      };
+    network = {
+      inherit
+        ipv6
+        ipv6gw
+        interface
+        tailscaleIp
+        ;
+    };
   };
   imports = [
     ./disk-config.nix

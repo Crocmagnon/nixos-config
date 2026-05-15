@@ -1,8 +1,9 @@
 { pkgs, ... }:
 {
   users.users.gaugendre = {
-  extraGroups = [
-      "networkmanager"];
+    extraGroups = [
+      "networkmanager"
+    ];
     packages = with pkgs; [
       kdePackages.kate
       prusa-slicer

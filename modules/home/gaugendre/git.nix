@@ -48,7 +48,7 @@
         cp = "cherry-pick";
         co = "checkout";
         cob = "switch -c";
-        cobf = ''! f() { git branch -D $1 && git switch -c $1; }; f'';
+        cobf = "! f() { git branch -D $1 && git switch -c $1; }; f";
         lol = "log --graph --decorate --pretty=oneline --abbrev-commit";
         lola = "lol --all";
         gl = "log --graph --pretty=format:'%C(auto)%h %C(bold blue)<%an>%Creset%C(auto) (%G?) %d %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative";

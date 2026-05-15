@@ -1,6 +1,6 @@
-{...}:
+{ ... }:
 {
-boot = {
+  boot = {
     supportedFilesystems = [ "btrfs" ];
 
     loader = {
