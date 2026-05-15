@@ -69,9 +69,9 @@ This is a NixOS flake configuration for three machines:
 
 ### Caddy Internal Access (srv-1)
 
-To restrict a Caddy virtualHost to internal/Tailscale access, **both** of these are required:
+To restrict a Caddy virtualHost to internal/Tailscale access, `import internal` in the virtualHost's `extraConfig` is sufficient. The `(internal)` snippet (defined in `hosts/srv-1/services/caddy.nix`) handles both:
 
-1. `import internal` in the virtualHost's `extraConfig` (IP-based access control)
-2. `bind ${tailscaleIp}` in the virtualHost's `extraConfig` (listen only on Tailscale interface)
+1. `bind ${config.host.network.tailscaleIp}` — listen only on the Tailscale interface
+2. IP-based access control via `client_ip` matcher (private ranges + Tailscale CGNAT)
 
-The module must also accept `tailscaleIp` as a function argument. Without `bind`, Caddy still listens on all interfaces even though `import internal` rejects external requests.
+Both are required: without `bind`, Caddy still listens on all interfaces even though the IP filter would reject external requests. Both live in the snippet so a vhost cannot import only one half.

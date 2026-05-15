@@ -6,7 +6,6 @@
   ];
 
   services.caddy.virtualHosts."paperless.augendre.info".extraConfig = ''
-    bind ${config.host.network.tailscaleIp}
     import common_headers
     import internal
     reverse_proxy localhost:9002

@@ -96,35 +96,30 @@ in
 
   services.caddy.virtualHosts = {
     "jellyfin.srv-1.augendre.info".extraConfig = ''
-      bind ${config.host.network.tailscaleIp}
       import common_headers
       import internal
       reverse_proxy localhost:8096
     '';
 
     "prowlarr.srv-1.augendre.info".extraConfig = ''
-      bind ${config.host.network.tailscaleIp}
       import common_headers
       import internal
       reverse_proxy localhost:${builtins.toString config.services.prowlarr.settings.server.port}
     '';
 
     "sonarr.srv-1.augendre.info".extraConfig = ''
-      bind ${config.host.network.tailscaleIp}
       import common_headers
       import internal
       reverse_proxy localhost:${builtins.toString config.services.sonarr.settings.server.port}
     '';
 
     "radarr.srv-1.augendre.info".extraConfig = ''
-      bind ${config.host.network.tailscaleIp}
       import common_headers
       import internal
       reverse_proxy localhost:${builtins.toString config.services.radarr.settings.server.port}
     '';
 
     "transmission.srv-1.augendre.info".extraConfig = ''
-      bind ${config.host.network.tailscaleIp}
       import common_headers
       import internal
       reverse_proxy localhost:${builtins.toString config.services.transmission.settings.rpc-port}

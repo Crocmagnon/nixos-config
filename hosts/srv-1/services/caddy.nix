@@ -50,6 +50,7 @@ in
       }
 
       (internal) {
+        bind ${config.host.network.tailscaleIp}
         @blocked not client_ip private_ranges 2a01:e0a:325:a1c0::/64 fd7a:115c:a1e0::/48 100.0.0.0/8
         respond @blocked "Access denied" 403 {
           close
