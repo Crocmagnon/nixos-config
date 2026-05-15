@@ -8,8 +8,9 @@
     - **`modules/nixos/desktop/`**: Config for **desktop machines only** (Plasma, audio, fonts, locale, boot, docker, vpn, uv-python, desktop users, desktop home-manager)
     - **`modules/home/gaugendre/`**: User-specific Home Manager configuration entry point.
     - **`modules/home/gaugendre/desktop/`**: Home Manager modules for **desktop machines only** (konsole, email, zed, vscode, krunner).
-    - **`modules/home/shared/`**: Reusable Home Manager modules shared across **all** machines (shell, editor, prompt).
+    - **`modules/home/shared/`**: Reusable Home Manager modules shared across **all** users (shell, editor, prompt).
     - **`modules/home/root/`**: Root user Home Manager configuration.
+- **`lib/`**: Shared helpers — `identity.nix` exposes `fullName` / `email` as a single source of truth (consumed by git, email account, Caddy ACME).
 - **`overlays/`**: Custom Nixpkgs overlays to modify or extend packages.
 
 ## Module Hierarchy
@@ -19,8 +20,10 @@
 modules/nixos/common/
   default.nix → save-disk.nix, home-manager.nix, users.nix
                                 → modules/home/gaugendre/home.nix (base: CLI tools, git, ssh, gpg)
-                                → modules/home/shared/ (fish, helix, starship, eza, ai-agents)
+                                  → modules/home/shared/ (fish, helix, starship, eza)
+                                  → modules/home/gaugendre/ai-agents.nix (Claude Code, gaugendre only)
                                 → modules/home/root/home.nix
+                                  → modules/home/shared/ (fish, helix, starship, eza)
 ```
 
 ### Desktop machines (framework-gab, desktop-gab)
@@ -58,24 +61,17 @@ modules/nixos/common/ only → no desktop config leaks in
       system.stateVersion = "25.11";
     }
     ```
-3. Add to `flake.nix`:
+3. Add to `flake.nix` via the `mkHost` helper:
     ```nix
-    nixosConfigurations.<hostname> = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      specialArgs = { inherit inputs; };
-      modules = [
+    nixosConfigurations.<hostname> = mkHost {
+      extraModules = [
         ./hosts/<hostname>/configuration.nix
-        # nixos-hardware module if applicable
+        # nixos-hardware.nixosModules.<board> if applicable
         catppuccin.nixosModules.catppuccin
-        home-manager.nixosModules.home-manager
-        {
-          nixpkgs.overlays = [
-            (import ./overlays/unstable-packages.nix { inherit nixpkgs-unstable; })
-          ];
-        }
       ];
     };
     ```
+    `mkHost` already wires `home-manager`, `system`, `specialArgs`, and the `unstable-packages` overlay. Pass `extraOverlays = [ ... ]` if you need additional overlays.
 4. Build: `nixos-rebuild dry-build --flake .#<hostname>`
 
 ### New Server
@@ -94,7 +90,15 @@ modules/nixos/common/ only → no desktop config leaks in
       system.stateVersion = "25.11";
     }
     ```
-3. Add to `flake.nix` (same pattern, without catppuccin/nixos-hardware if not needed)
+3. Add to `flake.nix` via `mkHost` (omit `catppuccin.nixosModules.catppuccin` unless you want NixOS-level theming):
+    ```nix
+    nixosConfigurations.<hostname> = mkHost {
+      extraModules = [
+        ./hosts/<hostname>/configuration.nix
+        # disko.nixosModules.disko, agenix.nixosModules.default if needed
+      ];
+    };
+    ```
 4. Build: `nixos-rebuild dry-build --flake .#<hostname>`
 
 ## Update secrets

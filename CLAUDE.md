@@ -50,22 +50,29 @@ This is a NixOS flake configuration for three machines:
   - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `virt.nix`
 
 **Home-manager** (`modules/home/`):
-- `gaugendre/home.nix` → Base user config for all machines (imports `shared/` + git)
+- `gaugendre/home.nix` → Base user config for all machines (imports `shared/`, `ai-agents.nix`, `git.nix`)
+- `gaugendre/ai-agents.nix` → Claude Code config (gaugendre only — not shared with root)
 - `gaugendre/desktop/` → Desktop-only HM modules (konsole, email, zed, vscode, krunner)
-- `shared/` → Reusable modules across all machines (fish, helix, starship, eza, ai-agents)
+- `shared/` → Reusable modules for **all** users (fish, helix, starship, eza) — imported by both gaugendre and root
 - `root/home.nix` → Root user HM config
+
+**Shared helpers** (`lib/`):
+- `identity.nix` → Single source of truth for `fullName` / `email`. Imported via `let identity = import .../lib/identity.nix` in git, email account, Caddy ACME, etc.
 
 **Host-specific** (`hosts/<hostname>/`):
 - `configuration.nix` → Entry point, imports hardware + `modules/nixos/common` + `modules/nixos/desktop` (desktops) or `modules/nixos/common` only (servers)
+- `srv-1/network-vars.nix` → Declares `host.network.{ipv6,ipv6gw,interface,tailscaleIp}` options (typed, via `lib.mkOption`). Consumed by `network.nix` and Caddy vhosts as `config.host.network.*`.
+- `srv-1/services/default.nix` → Aggregates all service imports for srv-1. `configuration.nix` just imports `./services`.
 
 ### Key Patterns
 
 - Desktops import both `modules/nixos/common` and `modules/nixos/desktop`. Servers import `modules/nixos/common` only.
 - Home-manager is configured via `modules/nixos/common/home-manager.nix` with `useGlobalPkgs = true`
 - Desktop HM additions are in `modules/nixos/desktop/home-manager.nix`
-- Catppuccin theming is enabled globally (`catppuccin.enable = true`)
+- Catppuccin theming is enabled on desktops (`catppuccin.enable = true`). srv-1 does **not** load `catppuccin.nixosModules.catppuccin` at the NixOS level (only the home-manager module via gaugendre).
 - Unstable packages available via overlay as `pkgs.unstable.<package>`
 - `nh os switch .` is the preferred rebuild command (wraps nixos-rebuild with niceties)
+- `flake.nix` uses a local `mkHost` helper to factor common modules (`home-manager`, `unstable-packages` overlay). Hosts only declare their `extraModules` (and `extraOverlays` for srv-1).
 
 ### Caddy Internal Access (srv-1)
 

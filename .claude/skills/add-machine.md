@@ -24,12 +24,19 @@ The user wants to add a new NixOS machine to the configuration.
 
 3. Create or copy `hosts/<hostname>/hardware-configuration.nix` (usually generated on the target machine with `nixos-generate-config`)
 
-4. Add the `nixosConfiguration.<hostname>` entry in `flake.nix`:
-   - For desktops, follow the pattern of `framework-gab` or `desktop-gab`
-   - For servers, follow the pattern of `srv-1`
-   - Include appropriate modules: `catppuccin.nixosModules.catppuccin`, `home-manager.nixosModules.home-manager`, hardware module, overlays
+4. Add the `nixosConfigurations.<hostname>` entry in `flake.nix` via the `mkHost` helper:
+   - `mkHost` already wires `system`, `specialArgs`, `home-manager.nixosModules.home-manager`, and the `unstable-packages` overlay. Don't repeat them.
+   - For **desktops**, follow `framework-gab` / `desktop-gab`: pass `extraModules = [ ./hosts/<hostname>/configuration.nix nixos-hardware.nixosModules.<board> catppuccin.nixosModules.catppuccin ]`.
+   - For **servers**, follow `srv-1`: pass `extraModules = [ disko.nixosModules.disko agenix.nixosModules.default ./hosts/<hostname>/configuration.nix ]`. Add `extraOverlays = [ ... ]` if needed. Omit `catppuccin.nixosModules.catppuccin` unless you want NixOS-level theming (home-manager's catppuccin is already wired via gaugendre).
 
 5. Verify: `nixos-rebuild dry-build --flake .#<hostname>`
+
+## Patterns to know
+
+- **Identity**: shared `fullName` / `email` live in `lib/identity.nix`. Import via `let identity = import .../lib/identity.nix in ...` instead of hardcoding.
+- **Host-specific network values (srv-1)**: declared in `hosts/srv-1/network-vars.nix` as typed options `host.network.{ipv6,ipv6gw,interface,tailscaleIp}`. Read via `config.host.network.*`. If a new server needs similar values, copy this module pattern.
+- **srv-1 services aggregation**: services are imported via `hosts/srv-1/services/default.nix`. To add a service, drop a new `.nix` file in `services/` and add it to that `default.nix`.
+- **Caddy internal vhosts**: `import internal` is sufficient — the `(internal)` snippet handles both `bind ${config.host.network.tailscaleIp}` and the IP-based ACL.
 
 ## Key Files Reference
 
@@ -44,7 +51,9 @@ The user wants to add a new NixOS machine to the configuration.
   - `home-manager.nix` — Desktop HM additions (imports `modules/home/gaugendre/desktop/`)
   - `plasma.nix` — Plasma/SDDM desktop environment
   - `virt.nix` — Virtualization (KVM/libvirt) — NOT imported by default, host must import explicitly
-- `modules/home/shared/` — CLI tools for all machines (fish, helix, starship, eza, ai-agents)
+- `modules/home/shared/` — CLI tools shared by ALL users (fish, helix, starship, eza). Imported by both gaugendre and root.
+- `modules/home/gaugendre/home.nix` — Base user config (all machines). Imports `../shared`, `./ai-agents.nix`, `./git.nix`.
+- `modules/home/gaugendre/ai-agents.nix` — Claude Code config (gaugendre only, intentionally NOT in `shared/` to keep root minimal).
 - `modules/home/gaugendre/desktop/` — Desktop home-manager (konsole, email, zed, vscode, krunner)
-- `modules/home/gaugendre/home.nix` — Base user config (all machines)
-- `modules/home/root/home.nix` — Root user HM config
+- `modules/home/root/home.nix` — Root user HM config (imports `../shared` only)
+- `lib/identity.nix` — Shared `fullName` / `email` (single source of truth)
