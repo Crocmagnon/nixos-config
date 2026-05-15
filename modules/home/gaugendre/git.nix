@@ -4,6 +4,9 @@
   lib,
   ...
 }:
+let
+  identity = import ../../../lib/identity.nix;
+in
 {
   programs.git = {
     enable = true;
@@ -27,8 +30,8 @@
     lfs.enable = true;
     settings = {
       user = {
-        name = "Gabriel Augendre";
-        email = "gabriel@augendre.info";
+        name = identity.fullName;
+        email = identity.email;
       };
       color = {
         ui = true;

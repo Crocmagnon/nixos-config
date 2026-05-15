@@ -4,6 +4,9 @@
   lib,
   ...
 }:
+let
+  identity = import ../../../lib/identity.nix;
+in
 {
   services.caddy = {
     enable = true;
@@ -11,7 +14,7 @@
       plugins = [ "github.com/caddy-dns/ovh@v1.1.0" ];
       hash = "sha256-cRDsYjLSasX7ronvmgdWujXWN6Oz7/we44vxC7FH73Y=";
     };
-    email = "gabriel@augendre.info";
+    email = identity.email;
     logFormat = ''
       format console
     '';

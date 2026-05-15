@@ -1,13 +1,16 @@
 { ... }:
+let
+  identity = import ../../../../lib/identity.nix;
+in
 {
   accounts.email.accounts.Migadu = {
     enable = true;
     flavor = "migadu.com";
     primary = true;
-    realName = "Gabriel Augendre";
+    realName = identity.fullName;
     thunderbird.enable = true;
-    userName = "gabriel@augendre.info";
-    address = "gabriel@augendre.info";
+    userName = identity.email;
+    address = identity.email;
   };
   programs.thunderbird = {
     enable = true;
