@@ -24,6 +24,14 @@
     nixfmt
     watchexec # used by mise watch
     amber # like find | sed but easier (ambr before after)
+    gotools
+    gopls
+    golangci-lint
+    delve
+    golangci-lint-langserver
+    terraform-ls
+    vscode-json-languageserver
+    yaml-language-server
   ];
 
   programs.htop.enable = true;

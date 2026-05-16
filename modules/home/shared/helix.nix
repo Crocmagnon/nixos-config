@@ -1,20 +1,10 @@
 {
-  pkgs,
   ...
 }:
 {
   programs.helix = {
     enable = true;
     defaultEditor = true;
-    extraPackages = with pkgs; [
-      gotools
-      gopls
-      golangci-lint
-      delve
-      golangci-lint-langserver
-      terraform-ls
-      vscode-json-languageserver
-    ];
     settings = {
       editor = {
         line-number = "relative";

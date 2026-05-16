@@ -1,14 +1,10 @@
 { pkgs, ... }:
 {
-  home.packages = [
-    pkgs.sox
-  ];
   programs.claude-code = {
     enable = true;
     package = pkgs.claude-code;
     settings = {
       theme = "auto";
-      voiceEnabled = true;
       language = "french";
       permissions = {
         allow = [
