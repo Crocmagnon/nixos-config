@@ -16,8 +16,8 @@
 
   # Configure keymap
   services.xserver.xkb = {
-    layout = "fr,fr";
-    variant = "azerty,ergol";
+    layout = "fr";
+    variant = "azerty";
   };
   console.keyMap = "fr";
 }
