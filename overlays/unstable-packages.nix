@@ -12,5 +12,6 @@ final: prev: {
     uv
     claude-code
     prek
+    esphome
     ;
 }

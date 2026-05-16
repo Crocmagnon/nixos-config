@@ -40,6 +40,7 @@
     solvespace
     jetbrains.pycharm
     jetbrains.goland
+    esphome
   ];
 
   programs.firefox.enable = true;
