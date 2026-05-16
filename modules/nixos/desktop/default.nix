@@ -27,6 +27,7 @@
     bind # dig, among other
     wl-clipboard
     kdePackages.kate
+    kdePackages.dolphin-plugins
     prusa-slicer
     libreoffice-qt-still
     # using rustdesk-flutter instead of rustdesk because rustdesk requires a full rebuild from source
