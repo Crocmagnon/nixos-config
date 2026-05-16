@@ -7,5 +7,6 @@
     ./zed.nix
     ./vscode.nix
     ./plasma.nix
+    ./niri
   ];
 }

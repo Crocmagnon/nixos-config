@@ -8,6 +8,7 @@
     ./boot.nix
     ./docker.nix
     ./plasma.nix
+    ./niri.nix
     ./home-manager.nix
     ./users.nix
     ./vpn.nix
