@@ -12,6 +12,7 @@
 
     configFile = {
       kdeglobals.KDE.AutomaticLookAndFeel = true;
+      kdeglobals.KDE.AutomaticLookAndFeelOnIdle = false;
 
       kwinrc.TabBox = {
         ApplicationsMode = 1;
