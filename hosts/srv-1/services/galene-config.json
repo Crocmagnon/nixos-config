@@ -1,0 +1,6 @@
+{
+  "proxyURL": "https://visio.g4b.ovh",
+  "allowOrigin": [
+    "https://visio.g4b.ovh"
+  ]
+}

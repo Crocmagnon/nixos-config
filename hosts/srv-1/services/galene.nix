@@ -33,6 +33,10 @@ in
     };
   };
 
+  systemd.tmpfiles.rules = [
+    "L+ ${config.services.galene.dataDir}/config.json 0640 galene galene - ${./galene-config.json}"
+  ];
+
   # overridden to add the -udp-range option
   systemd.services.galene.serviceConfig.ExecStart = lib.mkForce ''
     ${config.services.galene.package}/bin/galene \
