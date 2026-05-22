@@ -15,7 +15,7 @@ run = "nh os switch .#"
 
 [tasks.srv-1]
 description = "deploy flake to server"
-run = "nixos-rebuild switch --flake .#srv-1 --target-host gaugendre@srv-1 --build-host gaugendre@srv-1 --sudo"
+run = "nh os switch .#srv-1 --target-host gaugendre@srv-1 --build-host gaugendre@srv-1 -e passwordless"
 
 [tasks.initial-srv-1]
 description = "initial deploy to server over debian"
