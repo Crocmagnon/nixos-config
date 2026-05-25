@@ -52,6 +52,9 @@
         $cmd
       '';
       showcert = "openssl s_client -connect $argv[1]:443 -servername $argv[1] -showcerts < /dev/null";
+      rustrover-here = "rust-rover . > /dev/null 2>&1 &; disown";
+      goland-here = "goland . > /dev/null 2>&1 &; disown";
+      pycharm-here = "pycharm . > /dev/null 2>&1 &; disown";
     };
   };
 
