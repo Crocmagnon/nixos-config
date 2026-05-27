@@ -21,16 +21,9 @@
       }
     ];
     shellAliases = {
-      k = "kubectl";
-      kctx = "kubectl ctx";
       ping8 = "ping 1.1.1.1";
-      static-server = "go run github.com/eliben/static-server@latest";
     };
     functions = {
-      ansible-encrypt-to-clipboard = ''
-        read -s val
-        ansible-vault encrypt_string -- "$val" | grep -v Encryption | pbcopy
-      '';
       cat = {
         wraps = "bat";
         body = ''
@@ -52,9 +45,8 @@
         $cmd
       '';
       showcert = "openssl s_client -connect $argv[1]:443 -servername $argv[1] -showcerts < /dev/null";
-      rustrover-here = "rust-rover . > /dev/null 2>&1 &; disown";
-      goland-here = "goland . > /dev/null 2>&1 &; disown";
-      pycharm-here = "pycharm . > /dev/null 2>&1 &; disown";
+      _here = "$argv[1] . > /dev/null 2>&1 &; disown";
+      pycharm-here = "_here pycharm";
     };
   };
 

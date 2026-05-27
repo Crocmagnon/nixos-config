@@ -24,15 +24,16 @@
     nixfmt
     watchexec # used by mise watch
     amber # like find | sed but easier (ambr before after)
-    gotools
-    gopls
-    golangci-lint
-    delve
-    golangci-lint-langserver
     terraform-ls
     vscode-json-languageserver
     yaml-language-server
   ];
+
+  home.sessionVariables = {
+    MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+    # fix man output with bat (remove color codes)
+    GROFF_NO_SGR = "1";
+  };
 
   programs.htop.enable = true;
   programs.btop.enable = true;
@@ -58,12 +59,6 @@
   programs.uv = {
     enable = true;
     package = pkgs.uv;
-  };
-
-  programs.go = {
-    enable = true;
-    telemetry.mode = "on";
-    env.CGO_ENABLED = "0";
   };
 
   programs.gpg = {

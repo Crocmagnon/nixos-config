@@ -8,5 +8,7 @@
     ./zed.nix
     ./vscode.nix
     ./plasma.nix
+    ./rust.nix
+    ./go.nix
   ];
 }

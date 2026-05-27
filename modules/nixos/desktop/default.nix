@@ -40,8 +40,6 @@
     freecad
     solvespace
     jetbrains.pycharm
-    jetbrains.goland
-    jetbrains.rust-rover
     esphome
   ];
 

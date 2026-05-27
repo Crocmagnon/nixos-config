@@ -10,7 +10,6 @@ in
 {
   programs.git = {
     enable = true;
-    attributes = [ "go.sum merge=union" ];
     ignores = [
       ".local"
 
