@@ -12,7 +12,7 @@ in
     enable = true;
     package = pkgs.caddy.withPlugins {
       plugins = [ "github.com/caddy-dns/ovh@v1.1.0" ];
-      hash = "sha256-/YZNdezvpbp83o5hHS6jahHy/gUU7DfaYsj1xeDMkmo=";
+      hash = "sha256-G4ri3iiYt8fAr6++LdKyLGeNH1/2z946sV2QFqfyrjA=";
     };
     email = identity.email;
     logFormat = ''
