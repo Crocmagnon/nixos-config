@@ -17,7 +17,7 @@
   time.timeZone = "Europe/Paris";
 
   programs.fish.enable = true;
-  documentation.man.generateCaches = false; # speeds up rebuild by skipping "building man-cache", enabled by default by fish
+  documentation.man.cache.enable = false; # speeds up rebuild by skipping "building man-cache", enabled by default by fish
 
   nixpkgs.config.allowUnfree = true;
 

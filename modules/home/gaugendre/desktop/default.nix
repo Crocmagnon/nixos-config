@@ -10,5 +10,6 @@
     ./plasma.nix
     ./rust.nix
     ./go.nix
+    ./devenv.nix
   ];
 }

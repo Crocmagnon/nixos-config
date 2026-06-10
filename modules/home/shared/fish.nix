@@ -24,16 +24,6 @@
       ping8 = "ping 1.1.1.1";
     };
     functions = {
-      cat = {
-        wraps = "bat";
-        body = ''
-          if type -q bat
-            bat $argv
-          else
-            command cat $argv
-          end
-        '';
-      };
       pbcopy = ''
         set cmd command pbcopy
         if type -q xclip
@@ -54,6 +44,4 @@
     enable = true;
     enableFishIntegration = false; # disable because conflicts with fzf.fish which is nicer
   };
-
-  programs.bat.enable = true; # Required for MANPAGER in config.fish
 }

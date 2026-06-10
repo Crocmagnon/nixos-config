@@ -29,12 +29,6 @@
     yaml-language-server
   ];
 
-  home.sessionVariables = {
-    MANPAGER = "sh -c 'col -bx | bat -l man -p'";
-    # fix man output with bat (remove color codes)
-    GROFF_NO_SGR = "1";
-  };
-
   programs.htop.enable = true;
   programs.btop.enable = true;
   programs.tmux.enable = true;
@@ -85,7 +79,7 @@
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
-    matchBlocks = {
+    settings = {
       "ubuntu srv-1" = {
         user = "gaugendre";
         forwardAgent = true;
