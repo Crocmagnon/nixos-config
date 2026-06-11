@@ -12,6 +12,7 @@
     ./users.nix
     ./vpn.nix
     ./uv-python.nix
+    ./nrfconnect.nix
   ];
 
   catppuccin.enable = true;
