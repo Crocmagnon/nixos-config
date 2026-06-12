@@ -42,6 +42,7 @@
     solvespace
     jetbrains.pycharm
     esphome
+    chromium
   ];
 
   programs.firefox.enable = true;
