@@ -13,5 +13,6 @@ final: prev: {
     claude-code
     prek
     esphome
+    fresh-editor
     ;
 }
