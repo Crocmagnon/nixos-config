@@ -43,6 +43,7 @@
     jetbrains.pycharm
     esphome
     chromium
+    jq
   ];
 
   programs.firefox.enable = true;
