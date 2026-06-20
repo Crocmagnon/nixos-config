@@ -12,7 +12,7 @@ let
       var = "$SHIVA";
     };
     eau-du-grand-lyon = {
-      calendar = "*-6,12-13 13:00";
+      calendar = "*-12-15 13:00";
       subcommand = "eau-du-grand-lyon";
       var = "$EDG";
     };
