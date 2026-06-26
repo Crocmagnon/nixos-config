@@ -46,6 +46,7 @@
     esphome
     chromium
     jq
+    gcc
   ];
 
   programs.firefox.enable = true;
