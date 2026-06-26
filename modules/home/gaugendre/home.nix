@@ -17,7 +17,6 @@
     git-crypt
     tlrc # tldr provider
     git-toolbelt
-    pre-commit
     prek
     nil
     nixd
