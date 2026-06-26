@@ -15,7 +15,10 @@
     ./nrfconnect.nix
   ];
 
-  catppuccin.enable = true;
+  catppuccin = {
+    enable = true;
+    cache.enable = true;
+  };
 
   networking.networkmanager.enable = true;
 
