@@ -5,8 +5,10 @@
     package = pkgs.claude-code;
     settings = {
       theme = "auto";
+      tui = "fullscreen";
       language = "french";
       permissions = {
+        defaultMode = "plan";
         allow = [
           "Bash(git status:*)"
           "Bash(git diff:*)"
