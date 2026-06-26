@@ -17,7 +17,8 @@
     };
     catppuccin = {
       url = "github:catppuccin/nix/release-26.05";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # Pas de `inputs.nixpkgs.follows` : laisser catppuccin utiliser son nixpkgs
+      # épinglé, sinon whiskers/thèmes sont rebuild (cache miss sur catppuccin.cachix.org).
     };
     disko = {
       url = "github:nix-community/disko";
