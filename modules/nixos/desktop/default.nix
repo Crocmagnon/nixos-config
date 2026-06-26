@@ -38,7 +38,6 @@
     # https://discourse.nixos.org/t/poor-install-performance-for-rustdesk-on-nixos/48829/4
     rustdesk-flutter
     pcloud
-    bottles
     signal-desktop
     openscad-unstable
     freecad
