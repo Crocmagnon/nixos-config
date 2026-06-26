@@ -14,5 +14,11 @@ final: prev: {
     prek
     esphome
     fresh-editor
+
+    gotools
+    gopls
+    golangci-lint
+    golangci-lint-langserver
+    delve
     ;
 }
