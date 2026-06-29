@@ -41,12 +41,9 @@ in
       (common_headers) {
         header * -Server
         header * -X-Powered-By
-        header * Permissions-Policy interest-cohort=()
         header * ?Strict-Transport-Security "max-age=0"
         header * ?Referrer-Policy "strict-origin-when-cross-origin"
         header * ?X-Content-Type-Options "nosniff"
-        header * ?X-Frame-Options "DENY"
-        header * ?X-XSS-Protection "1; mode=block"
       }
 
       (internal) {
