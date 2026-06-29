@@ -10,6 +10,7 @@
     ./plasma.nix
     ./rust.nix
     ./go.nix
+    ./lua.nix
     ./devenv.nix
   ];
 }
