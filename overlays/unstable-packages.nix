@@ -20,5 +20,7 @@ final: prev: {
     golangci-lint
     golangci-lint-langserver
     delve
+
+    koreader
     ;
 }
