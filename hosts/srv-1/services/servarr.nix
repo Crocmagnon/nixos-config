@@ -7,6 +7,7 @@ in
   # Create shared media group for all services
   users.groups.media = {
     members = [
+      "gaugendre"
       config.services.sonarr.user
       config.services.radarr.user
       config.services.jellyfin.user
@@ -22,6 +23,7 @@ in
     "d ${mediaDir}/downloads/incomplete 0775 ${config.services.transmission.user} media - -"
     "d ${mediaDir}/tv 0775 ${config.services.sonarr.user} media - -"
     "d ${mediaDir}/movies 0775 ${config.services.radarr.user} media - -"
+    "d ${mediaDir}/other-photos-videos 0775 ${config.services.jellyfin.user} media - -"
   ];
 
   services.jellyfin = {
