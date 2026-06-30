@@ -47,6 +47,7 @@
     chromium
     jq
     gcc
+    koreader
   ];
 
   programs.firefox.enable = true;
