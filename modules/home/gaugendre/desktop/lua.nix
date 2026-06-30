@@ -4,6 +4,7 @@
     luajit
     lua51Packages.luarocks
     lua51Packages.luacheck
+    lua51Packages.busted
     stylua
     lua-language-server
   ];
