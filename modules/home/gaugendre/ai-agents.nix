@@ -26,6 +26,11 @@
           "Bash(wget:*)"
         ];
       };
+      extraKnownMarketplaces.ponytail.source = {
+        source = "github";
+        repo = "DietrichGebert/ponytail";
+      };
+      enabledPlugins."ponytail@ponytail" = true;
     };
   };
 }
