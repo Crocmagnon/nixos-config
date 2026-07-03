@@ -11,6 +11,7 @@ final: prev: {
     jetbrains
     uv
     claude-code
+    rtk
     prek
     esphome
     fresh-editor
