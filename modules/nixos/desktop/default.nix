@@ -48,6 +48,7 @@
     jq
     gcc
     koreader
+    terraform
   ];
 
   programs.firefox.enable = true;
