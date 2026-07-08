@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   imports = [
     ./krunner-autostart.nix
@@ -12,5 +12,9 @@
     ./go.nix
     ./lua.nix
     ./devenv.nix
+  ];
+
+  home.packages = with pkgs; [
+    terraform
   ];
 }

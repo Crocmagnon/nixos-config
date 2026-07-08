@@ -48,7 +48,6 @@
     jq
     gcc
     koreader
-    terraform
     klavaro
     kanata
   ];
