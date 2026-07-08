@@ -19,6 +19,9 @@
         indent-guides = {
           render = true;
         };
+        inline-diagnostics = {
+          cursor-line = "warning";
+        };
       };
       keys.normal = {
         Z.Z = ":wq";
