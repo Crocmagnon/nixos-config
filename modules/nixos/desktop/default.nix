@@ -49,6 +49,8 @@
     gcc
     koreader
     terraform
+    klavaro
+    kanata
   ];
 
   programs.firefox.enable = true;
