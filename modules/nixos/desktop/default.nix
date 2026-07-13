@@ -13,6 +13,7 @@
     ./vpn.nix
     ./uv-python.nix
     ./nrfconnect.nix
+    ./kanata.nix
   ];
 
   catppuccin = {
@@ -49,7 +50,6 @@
     gcc
     koreader
     klavaro
-    kanata
   ];
 
   programs.firefox.enable = true;
