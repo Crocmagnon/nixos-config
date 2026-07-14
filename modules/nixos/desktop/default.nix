@@ -41,6 +41,7 @@
     signal-desktop
     openscad-unstable
     freecad
+    graphviz # used by freecad for dependency graph
     solvespace
     jetbrains.pycharm
     esphome
