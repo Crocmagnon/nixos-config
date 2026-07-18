@@ -49,8 +49,6 @@
     jq
     gcc
     koreader
-    klavaro
-    kanata
   ];
 
   programs.firefox.enable = true;
