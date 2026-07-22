@@ -24,10 +24,5 @@
     wget
   ];
 
-  # allow deploying config from non-root user
-  nix.settings.trusted-users = [
-    "gaugendre"
-  ];
-
   system.stateVersion = "25.11";
 }

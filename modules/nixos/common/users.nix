@@ -22,6 +22,9 @@ in
     openssh.authorizedKeys.keys = authorizedKeys;
   };
 
+  # allow deploying config / honoring client nix settings from non-root user
+  nix.settings.trusted-users = [ "gaugendre" ];
+
   # passwordless sudo
   security.sudo.extraRules = [
     {
