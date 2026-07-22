@@ -6,7 +6,6 @@
     golangci-lint
     golangci-lint-langserver
     delve
-    jetbrains.goland
   ];
   home.sessionPath = [
     "$HOME/go/bin"
@@ -14,7 +13,6 @@
   programs.fish = {
     shellAliases = {
       static-server = "go run github.com/eliben/static-server@latest";
-      goland-here = "_here goland";
     };
   };
   programs.git = {

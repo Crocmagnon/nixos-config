@@ -7,7 +7,6 @@ final: prev: {
     })
     btop
     gokrazy
-    jetbrains
     uv
     claude-code
     rtk

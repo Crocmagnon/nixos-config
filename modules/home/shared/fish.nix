@@ -36,7 +36,6 @@
       '';
       showcert = "openssl s_client -connect $argv[1]:443 -servername $argv[1] -showcerts < /dev/null";
       _here = "$argv[1] . > /dev/null 2>&1 &; disown";
-      pycharm-here = "_here pycharm";
     };
   };
 
