@@ -12,6 +12,7 @@
     ./go.nix
     ./lua.nix
     ./devenv.nix
+    ./ai-agents.nix
   ];
 
   home.packages = with pkgs; [
