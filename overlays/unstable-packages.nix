@@ -6,7 +6,6 @@ final: prev: {
       config.allowUnfree = true;
     })
     btop
-    amp-cli
     gokrazy
     jetbrains
     uv
