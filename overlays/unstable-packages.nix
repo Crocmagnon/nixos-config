@@ -9,7 +9,6 @@ final: prev: {
     gokrazy
     uv
     claude-code
-    rtk
     prek
     esphome
     fresh-editor
