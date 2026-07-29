@@ -1,5 +1,8 @@
 { pkgs, ... }:
 {
+  # node is required by the ponytail plugin
+  home.packages = [ pkgs.nodejs ];
+
   programs.claude-code = {
     enable = true;
     package = pkgs.claude-code;
