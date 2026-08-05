@@ -11,7 +11,7 @@
 
   # 2) Délai avant la bascule veille(s2idle) -> hibernation.
   #    1min POUR TESTER — à remonter (ex. 120min) une fois le mécanisme validé.
-  systemd.sleep.settings.Sleep.HibernateDelaySec = "1min";
+  systemd.sleep.settings.Sleep.HibernateDelaySec = "60min";
 
   # 3) powerdevil (KDE) fait nativement le suspend-then-hibernate, sur secteur ET batterie.
   #    Déclaré ici via home-manager pour tout garder dans ce seul fichier.
