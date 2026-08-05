@@ -4,6 +4,7 @@
     ./hardware-configuration.nix
     ./fingerprint.nix
     ./power-monitoring.nix
+    ./suspend-then-hibernate.nix
     ../../modules/nixos/common
     ../../modules/nixos/desktop
   ];
