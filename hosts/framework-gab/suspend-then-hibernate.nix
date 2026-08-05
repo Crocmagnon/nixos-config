@@ -18,5 +18,6 @@
   home-manager.users.gaugendre.programs.plasma.powerdevil = {
     AC.whenSleepingEnter = "standbyThenHibernate";
     battery.whenSleepingEnter = "standbyThenHibernate";
+    lowBattery.whenSleepingEnter = "standbyThenHibernate";
   };
 }
