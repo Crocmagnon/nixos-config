@@ -1,0 +1,41 @@
+  native-path:          BAT1
+  vendor:               NVT
+  model:                FRANGWA
+  serial:               01F9
+  power supply:         yes
+  updated:              Sun Aug  2 09:15:28 2026 (15 seconds ago)
+  has history:          yes
+  has statistics:       yes
+  battery
+    present:             yes
+    rechargeable:        yes
+    state:               discharging
+    warning-level:       none
+    energy:              47.8796 Wh
+    energy-empty:        0 Wh
+    energy-full:         57.6785 Wh
+    energy-full-design:  60.6042 Wh
+    voltage-min-design:  15.48 V
+    capacity-level:      Normal
+    energy-rate:         7.77096 W
+    voltage:             16.581 V
+    charge-cycles:       151
+    time to empty:       6.2 hours
+    percentage:          83%
+    capacity:            95.1724%
+    technology:          lithium-ion
+    icon-name:          'battery-full-symbolic'
+  History (charge):
+    1785654867	83.000	discharging
+    1785654867	0.000	unknown
+  History (rate):
+    1785654928	7.771	discharging
+    1785654897	10.867	discharging
+    1785654867	15.078	discharging
+    1785654867	0.000	unknown
+  History (voltage):
+    1785654928	16.581	discharging
+    1785654897	16.646	discharging
+    1785654867	16.422	discharging
+    1785654867	0.000	unknown
+
