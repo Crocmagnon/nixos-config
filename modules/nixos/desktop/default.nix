@@ -48,6 +48,7 @@
     jq
     gcc
     koreader
+    calibre-no-speech
   ];
 
   programs.firefox.enable = true;

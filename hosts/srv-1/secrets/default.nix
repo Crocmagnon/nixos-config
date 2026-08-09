@@ -9,5 +9,8 @@ in
     paperless-env.owner = "paperless";
     downloader-creds-env.owner = "paperless";
     transmission-credentials.owner = "transmission";
+    # calibre-library-sync tourne en calibre-web et doit lire le remote pcloud-gab.
+    # pcloud-sync tourne en root et continue de pouvoir le lire.
+    rclone-config.owner = "calibre-web";
   };
 }

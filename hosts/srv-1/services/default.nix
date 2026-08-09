@@ -13,6 +13,7 @@
     ./tailscale.nix
     ./galene.nix
     ./stirling-pdf.nix
+    ./calibre-web.nix
     # ./ftp.nix
   ];
 }

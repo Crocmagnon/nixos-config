@@ -12,6 +12,8 @@ let
     "sonarr.service"
     "radarr.service"
     "transmission.service"
+    # Calibre
+    "calibre-web.service"
   ];
 in
 {
@@ -29,7 +31,14 @@ in
         "/var/lib/private" # contains prowlarr data
         "/var/lib/transmission"
         "/var/lib/jellyfin"
+        "/var/lib/calibre-web"
         # "/var/lib/media"
+      ];
+      exclude = [
+        # Copie locale jetable de pCloud, resynchronisable par
+        # calibre-library-sync et déjà sauvegardée vers OVH par pcloud-sync.
+        # Seul app.db (comptes, étagères, progression) mérite le backup.
+        "/var/lib/calibre-web/library"
       ];
       repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-srv-1-gaugendre";
       pruneOpts = [
