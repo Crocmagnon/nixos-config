@@ -10,6 +10,10 @@
   hardware.bluetooth.enable = true;
   networking.hostName = "desktop-gab";
 
+  # simpledrm ne gère pas le hotplug DisplayPort : sans amdgpu dans l'initrd,
+  # allumer l'écran une fois arrivé sur l'invite LUKS laisse le moniteur noir.
+  boot.initrd.kernelModules = [ "amdgpu" ];
+
   services.hardware.openrgb.enable = true;
 
   # This value determines the NixOS release from which the default
