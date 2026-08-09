@@ -10,10 +10,6 @@
       theme = "auto";
       tui = "fullscreen";
       language = "french";
-      statusLine = {
-        type = "command";
-        command = ''bash "$(ls -1d /home/gaugendre/.claude/plugins/cache/ponytail/ponytail/*/hooks/ponytail-statusline.sh | sort -V | tail -n1)"'';
-      };
       permissions = {
         defaultMode = "plan";
         allow = [
