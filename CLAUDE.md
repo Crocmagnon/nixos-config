@@ -47,7 +47,7 @@ This is a NixOS flake configuration for three machines:
   - `default.nix` → Entry point, imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect. Also holds the desktop packages (Kate, PrusaSlicer, etc.), Firefox, Steam, KDE Connect
   - `users.nix` → Desktop-specific user groups (`networkmanager`, `dialout`)
   - `home-manager.nix` → Desktop-only HM additions (imports `modules/home/gaugendre/desktop/`)
-  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `nrfconnect.nix`, `virt.nix`
+  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `nrfconnect.nix`, `rotatrix.nix`, `virt.nix`
 
 **Home-manager** (`modules/home/`):
 - `gaugendre/home.nix` → Base user config for all machines (imports `shared/`, `git.nix`)
@@ -72,6 +72,9 @@ This is a NixOS flake configuration for three machines:
 - Catppuccin theming is enabled on desktops (`catppuccin.enable = true`). srv-1 does **not** load `catppuccin.nixosModules.catppuccin` at the NixOS level (only the home-manager module via gaugendre).
 - `overlays/unstable-packages.nix` replaces a fixed list of packages (btop, uv, claude-code, gopls, koreader…) by their nixpkgs-unstable version, under their usual `pkgs.<package>` name. To get another one from unstable, add it to that list.
 - `nh os switch .` is the preferred rebuild command (wraps nixos-rebuild with niceties)
+- Proprietary AppImages (`rotatrix.nix`) are packaged with `pkgs.requireFile` + `appimageTools.wrapType2`. The binary is never committed (public repo, 207 MB); it's registered per-machine with `nix-store --add-fixed` — see "Proprietary AppImages" in `README.md`. `wrapType2` only symlinks the binary, so the `.desktop` and icons must be installed by hand via `extraInstallCommands` (pull them out with `appimageTools.extract`).
+- udev: `services.udev.extraRules` lands in `/etc/udev/rules.d/99-local.rules`, which runs **after** systemd's `73-seat-late.rules`, so a `TAG+="uaccess"` there is silently ignored. Use `GROUP`/`MODE` (`rotatrix.nix`), or ship a rules file numbered below 70 via `services.udev.packages` (`nrfconnect.nix`). The `plugdev` group does not exist on NixOS.
+- Autostart of a **graphical** app: install its `.desktop` into `$out/etc/xdg/autostart` (`/etc/xdg/autostart` is in `environment.pathsToLink`, so it lands in `/run/current-system/sw/etc/xdg/autostart`), not a `systemd.user.services` unit on `graphical-session.target` — that unit starts before Plasma has published `DISPLAY`/`WAYLAND_DISPLAY` into the user systemd manager, which breaks anything touching X (cost us a `pynput` `ImportError` in `rotatrix.nix`). A systemd user unit is still right for a display-less daemon (`modules/home/gaugendre/desktop/krunner-autostart.nix`).
 - `flake.nix` uses a local `mkHost` helper to factor common modules (`home-manager`, `unstable-packages` overlay). Hosts only declare their `extraModules` (and `extraOverlays` for srv-1).
 
 ### Caddy Internal Access (srv-1)

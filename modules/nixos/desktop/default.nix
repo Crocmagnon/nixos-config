@@ -13,6 +13,7 @@
     ./vpn.nix
     ./uv-python.nix
     ./nrfconnect.nix
+    ./rotatrix.nix
   ];
 
   catppuccin = {

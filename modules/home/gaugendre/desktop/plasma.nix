@@ -3,6 +3,9 @@
   programs.plasma = {
     enable = true;
 
+    # Meta alone kept opening the launcher by accident. Alt+F1 still does it.
+    shortcuts.plasmashell."activate application launcher" = "Alt+F1";
+
     shortcuts.kwin = {
       "Walk Through Windows" = "Meta+Tab";
       "Walk Through Windows (Reverse)" = "Meta+Shift+Tab";
