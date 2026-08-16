@@ -46,14 +46,14 @@ The user wants to add a new NixOS machine to the configuration.
   - `home-manager.nix` — Base HM config for gaugendre + root
   - `save-disk.nix` — Garbage collection, store optimization
 - `modules/nixos/desktop/` — Desktop machines (does NOT import common, hosts import both)
-  - `default.nix` — Entry point (imports locale, fonts, audio, boot, docker, plasma, users, vpn, uv-python, desktop HM)
-  - `users.nix` — Desktop user packages (Kate, JetBrains, etc.), Firefox, Steam, KDE Connect
+  - `default.nix` — Entry point (imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect). Also holds the desktop packages (Kate, PrusaSlicer, etc.), Firefox, Steam, KDE Connect
+  - `users.nix` — Desktop user groups (`networkmanager`, `dialout`)
   - `home-manager.nix` — Desktop HM additions (imports `modules/home/gaugendre/desktop/`)
   - `plasma.nix` — Plasma/SDDM desktop environment
   - `virt.nix` — Virtualization (KVM/libvirt) — NOT imported by default, host must import explicitly
-- `modules/home/shared/` — CLI tools shared by ALL users (fish, helix, starship, eza). Imported by both gaugendre and root.
-- `modules/home/gaugendre/home.nix` — Base user config (all machines). Imports `../shared`, `./ai-agents.nix`, `./git.nix`.
-- `modules/home/gaugendre/ai-agents.nix` — Claude Code config (gaugendre only, intentionally NOT in `shared/` to keep root minimal).
-- `modules/home/gaugendre/desktop/` — Desktop home-manager (konsole, email, zed, vscode, krunner)
+- `modules/home/shared/` — CLI tools shared by ALL users (fish, bat, eza, starship, helix, fresh). Imported by both gaugendre and root.
+- `modules/home/gaugendre/home.nix` — Base user config (all machines). Imports `../shared`, `./git.nix`.
+- `modules/home/gaugendre/desktop/` — Desktop home-manager (krunner-autostart, konsole, kwallet-ssh, email, zed, vscode, plasma, rust, go, lua, devenv, ai-agents)
+- `modules/home/gaugendre/desktop/ai-agents.nix` — Claude Code config (gaugendre only, intentionally NOT in `shared/` to keep root minimal).
 - `modules/home/root/home.nix` — Root user HM config (imports `../shared` only)
 - `lib/identity.nix` — Shared `fullName` / `email` (single source of truth)

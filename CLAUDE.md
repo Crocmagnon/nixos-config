@@ -44,16 +44,16 @@ This is a NixOS flake configuration for three machines:
   - `users.nix` → Common user definition (gaugendre + root), SSH keys, passwordless sudo
   - `home-manager.nix` → Base HM config for gaugendre + root
 - `desktop/` → Config for **desktop machines only** (desktop-specific features, does NOT import common)
-  - `default.nix` → Entry point, imports locale, fonts, audio, boot, docker, plasma, users, vpn, uv-python, desktop HM
-  - `users.nix` → Desktop-specific user packages (Kate, PrusaSlicer, JetBrains, etc.), Firefox, Steam, KDE Connect
-  - `home-manager.nix` → Desktop-only HM additions (konsole, email, zed, vscode, krunner)
-  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `virt.nix`
+  - `default.nix` → Entry point, imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect. Also holds the desktop packages (Kate, PrusaSlicer, etc.), Firefox, Steam, KDE Connect
+  - `users.nix` → Desktop-specific user groups (`networkmanager`, `dialout`)
+  - `home-manager.nix` → Desktop-only HM additions (imports `modules/home/gaugendre/desktop/`)
+  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `nrfconnect.nix`, `virt.nix`
 
 **Home-manager** (`modules/home/`):
-- `gaugendre/home.nix` → Base user config for all machines (imports `shared/`, `ai-agents.nix`, `git.nix`)
-- `gaugendre/ai-agents.nix` → Claude Code config (gaugendre only — not shared with root)
-- `gaugendre/desktop/` → Desktop-only HM modules (konsole, email, zed, vscode, krunner)
-- `shared/` → Reusable modules for **all** users (fish, helix, starship, eza) — imported by both gaugendre and root
+- `gaugendre/home.nix` → Base user config for all machines (imports `shared/`, `git.nix`)
+- `gaugendre/desktop/` → Desktop-only HM modules (krunner-autostart, konsole, kwallet-ssh, email, zed, vscode, plasma, rust, go, lua, devenv, ai-agents)
+- `gaugendre/desktop/ai-agents.nix` → Claude Code config (gaugendre only — not shared with root)
+- `shared/` → Reusable modules for **all** users (fish, bat, eza, starship, helix, fresh) — imported by both gaugendre and root
 - `root/home.nix` → Root user HM config
 
 **Shared helpers** (`lib/`):
@@ -70,7 +70,7 @@ This is a NixOS flake configuration for three machines:
 - Home-manager is configured via `modules/nixos/common/home-manager.nix` with `useGlobalPkgs = true`
 - Desktop HM additions are in `modules/nixos/desktop/home-manager.nix`
 - Catppuccin theming is enabled on desktops (`catppuccin.enable = true`). srv-1 does **not** load `catppuccin.nixosModules.catppuccin` at the NixOS level (only the home-manager module via gaugendre).
-- Unstable packages available via overlay as `pkgs.unstable.<package>`
+- `overlays/unstable-packages.nix` replaces a fixed list of packages (btop, uv, claude-code, gopls, koreader…) by their nixpkgs-unstable version, under their usual `pkgs.<package>` name. To get another one from unstable, add it to that list.
 - `nh os switch .` is the preferred rebuild command (wraps nixos-rebuild with niceties)
 - `flake.nix` uses a local `mkHost` helper to factor common modules (`home-manager`, `unstable-packages` overlay). Hosts only declare their `extraModules` (and `extraOverlays` for srv-1).
 

@@ -5,10 +5,10 @@
 - **`hosts/`**: Machine-specific configurations. Each subdirectory corresponds to a hostname (e.g., `framework-gab`, `srv-1`) and contains the entry point (`configuration.nix`) for that system.
 - **`modules/`**:
     - **`modules/nixos/common/`**: Base config for **all** machines (nix settings, fish, basic packages, users, home-manager setup)
-    - **`modules/nixos/desktop/`**: Config for **desktop machines only** (Plasma, audio, fonts, locale, boot, docker, vpn, uv-python, desktop users, desktop home-manager)
+    - **`modules/nixos/desktop/`**: Config for **desktop machines only** (Plasma, audio, fonts, locale, iphone, boot, docker, vpn, uv-python, nrfconnect, desktop packages, desktop users, desktop home-manager)
     - **`modules/home/gaugendre/`**: User-specific Home Manager configuration entry point.
-    - **`modules/home/gaugendre/desktop/`**: Home Manager modules for **desktop machines only** (konsole, email, zed, vscode, krunner).
-    - **`modules/home/shared/`**: Reusable Home Manager modules shared across **all** users (shell, editor, prompt).
+    - **`modules/home/gaugendre/desktop/`**: Home Manager modules for **desktop machines only** (krunner-autostart, konsole, kwallet-ssh, email, zed, vscode, plasma, rust, go, lua, devenv, ai-agents).
+    - **`modules/home/shared/`**: Reusable Home Manager modules shared across **all** users (fish, bat, eza, starship, helix, fresh).
     - **`modules/home/root/`**: Root user Home Manager configuration.
 - **`lib/`**: Shared helpers — `identity.nix` exposes `fullName` / `email` as a single source of truth (consumed by git, email account, Caddy ACME).
 - **`overlays/`**: Custom Nixpkgs overlays to modify or extend packages.
@@ -20,10 +20,9 @@
 modules/nixos/common/
   default.nix → save-disk.nix, home-manager.nix, users.nix
                                 → modules/home/gaugendre/home.nix (base: CLI tools, git, ssh, gpg)
-                                  → modules/home/shared/ (fish, helix, starship, eza)
-                                  → modules/home/gaugendre/ai-agents.nix (Claude Code, gaugendre only)
+                                  → modules/home/shared/ (fish, bat, eza, starship, helix, fresh)
                                 → modules/home/root/home.nix
-                                  → modules/home/shared/ (fish, helix, starship, eza)
+                                  → modules/home/shared/ (fish, bat, eza, starship, helix, fresh)
 ```
 
 ### Desktop machines (framework-gab, desktop-gab)
@@ -31,10 +30,13 @@ modules/nixos/common/
 hosts import both modules/nixos/common and modules/nixos/desktop
 
 modules/nixos/desktop/
-  default.nix → locale, fonts, audio, boot, iphone, docker, plasma, vpn, uv-python
-              → users.nix (desktop user packages, Firefox, Steam, KDE Connect...)
+  default.nix → locale, fonts, audio, iphone, boot, docker, plasma, vpn, uv-python, nrfconnect
+              → desktop packages (Kate, PrusaSlicer...), Firefox, Steam, KDE Connect
+              → users.nix (desktop user groups: networkmanager, dialout)
               → home-manager.nix
-                  → modules/home/gaugendre/desktop/ (konsole, email, zed, vscode, krunner)
+                  → modules/home/gaugendre/desktop/ (krunner-autostart, konsole, kwallet-ssh,
+                    email, zed, vscode, plasma, rust, go, lua, devenv,
+                    ai-agents (Claude Code, gaugendre only))
 ```
 
 ### Server (srv-1)
