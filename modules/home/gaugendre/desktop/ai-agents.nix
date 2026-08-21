@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   # node is required by the ponytail plugin
   home.packages = [ pkgs.nodejs ];
@@ -6,6 +6,18 @@
   programs.claude-code = {
     enable = true;
     package = pkgs.claude-code;
+
+    mcpServers.nixos = {
+      type = "stdio";
+      command = lib.getExe pkgs.mcp-nixos;
+    };
+
+    # Host is only reachable over tailscale.
+    mcpServers.home-assistant = {
+      type = "http";
+      url = "https://hass.augendre.info/api/webhook/mcp_097dbb99b301df18ee32af7368a7f812";
+    };
+
     settings = {
       theme = "auto";
       tui = "fullscreen";
