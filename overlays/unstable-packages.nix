@@ -12,6 +12,7 @@ final: prev: {
     prek
     esphome
     ha-mcp
+    mcp-nixos
     fresh-editor
     gh
 
