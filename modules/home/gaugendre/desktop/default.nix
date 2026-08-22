@@ -9,6 +9,7 @@
     ./vscode.nix
     ./plasma.nix
     ./rust.nix
+    ./gh.nix
     ./go.nix
     ./lua.nix
     ./devenv.nix

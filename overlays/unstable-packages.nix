@@ -13,6 +13,7 @@ final: prev: {
     esphome
     ha-mcp
     fresh-editor
+    gh
 
     gotools
     gopls
