@@ -14,6 +14,7 @@
     ./galene.nix
     ./stirling-pdf.nix
     ./calibre-web.nix
+    ./esphome.nix
     # ./ftp.nix
   ];
 }
