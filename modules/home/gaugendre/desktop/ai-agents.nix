@@ -38,7 +38,15 @@
         "-c"
         ''HOMEASSISTANT_TOKEN="$(cat ${config.age.secrets.ha-mcp-token.path})" exec ${pkgs.ha-mcp}/bin/ha-mcp''
       ];
-      env.HOMEASSISTANT_URL = "https://hass.augendre.info";
+      env = {
+        HOMEASSISTANT_URL = "https://hass.augendre.info";
+        # Les outils de l'entrée « HA-MCP File & YAML Tools » sont désactivés
+        # par défaut côté serveur. ENABLE_BETA_FEATURES est le master : sans
+        # lui les deux sous-drapeaux sont ignorés à l'exécution.
+        ENABLE_BETA_FEATURES = "true";
+        HAMCP_ENABLE_FILESYSTEM_TOOLS = "true"; # ha_{list,read,write,delete}_file
+        ENABLE_YAML_CONFIG_EDITING = "true"; # ha_config_set_yaml
+      };
     };
 
     settings = {
