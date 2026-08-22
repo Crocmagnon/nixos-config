@@ -11,6 +11,7 @@ final: prev: {
     claude-code
     prek
     esphome
+    ha-mcp
     fresh-editor
 
     gotools

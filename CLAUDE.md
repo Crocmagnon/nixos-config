@@ -23,9 +23,21 @@ nix flake update <input-name>
 
 ## Secrets Management
 
-Secrets are managed with agenix (srv-1 only):
+Secrets are managed with agenix. Two independent secret stores:
+
 ```bash
+# srv-1 (system-level, decrypted at boot with the host SSH key)
 cd hosts/srv-1/secrets
+nix run github:ryantm/agenix -- -e <secret-name>.age
+
+# desktops (home-manager module, decrypted in the user session ->
+# $XDG_RUNTIME_DIR/agenix/). Desktops have no SSH host key, and ~/.ssh/id_ed25519
+# has a passphrase age cannot get from kwallet, so the systemd service decrypts
+# with a dedicated passphrase-less age key: ~/.config/agenix/identity.txt
+# (created by hand with `age-keygen`, never committed -- back it up).
+# The SSH key stays a recipient so `-e`/`-r` work with the default identity.
+# After changing recipients: `nix run github:ryantm/agenix -- -r`
+cd modules/home/gaugendre/desktop/secrets
 nix run github:ryantm/agenix -- -e <secret-name>.age
 ```
 

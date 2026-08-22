@@ -4,6 +4,7 @@
     imports = [
       ../../home/gaugendre/desktop
       inputs.plasma-manager.homeModules.plasma-manager
+      inputs.agenix.homeManagerModules.age
     ];
   };
 }

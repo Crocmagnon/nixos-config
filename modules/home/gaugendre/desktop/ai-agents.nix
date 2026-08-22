@@ -1,7 +1,19 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   # node is required by the ponytail plugin
   home.packages = [ pkgs.nodejs ];
+
+  # Identité age dédiée, sans passphrase, créée à la main (hors store, hors git) :
+  # `age-keygen -o ~/.config/agenix/identity.txt`. La clé SSH par défaut a une
+  # passphrase et age ne sait pas la demander à kwallet/ksshaskpass, donc le
+  # service systemd ne peut pas l'utiliser.
+  age.identityPaths = [ "${config.home.homeDirectory}/.config/agenix/identity.txt" ];
+  age.secrets.ha-mcp-token.file = ./secrets/ha-mcp-token.age;
 
   programs.claude-code = {
     enable = true;
@@ -12,10 +24,21 @@
       command = lib.getExe pkgs.mcp-nixos;
     };
 
-    # Host is only reachable over tailscale.
+    # ha-mcp tourne en local et parle à l'API REST de HA : pas d'OAuth. Le flux
+    # OAuth via le webhook est cassé côté HA (IndieAuth compare le redirect_uri
+    # à l'identique, or Claude Code annonce http://localhost/callback sans port
+    # et écoute sur un port dynamique → « Invalid redirect URI »).
+    # Host joignable uniquement via tailscale.
     mcpServers.home-assistant = {
-      type = "http";
-      url = "https://hass.augendre.info/api/webhook/mcp_097dbb99b301df18ee32af7368a7f812";
+      type = "stdio";
+      # ponytail: agenix n'écrit qu'un fichier, ha-mcp ne lit qu'une variable
+      # d'env. Un `bash -c` suffit, pas besoin d'un wrapper packagé.
+      command = "${pkgs.bash}/bin/bash";
+      args = [
+        "-c"
+        ''HOMEASSISTANT_TOKEN="$(cat ${config.age.secrets.ha-mcp-token.path})" exec ${pkgs.ha-mcp}/bin/ha-mcp''
+      ];
+      env.HOMEASSISTANT_URL = "https://hass.augendre.info";
     };
 
     settings = {
