@@ -1,4 +1,8 @@
 {
+  pkgs,
+  ...
+}:
+{
   imports = [
     ./fish.nix
     ./bat.nix
@@ -7,6 +11,9 @@
     ./helix.nix
     ./fresh.nix
   ];
+
+  # LSP markdown, partagé par helix et fresh-editor
+  home.packages = [ pkgs.marksman ];
 
   programs.nix-index-database.comma.enable = true;
 
