@@ -54,7 +54,7 @@
       tui = "fullscreen";
       language = "french";
       permissions = {
-        defaultMode = "plan";
+        defaultMode = "auto";
         allow = [
           "Bash(git status:*)"
           "Bash(git diff:*)"
