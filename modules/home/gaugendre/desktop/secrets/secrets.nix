@@ -18,4 +18,5 @@ let
 in
 {
   "ha-mcp-token.age".publicKeys = all;
+  "migadu-password.age".publicKeys = all;
 }
