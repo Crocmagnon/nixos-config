@@ -77,6 +77,23 @@
           "Bash(wget:*)"
         ];
       };
+      # Reproduit `herdr integration install claude` : herdr sait poser
+      # ~/.claude/hooks/herdr-agent-state.sh, mais pas déclarer le hook dans
+      # settings.json, read-only car géré par home-manager. Sur une machine
+      # neuve, lancer `herdr integration install claude` une fois pour le script.
+      hooks.SessionStart = [
+        {
+          matcher = "*";
+          hooks = [
+            {
+              type = "command";
+              command = "bash '${config.home.homeDirectory}/.claude/hooks/herdr-agent-state.sh' session";
+              timeout = 10;
+            }
+          ];
+        }
+      ];
+
       extraKnownMarketplaces.ponytail.source = {
         source = "github";
         repo = "DietrichGebert/ponytail";
