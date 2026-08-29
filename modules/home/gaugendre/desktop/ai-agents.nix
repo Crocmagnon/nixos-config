@@ -6,7 +6,12 @@
 }:
 {
   # node is required by the ponytail plugin
-  home.packages = [ pkgs.nodejs ];
+  # herdr : pas de module home-manager en release-26.05 ni de thème catppuccin,
+  # donc juste le paquet.
+  home.packages = [
+    pkgs.nodejs
+    pkgs.herdr
+  ];
 
   # Identité age dédiée, sans passphrase, créée à la main (hors store, hors git) :
   # `age-keygen -o ~/.config/agenix/identity.txt`. La clé SSH par défaut a une

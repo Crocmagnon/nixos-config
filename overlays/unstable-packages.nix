@@ -13,6 +13,7 @@ final: prev: {
     esphome
     ha-mcp
     mcp-nixos
+    herdr
     fresh-editor
     gh
 
