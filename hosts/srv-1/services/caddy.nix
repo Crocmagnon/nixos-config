@@ -95,6 +95,11 @@ in
       "git.augendre.info".extraConfig = ''
         redir https://codeberg.org/Crocmagnon
       '';
+
+      "gabnotes.org, www.gabnotes.org".extraConfig = ''
+        import common_headers
+        redir https://gabnotes.fr{uri} permanent
+      '';
     };
   };
   systemd.services.caddy = {
