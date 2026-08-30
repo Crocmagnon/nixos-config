@@ -1,4 +1,11 @@
 { config, ... }:
+let
+  # agenix rend le chemin avec la syntaxe bash `${XDG_RUNTIME_DIR}` ; fish
+  # refuse les accolades (« Variables cannot be bracketed »).
+  tokenFile =
+    builtins.replaceStrings [ "\${XDG_RUNTIME_DIR}" ] [ "$XDG_RUNTIME_DIR" ]
+      config.age.secrets.ro-github-token.path;
+in
 {
   # PAT fine-grained « public repositories, read-only ». Sans lui, mise et nix
   # tapent l'API GitHub en anonyme (60 req/h partagées par IP) et finissent en
@@ -21,8 +28,8 @@
   # Le `test -r` couvre le tout premier login, où le shell peut démarrer avant
   # le service de déchiffrement.
   programs.fish.interactiveShellInit = ''
-    if test -r ${config.age.secrets.ro-github-token.path}
-        set -gx GITHUB_API_TOKEN (cat ${config.age.secrets.ro-github-token.path})
+    if test -r ${tokenFile}
+        set -gx GITHUB_API_TOKEN (cat ${tokenFile})
         set -gx NIX_CONFIG "access-tokens = github.com=$GITHUB_API_TOKEN"
     end
   '';
