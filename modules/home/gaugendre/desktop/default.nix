@@ -13,6 +13,7 @@
     ./go.nix
     ./lua.nix
     ./devenv.nix
+    ./github-token.nix
     ./ai-agents.nix
   ];
 
