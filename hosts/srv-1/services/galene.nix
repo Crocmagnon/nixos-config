@@ -9,6 +9,36 @@ let
   udpMin = 40000;
   udpMax = 60000;
   udpRange = "${toString udpMin}-${toString udpMax}";
+
+  # One op user per group, named after the group, mapped to its hashed password.
+  # No wildcard user, so these are the only usernames that can connect.
+  # To change a password:
+  #   galenectl hash-password -type pbkdf2 -iterations 600000 -password '<new password>'
+  # and paste the JSON it prints as that user's value below.
+  opPasswords = {
+    Claire = ''{"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000}'';
+    Didier = ''{"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000}'';
+    Tom = ''{"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000}'';
+    Maxime = ''{"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000}'';
+    Nicolas = ''{"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000}'';
+    Fleur = ''{"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000}'';
+  };
+
+  groupFiles = lib.mapAttrsToList (
+    name: password:
+    pkgs.writeTextDir "${name}.json" ''
+      {
+        "public": true,
+        "allow-recording": false,
+        "users": {
+          "${name}": {
+            "password": ${password},
+            "permissions": "op"
+          }
+        }
+      }
+    ''
+  ) opPasswords;
 in
 {
   services.galene = {
@@ -16,20 +46,9 @@ in
     httpAddress = "127.0.0.1";
     httpPort = 8003;
     turnAddress = ":${toString turnPort}";
-    groupsDir = pkgs.writeTextFile {
+    groupsDir = pkgs.symlinkJoin {
       name = "galene-groupdir";
-      destination = "/meet.json";
-      text = ''
-        {
-          "allow-recording": true,
-          "auto-subgroups": true,
-          "wildcard-user": {
-            "password": {"type":"pbkdf2","hash":"sha-256","key":"5a55c8dd64753232fb6078ff89740b34c3e46c3a6b7b5619d42727525f4b1124","salt":"b68bbafb67a60ce0","iterations":600000},
-            "permissions": "op"
-          },
-          "public": true
-        }
-      '';
+      paths = groupFiles;
     };
   };
 
