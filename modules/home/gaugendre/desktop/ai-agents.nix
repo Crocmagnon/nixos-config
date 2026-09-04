@@ -58,6 +58,14 @@
       theme = "auto";
       tui = "fullscreen";
       language = "french";
+
+      # ponytail: le hook SessionStart réclame une status line tant que la clé
+      # est absente de settings.json. Une commande qui n'affiche rien le tait
+      # sans ajouter de status line. Y mettre le badge si un jour on en veut un.
+      statusLine = {
+        type = "command";
+        command = "true";
+      };
       permissions = {
         defaultMode = "auto";
         allow = [
