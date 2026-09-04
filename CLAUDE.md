@@ -41,6 +41,10 @@ cd modules/home/gaugendre/desktop/secrets
 nix run github:ryantm/agenix -- -e <secret-name>.age
 ```
 
+`secrets/fonts/` is a third rules file (same recipients, imported from the parent
+one) holding the licensed OTFs: binary, so they're encrypted with `age -r` by hand
+rather than `agenix -e`. A rotation means `agenix -r` in **both** directories.
+
 ## Architecture
 
 This is a NixOS flake configuration for three machines:
