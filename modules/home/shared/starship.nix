@@ -50,7 +50,7 @@
           tag_symbol = " #";
         };
         git_status = {
-          format = "[$all_status$ahead_behind]($style)";
+          format = "[$ahead_behind$all_status]($style)";
           # style est la couleur par défaut du bloc ; les styles imbriqués des
           # sous-champs l'écrasent. L'espace reste hors des crochets.
           style = "yellow";
@@ -59,7 +59,7 @@
           behind = "[⇣$count](green) ";
           diverged = "[⇡$ahead_count ⇣$behind_count](green) ";
           untracked = "[?$count](blue) ";
-          stashed = "\\$$count ";
+          stashed = "[*$count](green) ";
           modified = "!$count ";
           staged = "+$count ";
           renamed = "»$count ";
