@@ -24,5 +24,6 @@ final: prev: {
     delve
 
     koreader
+    prusa-slicer
     ;
 }
