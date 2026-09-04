@@ -8,9 +8,7 @@
   programs.starship = {
     enable = true;
     settings = lib.mkMerge [
-      (builtins.fromTOML (
-        builtins.readFile "${pkgs.starship}/share/starship/presets/nerd-font-symbols.toml"
-      ))
+      (builtins.fromTOML (builtins.readFile "${pkgs.starship}/share/starship/presets/no-nerd-font.toml"))
       {
         format = "$all$fill$cmd_duration$time$line_break$character";
         fill.symbol = " ";
@@ -22,7 +20,7 @@
         cmd_duration = {
           min_time = 5000;
           style = "black";
-          format = "[ $duration]($style) ";
+          format = "[⏱ $duration]($style) ";
         };
         hostname = {
           format = "[@$hostname]($style) ";
