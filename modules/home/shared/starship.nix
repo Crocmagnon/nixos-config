@@ -36,17 +36,29 @@
           repo_root_style = "bold cyan";
         };
         git_branch = {
-          format = "[$symbol$branch(:$remote_branch)]($style) ";
+          # $symbol retiré : c'est un glyphe Nerd Font (U+E0A0) que le préréglage
+          # no-nerd-font ne remplace pas. only_attached évite un « HEAD » redondant
+          # avec la ligne git_commit quand on est sur un tag.
+          format = "[$branch(:$remote_branch)]($style) ";
+          only_attached = true;
           style = "green";
+        };
+
+        # Sans tag_disabled = false, un HEAD détaché n'affiche que le hash.
+        git_commit = {
+          tag_disabled = false;
+          tag_symbol = " #";
         };
         git_status = {
           format = "[$all_status$ahead_behind]($style)";
+          # style est la couleur par défaut du bloc ; les styles imbriqués des
+          # sous-champs l'écrasent. L'espace reste hors des crochets.
           style = "yellow";
           conflicted = "=$count ";
-          ahead = "⇡$count ";
-          behind = "⇣$count ";
-          diverged = "⇡$ahead_count ⇣$behind_count ";
-          untracked = "?$count ";
+          ahead = "[⇡$count](green) ";
+          behind = "[⇣$count](green) ";
+          diverged = "[⇡$ahead_count ⇣$behind_count](green) ";
+          untracked = "[?$count](blue) ";
           stashed = "\\$$count ";
           modified = "!$count ";
           staged = "+$count ";
