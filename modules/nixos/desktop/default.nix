@@ -26,6 +26,8 @@
   services.printing.enable = true;
   services.fwupd.enable = true;
 
+  services.flatpak.enable = true;
+
   environment.systemPackages = with pkgs; [
     kdePackages.partitionmanager
     gokrazy
