@@ -46,7 +46,7 @@ The user wants to add a new NixOS machine to the configuration.
   - `home-manager.nix` — Base HM config for gaugendre + root
   - `save-disk.nix` — Garbage collection, store optimization
 - `modules/nixos/desktop/` — Desktop machines (does NOT import common, hosts import both)
-  - `default.nix` — Entry point (imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect). Also holds the desktop packages (Kate, PrusaSlicer, etc.), Firefox, Steam, KDE Connect
+  - `default.nix` — Entry point (imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect, flatpak). Also holds the desktop packages (Kate, FreeCAD, etc.), Firefox, Steam, KDE Connect
   - `users.nix` — Desktop user groups (`networkmanager`, `dialout`)
   - `home-manager.nix` — Desktop HM additions (imports `modules/home/gaugendre/desktop/`)
   - `plasma.nix` — Plasma/SDDM desktop environment

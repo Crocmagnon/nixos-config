@@ -60,10 +60,10 @@ This is a NixOS flake configuration for three machines:
   - `users.nix` → Common user definition (gaugendre + root), SSH keys, passwordless sudo
   - `home-manager.nix` → Base HM config for gaugendre + root
 - `desktop/` → Config for **desktop machines only** (desktop-specific features, does NOT import common)
-  - `default.nix` → Entry point, imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect. Also holds the desktop packages (Kate, PrusaSlicer, etc.), Firefox, Steam, KDE Connect
+  - `default.nix` → Entry point, imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect, flatpak. Also holds the desktop packages (Kate, FreeCAD, etc.), Firefox, Steam, KDE Connect
   - `users.nix` → Desktop-specific user groups (`networkmanager`, `dialout`)
   - `home-manager.nix` → Desktop-only HM additions (imports `modules/home/gaugendre/desktop/`)
-  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `nrfconnect.nix`, `rotatrix.nix`, `virt.nix`
+  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `nrfconnect.nix`, `rotatrix.nix`, `virt.nix`, `flatpak.nix`
 
 **Home-manager** (`modules/home/`):
 - `gaugendre/home.nix` → Base user config for all machines (imports `shared/`, `git.nix`)

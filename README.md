@@ -32,7 +32,7 @@ hosts import both modules/nixos/common and modules/nixos/desktop
 modules/nixos/desktop/
   default.nix → locale, fonts, audio, iphone, boot, docker, plasma, vpn, uv-python, nrfconnect,
                 rotatrix
-              → desktop packages (Kate, PrusaSlicer...), Firefox, Steam, KDE Connect
+              → desktop packages (Kate, FreeCAD...), Firefox, Steam, KDE Connect
               → users.nix (desktop user groups: networkmanager, dialout)
               → home-manager.nix
                   → modules/home/gaugendre/desktop/ (krunner-autostart, konsole, kwallet-ssh,

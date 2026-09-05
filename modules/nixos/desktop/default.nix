@@ -14,6 +14,7 @@
     ./uv-python.nix
     ./nrfconnect.nix
     ./rotatrix.nix
+    ./flatpak.nix
   ];
 
   catppuccin = {
@@ -26,8 +27,6 @@
   services.printing.enable = true;
   services.fwupd.enable = true;
 
-  services.flatpak.enable = true;
-
   environment.systemPackages = with pkgs; [
     kdePackages.partitionmanager
     gokrazy
@@ -35,7 +34,6 @@
     wl-clipboard
     kdePackages.kate
     kdePackages.dolphin-plugins
-    prusa-slicer
     libreoffice-qt-still
     # using rustdesk-flutter instead of rustdesk because rustdesk requires a full rebuild from source
     # https://discourse.nixos.org/t/poor-install-performance-for-rustdesk-on-nixos/48829/4
