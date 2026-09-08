@@ -113,27 +113,33 @@ nix run github:ryantm/agenix -- -e miniflux-db.age
 ## Proprietary AppImages
 
 Some desktop apps aren't in nixpkgs and are only distributed as a license-gated AppImage
-(currently: Rotatrix, `modules/nixos/desktop/rotatrix.nix`). The binary is **not** committed —
-this repository is public, and a 207 MB blob would sit in the git history forever. Instead the
-module uses `pkgs.requireFile`, so the repo only holds a filename and a sha256, and the binary is
-registered in the Nix store manually.
+(currently: Rotatrix, `modules/nixos/desktop/rotatrix.nix`). Neither the binary nor the download
+key is committed — this repository is public. The module downloads the AppImage in a fixed-output
+derivation whose builder reads the key from `/etc/rotatrix-key`, bind-mounted into the build
+sandbox via `nix.settings.extra-sandbox-paths`. The key never enters the Nix store.
 
-That registration is needed **once per machine, and again after every version bump**:
+Setup is needed **once per machine**, and nothing on version bumps:
 
 ```
-# 1. download the AppImage (Rotatrix: https://rotatrix.com/instructions/, needs the license key)
-# 2. register it, keeping the original filename — it's part of the store path
-nix-store --add-fixed sha256 ~/Downloads/Rotatrix-linux-x86_64.AppImage
+printf '%s' RTX-XXXXXXXX | sudo tee /etc/rotatrix-key >/dev/null
+sudo chown root:nixbld /etc/rotatrix-key && sudo chmod 440 /etc/rotatrix-key  # readable by the build user
 ```
 
-On a version bump, also update `version` and `hash` in the module:
+On the very first rebuild the sandbox mapping isn't in `nix.conf` yet, so pass it once (fish; the
+`$NIX_CONFIG` prefix keeps the `access-tokens` line `github-token.nix` exports):
+
+```
+env NIX_CONFIG="$NIX_CONFIG"\n"extra-sandbox-paths = /etc/rotatrix-key?" nh os switch .
+```
+
+On a version bump, only `version` and `outputHash` in the module change:
 
 ```
 nix hash file --sri ~/Downloads/Rotatrix-linux-x86_64.AppImage
 ```
 
-`nix flake check` and evaluation still work on a machine where the file isn't registered — only
-building the package needs it.
+`nix flake check` and evaluation still work on a machine without the key — only building the
+package needs it, and it fails with an explicit message.
 
 Rotatrix installs its FreeCAD addon by copying it out of the extracted AppImage, so it lands in
 `~/.local/share/FreeCAD/v1-1/Mod/rotatrix_freecad` with the store's read-only permissions (dir
