@@ -17,6 +17,7 @@ final: prev: {
     fresh-editor
     gh
 
+    mise
     gotools
     gopls
     golangci-lint
