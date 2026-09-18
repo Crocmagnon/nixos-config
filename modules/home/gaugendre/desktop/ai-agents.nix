@@ -13,6 +13,32 @@
     pkgs.herdr
   ];
 
+  # Une fenêtre kitty ouvre herdr et non fish : herdr gère son propre shell
+  # (terminal.default_shell ci-dessous).
+  programs.kitty.settings.startup_session = "herdr.session";
+  xdg.configFile."kitty/herdr.session".text = "launch ${lib.getExe pkgs.herdr}\n";
+
+  # Pas de module home-manager pour herdr, donc le TOML à la main. auto_switch
+  # resterait cohérent avec le reste (tout est figé en latte via catppuccin.flavor).
+  xdg.configFile."herdr/config.toml".text = ''
+    onboarding = false
+
+    [theme]
+    name = "catppuccin-latte"
+    auto_switch = false
+
+    [ui]
+    agent_panel_sort = "priority"
+    show_agent_labels_on_pane_borders = true
+    mouse_capture = true
+
+    [ui.toast]
+    delivery = "system"
+
+    [terminal]
+    default_shell = "${lib.getExe pkgs.fish}"
+  '';
+
   age.secrets.ha-mcp-token.file = ./age/ha-mcp-token.age;
 
   programs.claude-code = {
