@@ -10,6 +10,7 @@
     ./starship.nix
     ./helix.nix
     ./fresh.nix
+    ./theme-auto.nix
   ];
 
   # LSP markdown, partagé par helix et fresh-editor

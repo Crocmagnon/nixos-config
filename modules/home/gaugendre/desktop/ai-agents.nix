@@ -20,8 +20,8 @@ let
 in
 {
   # node is required by the ponytail plugin
-  # herdr : pas de module home-manager en release-26.05 ni de thème catppuccin,
-  # donc juste le paquet.
+  # herdr : pas de module home-manager en release-26.05, donc juste le paquet.
+  # Son thème est configuré plus bas, dans herdr/config.toml.
   home.packages = [
     pkgs.nodejs
     pkgs.herdr
@@ -32,14 +32,16 @@ in
   programs.kitty.settings.startup_session = "herdr.session";
   xdg.configFile."kitty/herdr.session".text = "launch ${lib.getExe pkgs.herdr}\n";
 
-  # Pas de module home-manager pour herdr, donc le TOML à la main. auto_switch
-  # resterait cohérent avec le reste (tout est figé en latte via catppuccin.flavor).
+  # Pas de module home-manager pour herdr, donc le TOML à la main. herdr s'abonne
+  # à OSC 2031 et relaie la couleur de fond de kitty aux enfants des panes, donc
+  # auto_switch suffit à le faire suivre.
   xdg.configFile."herdr/config.toml".text = ''
     onboarding = false
 
     [theme]
-    name = "catppuccin-latte"
-    auto_switch = false
+    auto_switch = true
+    dark_name = "catppuccin-mocha"
+    light_name = "catppuccin-latte"
 
     [ui]
     agent_panel_sort = "priority"
@@ -92,7 +94,9 @@ in
     };
 
     settings = {
-      theme = "light";
+      # « Auto (match terminal) » : claude interroge OSC 11 avec repli sur
+      # COLORFGBG. Confirmé au démarrage d'une session.
+      theme = "auto";
       tui = "fullscreen";
       language = "french";
       # Sinon une question sans réponse finit par se valider toute seule avec ce

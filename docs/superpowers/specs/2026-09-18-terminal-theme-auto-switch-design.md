@@ -154,9 +154,9 @@ et tout retombe en Latte. C'est le comportement actuel : aucune régression.
   mtime a augmenté, or elle est figée dans le nix store. Après un rebuild qui change le
   *contenu* d'un thème, une instance kitty déjà lancée garde l'ancienne palette jusqu'à
   redémarrage. La bascule Latte ↔ Mocha, elle, reste à chaud.
-- **claude en cours de session.** Le thème `auto` est confirmé au démarrage. La
-  redétection pendant une session n'a pas été vérifiée explicitement ; si elle n'existe
-  pas, une session déjà ouverte garde son thème jusqu'à relance.
+- **claude en cours de session.** Le thème `auto` est confirmé au démarrage. Vérifié à
+  l'application : une session déjà ouverte ne redétecte pas et garde son thème jusqu'à
+  relance. Seules les nouvelles sessions suivent.
 - **srv-1 embarque les deux saveurs** dans sa closure (quelques centaines de Ko de
   fichiers de thème).
 - **srv-1 doit être redéployé** pour recevoir la nouvelle configuration.
