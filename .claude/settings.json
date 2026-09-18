@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(age:*)",
+      "Bash(agenix:*)",
+      "Bash(age-keygen:*)",
+      "Read(**/*.age)",
+      "Read(//home/gaugendre/.config/agenix/**)"
+    ]
+  }
+}
