@@ -76,9 +76,16 @@
     };
 
     settings = {
-      theme = "auto";
+      theme = "light";
       tui = "fullscreen";
       language = "french";
+      # Sinon une question sans réponse finit par se valider toute seule avec ce
+      # qui est sélectionné à ce moment-là.
+      askUserQuestionTimeout = "never";
+      # Marque l'opt-in du mode auto comme accepté, vu que defaultMode l'est déjà.
+      skipAutoPermissionPrompt = true;
+
+      env.FORCE_HYPERLINK = "1";
 
       # ponytail: le hook SessionStart réclame une status line tant que la clé
       # est absente de settings.json. Une commande qui n'affiche rien le tait
@@ -104,6 +111,24 @@
         deny = [
           "Bash(curl:*)"
           "Bash(wget:*)"
+
+          "Read(**/*.enc)"
+          "Read(**/*.key)"
+          "Read(**/*.pem)"
+          "Read(**/.env)"
+          "Read(**/.env.*)"
+          "Read(**/.terraformrc)"
+          "Read(**/credentials.json)"
+          "Read(**/id_dsa)"
+          "Read(**/id_ecdsa)"
+          "Read(**/id_ed25519)"
+          "Read(**/id_rsa)"
+          "Read(**/secrets.json)"
+          "Read(**/terraform.rc)"
+          "Read(**/vault.yaml)"
+          "Read(**/vault.yml)"
+          "Read(*.tfstate)"
+          "Read(*.tfvars)"
         ];
       };
       # Reproduit `herdr integration install claude` : herdr sait poser
@@ -112,7 +137,7 @@
       # neuve, lancer `herdr integration install claude` une fois pour le script.
       hooks.SessionStart = [
         {
-          matcher = "*";
+          matcher = "^(startup|resume|clear|compact|fork)$";
           hooks = [
             {
               type = "command";
@@ -127,8 +152,14 @@
         source = "github";
         repo = "DietrichGebert/ponytail";
       };
+      extraKnownMarketplaces.goland-claude-marketplace.source = {
+        source = "github";
+        repo = "JetBrains/go-modern-guidelines";
+      };
       enabledPlugins."ponytail@ponytail" = true;
       enabledPlugins."superpowers@claude-plugins-official" = true;
+      enabledPlugins."gopls-lsp@claude-plugins-official" = true;
+      enabledPlugins."modern-go-guidelines@goland-claude-marketplace" = true;
     };
   };
 }
