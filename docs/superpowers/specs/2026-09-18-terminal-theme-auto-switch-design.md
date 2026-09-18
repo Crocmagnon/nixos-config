@@ -154,9 +154,13 @@ et tout retombe en Latte. C'est le comportement actuel : aucune régression.
   mtime a augmenté, or elle est figée dans le nix store. Après un rebuild qui change le
   *contenu* d'un thème, une instance kitty déjà lancée garde l'ancienne palette jusqu'à
   redémarrage. La bascule Latte ↔ Mocha, elle, reste à chaud.
-- **claude en cours de session.** Le thème `auto` est confirmé au démarrage. Vérifié à
-  l'application : une session déjà ouverte ne redétecte pas et garde son thème jusqu'à
-  relance. Seules les nouvelles sessions suivent.
+- **claude en cours de session, dans un pane herdr.** Le thème `auto` prend toujours la
+  bonne saveur au démarrage, quelle que soit celle du système. En fenêtre kitty simple, il
+  suit aussi les bascules à chaud, sans défaut. Dans un pane herdr en revanche il a un cran
+  de retard : le fond est déjà clair alors que les couleurs d'accentuation sont encore
+  celles du thème sombre, et inversement. Le décalage disparaît à la session suivante.
+  C'est une interaction entre le relais OSC 11 de herdr et la redétection de claude — rien
+  que la configuration Nix puisse corriger.
 - **srv-1 embarque les deux saveurs** dans sa closure (quelques centaines de Ko de
   fichiers de thème).
 - **srv-1 doit être redéployé** pour recevoir la nouvelle configuration.
@@ -195,6 +199,9 @@ inspecté à ce jour.
   <https://github.com/helix-editor/helix/issues/8899>) ; la release suivant la 25.07.1
   devrait l'embarquer. À chaque bump de helix dans le flake, vérifier et, le cas échéant,
   supprimer le thème indirect, le `pkill -USR1` et la moitié helix du hook fish.
+- **Le cran de retard de claude dans un pane herdr.** Isolé à l'interaction herdr ↔ claude :
+  la même bascule est parfaite en fenêtre kitty simple. À remonter en amont si ça devient
+  gênant, ou à retester à chaque montée de version de herdr ou de claude.
 - **`COLORTERM` perdu en SSH, cause racine.** Le correctif helix traite le seul symptôme
   constaté. fish (`fish_term24bit`), bat et d'autres ont leur propre détection et sont
   peut-être dégradés eux aussi sur srv-1. À mesurer en phase 5 avant de généraliser : si
