@@ -47,6 +47,15 @@
   programs.fd.enable = true;
   programs.mise.enable = true;
   programs.zoxide.enable = true;
+  programs.fish.functions.zoxide-scan = {
+    description = "Ajoute à zoxide la racine de chaque repo git sous un répertoire";
+    body = ''
+      set -l root (test -n "$argv[1]" && echo $argv[1] || pwd)
+      fd --hidden --no-ignore --type d --max-depth 6 '^\.git$' $root | while read -l gitdir
+          zoxide add (path dirname $gitdir)
+      end
+    '';
+  };
 
   programs.uv = {
     enable = true;

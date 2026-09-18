@@ -35,6 +35,12 @@
         $cmd
       '';
       showcert = "openssl s_client -connect $argv[1]:443 -servername $argv[1] -showcerts < /dev/null";
+      lastdl = {
+        description = "Chemin du dernier fichier modifié dans ~/Downloads";
+        # --no-quotes : sans lui eza entoure d'apostrophes les noms à espaces,
+        # et `cp (lastdl) .` ne trouve plus le fichier.
+        body = "eza -1 -s modified --absolute=on --no-quotes ~/Downloads | tail -1";
+      };
       _here = "$argv[1] . > /dev/null 2>&1 &; disown";
     };
   };

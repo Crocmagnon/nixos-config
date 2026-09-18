@@ -16,6 +16,12 @@
           bat $argv
         '';
       };
+      catp = {
+        wraps = "bat --plain";
+        body = ''
+          bat --plain $argv
+        '';
+      };
     };
   };
 }
