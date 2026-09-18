@@ -3,6 +3,7 @@
   imports = [
     ./agenix.nix
     ./krunner-autostart.nix
+    ./kitty.nix
     ./konsole
     ./kwallet-ssh.nix
     ./email.nix
