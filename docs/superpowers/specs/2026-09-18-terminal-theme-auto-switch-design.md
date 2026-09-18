@@ -161,6 +161,12 @@ et tout retombe en Latte. C'est le comportement actuel : aucune régression.
   celles du thème sombre, et inversement. Le décalage disparaît à la session suivante.
   C'est une interaction entre le relais OSC 11 de herdr et la redétection de claude — rien
   que la configuration Nix puisse corriger.
+- **Le relais dépend d'un fish au prompt.** fish ne traite la notification du terminal que
+  pendant qu'il lit son entrée, donc au prompt. Un fish bloqué sur une commande au premier
+  plan — un `hx` ouvert, justement — ne peut rien relayer. Il faut qu'un fish, quelque
+  part, repasse par un prompt pour que starship, eza et helix soient mis à jour. C'est le
+  prix du choix « pas de démon » : seul un service systemd à l'écoute du portail
+  déclencherait la bascule indépendamment de tout shell.
 - **srv-1 embarque les deux saveurs** dans sa closure (quelques centaines de Ko de
   fichiers de thème).
 - **srv-1 doit être redéployé** pour recevoir la nouvelle configuration.
