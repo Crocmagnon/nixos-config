@@ -59,6 +59,8 @@ in
     enable = true;
     package = pkgs.claude-code;
 
+    rules.workflow = ./claude-rules-workflow.md;
+
     mcpServers.nixos = {
       type = "stdio";
       command = lib.getExe pkgs.mcp-nixos;
