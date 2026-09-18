@@ -102,7 +102,15 @@ in
     # accroche. L'appel explicite en fin de bloc couvre le cas où la variable est
     # déjà posée au moment où la fonction est définie.
     function __theme_auto --on-variable fish_terminal_color_theme
+        # Tant que le terminal n'a pas répondu à OSC 11, la variable est vide.
+        # Ne rien faire : en déduire « clair » réécrirait le thème de helix et
+        # le ferait clignoter à chaque ouverture de terminal, avant que la vraie
+        # valeur n'arrive une fraction de seconde plus tard.
+        test -z "$fish_terminal_color_theme"; and return 0
+
+        set -l flavor latte
         if test "$fish_terminal_color_theme" = dark
+            set flavor mocha
             set -gx STARSHIP_CONFIG ${starshipMocha}
             set -gx EZA_CONFIG_DIR ${ezaThemeFor "mocha"}
         else
@@ -110,19 +118,19 @@ in
             set -e EZA_CONFIG_DIR
         end
 
-        set -l flavor latte
-        test "$fish_terminal_color_theme" = dark; and set flavor mocha
         set -l themeFile "${config.xdg.configHome}/helix/themes/catppuccin.toml"
         set -l want "inherits = \"catppuccin-$flavor\""
         # N'écrire et ne signaler que si ça change : sinon chaque nouveau shell
         # enverrait un SIGUSR1 à tous les helix ouverts.
         if test "$(cat $themeFile 2>/dev/null)" != "$want"
             echo $want > $themeFile
-            # Motif exact : hx est un wrapper qui exécute .hx-wrapped, donc le
-            # nom vu par pkill est l'un ou l'autre. Sans -x le motif matcherait
-            # par sous-chaîne, et l'action par défaut de SIGUSR1 étant de tuer
-            # le processus, un faux positif serait destructeur.
-            ${pkgs.procps}/bin/pkill -USR1 -x '\.?hx(-wrapped)?'
+            # hx est un wrapper qui exécute .hx-wrapped : le nom vu par pkill est
+            # l'un ou l'autre. Deux motifs courts plutôt qu'une alternative, car
+            # pkill refuse tout motif de plus de 15 caractères — la taille de
+            # comm. -x est indispensable : sans lui le match se ferait par
+            # sous-chaîne, et SIGUSR1 tue un processus qui ne le gère pas.
+            ${pkgs.procps}/bin/pkill -USR1 -x hx
+            ${pkgs.procps}/bin/pkill -USR1 -x '\.hx-wrapped'
         end
         return 0
     end
