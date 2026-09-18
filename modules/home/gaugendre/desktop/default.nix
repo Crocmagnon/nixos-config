@@ -10,6 +10,7 @@
     ./zed.nix
     ./vscode.nix
     ./plasma.nix
+    ./python.nix
     ./rust.nix
     ./gh.nix
     ./go.nix

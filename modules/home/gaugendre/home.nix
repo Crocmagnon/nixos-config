@@ -57,11 +57,6 @@
     '';
   };
 
-  programs.uv = {
-    enable = true;
-    package = pkgs.uv;
-  };
-
   programs.gpg = {
     enable = true;
     homedir = "${config.xdg.dataHome}/gnupg";
