@@ -4,6 +4,20 @@
   pkgs,
   ...
 }:
+let
+  # bashOptions vidé : le script enchaîne des `[ ... ] && ...` dont l'échec est
+  # le cas normal, et `set -e` couperait la statusline à la première branche
+  # fausse.
+  statusline = pkgs.writeShellApplication {
+    name = "claude-statusline";
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.git
+    ];
+    bashOptions = [ ];
+    text = builtins.readFile ./claude-statusline.sh;
+  };
+in
 {
   # node is required by the ponytail plugin
   # herdr : pas de module home-manager en release-26.05 ni de thème catppuccin,
@@ -87,12 +101,9 @@
 
       env.FORCE_HYPERLINK = "1";
 
-      # ponytail: le hook SessionStart réclame une status line tant que la clé
-      # est absente de settings.json. Une commande qui n'affiche rien le tait
-      # sans ajouter de status line. Y mettre le badge si un jour on en veut un.
       statusLine = {
         type = "command";
-        command = "true";
+        command = lib.getExe statusline;
       };
       permissions = {
         defaultMode = "auto";
