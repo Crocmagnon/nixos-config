@@ -10,10 +10,7 @@
   home.homeDirectory = "/root";
   home.stateVersion = "25.11";
 
-  catppuccin = {
-    enable = true;
-    cache.enable = true;
-  };
+  catppuccin = import ../../../lib/catppuccin.nix;
 
   programs.bash.enable = true;
 }

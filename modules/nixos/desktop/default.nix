@@ -17,10 +17,7 @@
     ./flatpak.nix
   ];
 
-  catppuccin = {
-    enable = true;
-    cache.enable = true;
-  };
+  catppuccin = import ../../../lib/catppuccin.nix;
 
   networking.networkmanager.enable = true;
 

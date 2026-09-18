@@ -67,10 +67,7 @@
     maxCacheTtl = 86400 * 7;
   };
 
-  catppuccin = {
-    enable = true;
-    cache.enable = true;
-  };
+  catppuccin = import ../../../lib/catppuccin.nix;
 
   home.file."nix-config" = {
     target = ".config/nixpkgs/config.nix";
