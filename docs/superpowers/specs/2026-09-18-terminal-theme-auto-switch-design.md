@@ -161,12 +161,12 @@ et tout retombe en Latte. C'est le comportement actuel : aucune régression.
   celles du thème sombre, et inversement. Le décalage disparaît à la session suivante.
   C'est une interaction entre le relais OSC 11 de herdr et la redétection de claude — rien
   que la configuration Nix puisse corriger.
-- **Le relais dépend d'un fish au prompt.** fish ne traite la notification du terminal que
-  pendant qu'il lit son entrée, donc au prompt. Un fish bloqué sur une commande au premier
-  plan — un `hx` ouvert, justement — ne peut rien relayer. Il faut qu'un fish, quelque
-  part, repasse par un prompt pour que starship, eza et helix soient mis à jour. C'est le
-  prix du choix « pas de démon » : seul un service systemd à l'écoute du portail
-  déclencherait la bascule indépendamment de tout shell.
+- **Le relais demande un fish qui repasse par un prompt.** Un fish bloqué sur une commande
+  au premier plan — un `hx` ouvert, justement — ne relaie rien : il faut qu'un fish, quelque
+  part, revienne à son prompt pour que starship, eza et helix soient mis à jour. C'est le
+  prix du choix « pas de démon » ; seul un service systemd à l'écoute du portail
+  déclencherait la bascule indépendamment de tout shell. À ne pas confondre avec le cran de
+  retard décrit ci-dessous, qui a une tout autre cause.
 - **srv-1 embarque les deux saveurs** dans sa closure (quelques centaines de Ko de
   fichiers de thème).
 - **srv-1 doit être redéployé** pour recevoir la nouvelle configuration.
@@ -205,9 +205,17 @@ inspecté à ce jour.
   <https://github.com/helix-editor/helix/issues/8899>) ; la release suivant la 25.07.1
   devrait l'embarquer. À chaque bump de helix dans le flake, vérifier et, le cas échéant,
   supprimer le thème indirect, le `pkill -USR1` et la moitié helix du hook fish.
-- **Le cran de retard de claude dans un pane herdr.** Isolé à l'interaction herdr ↔ claude :
-  la même bascule est parfaite en fenêtre kitty simple. À remonter en amont si ça devient
-  gênant, ou à retester à chaque montée de version de herdr ou de claude.
+- **Le cran de retard dans un pane herdr — diagnostiqué, bug amont de herdr.** herdr
+  transmet bien la notification `CSI ? 997 ; N n` aux enfants des panes, sans délai
+  mesurable. Mais il répond à l'interrogation OSC 11 qui suit avec la couleur de fond
+  **précédente** ; la bonne valeur n'arrive qu'environ une seconde et demie plus tard.
+  Mesuré 4 fois sur 4 en herdr 0.9.0 : notification « clair » → OSC 11 immédiat
+  « sombre » → OSC 11 à +1,5 s « clair ». Tout programme qui applique le réflexe correct —
+  on me prévient, je redemande — hérite donc du thème d'avant. C'est la cause unique du
+  décalage de fish **et** de celui de claude, et c'est pourquoi la même bascule est parfaite
+  en fenêtre kitty simple, pourquoi une simple pression sur Entrée répare, et pourquoi le
+  retard est toujours d'exactement un cran. Rien à corriger côté configuration Nix. Le
+  changelog de la 0.9.1 ne mentionne rien à ce sujet, donc y monter n'a pas de raison d'aider.
 - **`COLORTERM` perdu en SSH, cause racine.** Le correctif helix traite le seul symptôme
   constaté. fish (`fish_term24bit`), bat et d'autres ont leur propre détection et sont
   peut-être dégradés eux aussi sur srv-1. À mesurer en phase 5 avant de généraliser : si
