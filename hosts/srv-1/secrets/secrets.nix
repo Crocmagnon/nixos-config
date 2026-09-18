@@ -5,7 +5,9 @@ let
   };
   # put which users should also be able to decrypt the secret
   users = {
-    gaugendre = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIBZRv1LUKsDbrjGJh051NCu40x9edBpERi68PgSzDW4";
+    gaugendre-laptop = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIBZRv1LUKsDbrjGJh051NCu40x9edBpERi68PgSzDW4";
+    gaugendre-desktop = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK5cJpHZTB9Sf6vmFAtieZ/8ffzs5Q4m8n9XVfkcZxG/";
+    gaugendre-age = "age1el8d8hfa76kta040rhva7u64pfkuc8d6sujttqrq0tf7je0wqetqkz5hd9";
   };
   allUsers = builtins.attrValues users;
 in
