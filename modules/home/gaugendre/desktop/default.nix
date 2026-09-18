@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   imports = [
+    ./agenix.nix
     ./krunner-autostart.nix
     ./konsole
     ./kwallet-ssh.nix

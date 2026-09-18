@@ -4,6 +4,7 @@
     useGlobalPkgs = true;
     useUserPackages = true;
     backupFileExtension = "hm-bkp";
+    extraSpecialArgs = { inherit inputs; };
 
     users.gaugendre = {
       imports = [

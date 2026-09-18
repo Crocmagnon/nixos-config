@@ -10,9 +10,6 @@ in
   # PAT fine-grained « public repositories, read-only ». Sans lui, mise et nix
   # tapent l'API GitHub en anonyme (60 req/h partagées par IP) et finissent en
   # 403 : mise n'arrive plus à lister les versions, nix à résoudre un input.
-  #
-  # Identité age dédiée, sans passphrase : voir le commentaire dans ai-agents.nix.
-  age.identityPaths = [ "${config.home.homeDirectory}/.config/agenix/identity.txt" ];
   age.secrets.ro-github-token.file = ./secrets/ro-github-token.age;
 
   # ponytail: agenix écrit un fichier, les outils lisent des variables d'env.

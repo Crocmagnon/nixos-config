@@ -13,11 +13,6 @@
     pkgs.herdr
   ];
 
-  # Identité age dédiée, sans passphrase, créée à la main (hors store, hors git) :
-  # `age-keygen -o ~/.config/agenix/identity.txt`. La clé SSH par défaut a une
-  # passphrase et age ne sait pas la demander à kwallet/ksshaskpass, donc le
-  # service systemd ne peut pas l'utiliser.
-  age.identityPaths = [ "${config.home.homeDirectory}/.config/agenix/identity.txt" ];
   age.secrets.ha-mcp-token.file = ./secrets/ha-mcp-token.age;
 
   programs.claude-code = {

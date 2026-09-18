@@ -9,7 +9,6 @@ in
   # Polices payantes : impossible d'en faire un paquet Nix (les sources
   # seraient en clair dans un dépôt public), donc agenix les déchiffre dans la
   # session et les expose via ~/.local/share/fonts, que fontconfig scanne.
-  age.identityPaths = [ "${config.home.homeDirectory}/.config/agenix/identity.txt" ];
   age.secrets = builtins.listToAttrs (
     map (
       file:
