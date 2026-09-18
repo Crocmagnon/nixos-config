@@ -25,25 +25,66 @@ nix flake update <input-name>
 
 Secrets are managed with agenix. Two independent secret stores:
 
+The directories are named `age/`, not `secrets/`: Claude Code refuses to read
+anything under a path segment called `secrets`, which blocked reading the rules
+files themselves. `.claude/settings.json` denies what actually matters instead --
+running `age`/`agenix` and reading `*.age`.
+
 ```bash
 # srv-1 (system-level, decrypted at boot with the host SSH key)
-cd hosts/srv-1/secrets
-nix run github:ryantm/agenix -- -e <secret-name>.age
+cd hosts/srv-1/age
+agenix -e <secret-name>.age
 
 # desktops (home-manager module, decrypted in the user session ->
-# $XDG_RUNTIME_DIR/agenix/). Desktops have no SSH host key, and ~/.ssh/id_ed25519
-# has a passphrase age cannot get from kwallet, so the systemd service decrypts
-# with a dedicated passphrase-less age key: ~/.config/agenix/identity.txt
-# (created by hand with `age-keygen`, never committed -- back it up).
-# The SSH key stays a recipient so `-e`/`-r` work with the default identity.
-# After changing recipients: `nix run github:ryantm/agenix -- -r`
-cd modules/home/gaugendre/desktop/secrets
-nix run github:ryantm/agenix -- -e <secret-name>.age
+# $XDG_RUNTIME_DIR/agenix/).
+cd modules/home/gaugendre/desktop/age
+agenix -e <secret-name>.age
+
+# After changing recipients: `agenix -r` in EACH of the three rules directories
+# (hosts/srv-1/age, .../desktop/age, .../desktop/age/fonts) -- the fonts rules
+# file is standalone, the parent one does not reference it.
+agenix -r
 ```
 
-`secrets/fonts/` is a third rules file (same recipients, imported from the parent
-one) holding the licensed OTFs: binary, so they're encrypted with `age -r` by hand
-rather than `agenix -e`. A rotation means `agenix -r` in **both** directories.
+`hosts/srv-1/age/default.nix` derives `age.secrets` from `secrets.nix` by
+`mapAttrs'`, so adding a server secret is one rule + one `agenix -e`, no module
+edit. Desktop secrets are declared in the module that consumes them.
+
+`agenix` on desktops is a wrapper (`modules/home/gaugendre/desktop/agenix.nix`)
+around the flake's pinned agenix, forcing `-i ~/.config/agenix/identity.txt`: the
+CLI has no env var or config file for the identity, and `~/.ssh/id_ed25519` has a
+passphrase age cannot get from kwallet. That same passphrase-less age key
+(`age-keygen`, never committed -- **back it up**) is a recipient of both stores and
+is what the user-session systemd services decrypt with (`age.identityPaths`, set
+once in `agenix.nix` for all desktop modules). The SSH keys stay recipients as a
+fallback (`agenix -i ~/.ssh/id_ed25519 -e ...` if the age key is lost).
+
+`age/fonts/` is a third rules file holding the licensed OTFs. It is a separate
+file (so it needs its own `agenix -r`) but its recipients are the parent's, read
+back out of it -- one list to maintain.
+
+Updating an **existing** font needs no `age` by hand: when stdin isn't a TTY agenix
+swaps its editor for `cp -- /dev/stdin`, which is binary-safe.
+
+```bash
+cd modules/home/gaugendre/desktop/age/fonts
+agenix -e ComicCode-Bold.otf.age < ~/Downloads/ComicCode-Bold.otf
+agenix -d ComicCode-Bold.otf.age > /tmp/ComicCode-Bold.otf
+```
+
+Adding a **new** font is the chicken-and-egg case: `secrets.nix` derives its rules
+from `readDir`, so the rule only exists once the `.age` does, and `agenix -e` on a
+name with no rule fails. Create that first file with `age` directly, then agenix
+owns it:
+
+```bash
+nix eval --raw --impure \
+  --expr 'builtins.concatStringsSep "\n" (import ./../secrets.nix)."ro-github-token.age".publicKeys' \
+  | age -R - -o NewFont.otf.age ~/Downloads/NewFont.otf
+```
+
+`fonts.nix` picks up any `*.age` in the directory by `readDir`, so that single file
+is the whole change -- no module edit. `agenix -r` rekeys binaries fine.
 
 ## Architecture
 

@@ -106,9 +106,39 @@ modules/nixos/common/ only → no desktop config leaks in
 
 ## Update secrets
 ```
-cd hosts/srv-1/secrets
-nix run github:ryantm/agenix -- -e miniflux-db.age
+cd hosts/srv-1/age
+agenix -e miniflux-db.age
 ```
+
+Les dossiers s'appellent `age/` et non `secrets/` : Claude Code refuse de lire quoi que ce soit
+sous un segment de chemin nommé `secrets`, ce qui bloquait la lecture des fichiers de règles
+eux-mêmes. `.claude/settings.json` interdit à la place ce qui compte vraiment — exécuter
+`age`/`agenix` et lire les `*.age`.
+
+Pour un secret binaire (les polices sous licence de `modules/home/gaugendre/desktop/age/fonts/`),
+agenix bascule sur `cp -- /dev/stdin` quand stdin n'est pas un TTY — donc pas d'éditeur, et
+c'est binary-safe :
+
+```
+cd modules/home/gaugendre/desktop/age/fonts
+agenix -e MaPolice.otf.age < ~/Downloads/MaPolice.otf
+agenix -d MaPolice.otf.age > /tmp/MaPolice.otf
+```
+
+Ça ne vaut que pour une police **déjà** présente : les règles de `fonts/secrets.nix` sont
+dérivées d'un `readDir`, donc pour une **nouvelle** police il faut créer le premier `.age`
+avec `age` (aucune règle n'existe encore, `agenix -e` refuserait) :
+
+```
+nix eval --raw --impure \
+  --expr 'builtins.concatStringsSep "\n" (import ./../secrets.nix)."ro-github-token.age".publicKeys' \
+  | age -R - -o NouvellePolice.otf.age ~/Downloads/NouvellePolice.otf
+```
+
+La commande `agenix` des desktops est un wrapper (`modules/home/gaugendre/desktop/agenix.nix`)
+qui force `-i ~/.config/agenix/identity.txt`, l'identité age dédiée sans passphrase —
+sinon age réclame la passphrase de `~/.ssh/id_ed25519`. **Cette clé est à sauvegarder** :
+sans elle (et sans la clé SSH, toujours destinataire), plus aucun secret n'est déchiffrable.
 
 ## Proprietary AppImages
 
