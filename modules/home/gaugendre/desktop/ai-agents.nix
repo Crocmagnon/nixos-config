@@ -13,7 +13,7 @@
     pkgs.herdr
   ];
 
-  age.secrets.ha-mcp-token.file = ./secrets/ha-mcp-token.age;
+  age.secrets.ha-mcp-token.file = ./age/ha-mcp-token.age;
 
   programs.claude-code = {
     enable = true;

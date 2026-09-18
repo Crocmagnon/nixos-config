@@ -7,7 +7,7 @@
     ./boot.nix
     ./network.nix
     ../../modules/nixos/common
-    ./secrets
+    ./age
     ./services
   ];
 

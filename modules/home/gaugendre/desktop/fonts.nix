@@ -1,6 +1,6 @@
 { config, lib, ... }:
 let
-  fontsDir = ./secrets/fonts;
+  fontsDir = ./age/fonts;
   # ponytail: readDir plutôt que 16 déclarations à la main ; déposer un
   # `<nom>.otf.age` dans le dossier suffit à installer la police.
   encrypted = builtins.filter (lib.hasSuffix ".age") (builtins.attrNames (builtins.readDir fontsDir));

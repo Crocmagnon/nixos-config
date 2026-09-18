@@ -3,7 +3,7 @@ let
   identity = import ../../../../lib/identity.nix;
 in
 {
-  age.secrets.migadu-password.file = ./secrets/migadu-password.age;
+  age.secrets.migadu-password.file = ./age/migadu-password.age;
 
   accounts.email.accounts.Migadu = {
     enable = true;
