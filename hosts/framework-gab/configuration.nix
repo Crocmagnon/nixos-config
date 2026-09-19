@@ -12,6 +12,14 @@
   hardware.bluetooth.enable = true;
   networking.hostName = "framework-gab";
 
+  # Réveil de la veille s2idle par le clavier/souris derrière le KVM. Le noyau crée
+  # chaque device USB avec power/wakeup=disabled ; le KVM détache/rattache le hub à
+  # chaque bascule, donc un réglage ponctuel ne survit pas -- il faut la règle udev.
+  # Sans effet une fois la machine hibernée (cf. suspend-then-hibernate.nix).
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="enabled"
+  '';
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It's perfectly fine and recommended to leave
