@@ -114,6 +114,23 @@ les six autres bases.
 L'instance tourne en **PostgreSQL 17**. Odoo 19 exige ≥ 12 ; 17 est dans la fenêtre. À
 reconfirmer au premier démarrage, c'est gratuit.
 
+### Odoo 19 écoute sur `0.0.0.0` par défaut
+
+Relevé au premier démarrage :
+
+```
+WARNING odoo.tools.config: missing --http-interface/http_interface, using 0.0.0.0
+by default, will change to 127.0.0.1 in 20.0
+```
+
+Sans `http_interface = "127.0.0.1"`, Odoo écoute sur **toutes** les interfaces de srv-1,
+y compris l'IP publique. Toute la protection de ce design — le `bind` du snippet
+`(internal)` sur l'IP Tailscale, le filtre `client_ip` — porte sur Caddy, et serait
+purement et simplement contournée en tapant `srv-1:8069` directement.
+
+C'est le seul réglage de cette spec dont l'oubli est une faille et pas une gêne. Odoo 20
+corrigera le défaut ; d'ici là il est explicite.
+
 ### La latence
 
 Odoo est nettement plus bavard avec sa base que tout ce qui tourne déjà sur srv-1 —
@@ -244,6 +261,7 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
       db_user = "odoo";
       db_sslmode = "require";
       dbfilter = "^odoo$";
+      http_interface = "127.0.0.1"; # défaut 0.0.0.0 en 19.0 — sans ça, Odoo court-circuite Caddy
       unaccent = true; # extension activée à la main dans l'espace client OVH
       db_maxconn = 4; # 6 processus × 4 = 24 connexions au pire, cf. design
       workers = 3;
