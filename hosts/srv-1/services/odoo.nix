@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   services.caddy.virtualHosts."odoo.srv-1.augendre.info".extraConfig = ''
     import common_headers
@@ -11,6 +11,14 @@
     }
   '';
 
+  # Le module tourne en DynamicUser, ce qui place l'état sous /var/lib/private (0700
+  # root) avec un uid transitoire : impossible de lancer odoo à la main, donc pas de
+  # `odoo shell`, pas de montée de module par -u, pas d'import, pas même le -i base
+  # initial. Sur un ERP qu'on administre, c'est disqualifiant. On revient à
+  # l'utilisateur statique `odoo` que le module déclare déjà, et l'état va dans
+  # /var/lib/odoo.
+  systemd.services.odoo.serviceConfig.DynamicUser = lib.mkForce false;
+
   services.odoo = {
     enable = true;
     # Explicite : le défaut du module suit le stateVersion, et on ne veut pas qu'un bump
@@ -19,6 +27,9 @@
     # domain reste null : Caddy fait le reverse proxy, pas le nginx du module.
     settings.options = {
       db_name = "odoo";
+      # Suit DynamicUser = false ci-dessus : le défaut du module pointe sur
+      # /var/lib/private/odoo/data, qui n'existe plus.
+      data_dir = lib.mkForce "/var/lib/odoo/data";
       # Odoo 19 écoute sur 0.0.0.0 par défaut (corrigé en 20.0). Sans ça il répond sur
       # l'IP publique de srv-1 et le bind Tailscale du snippet (internal) ne protège
       # plus rien.
