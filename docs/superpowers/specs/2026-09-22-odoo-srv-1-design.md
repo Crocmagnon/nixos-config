@@ -1,7 +1,7 @@
 # Odoo sur srv-1, base PostgreSQL chez OVH
 
 Date : 2026-09-22
-Statut : design validé, implémentation à faire
+Statut : déployé sur srv-1 le 2026-09-22, en cours d'évaluation
 
 ## Problème
 
@@ -226,7 +226,13 @@ change le code.
 |---|---|---|---|
 | 1 | `PGPASSWORD` atteint bien psycopg2 | la base créée, sans rien déployer : `env NIXPKGS_ALLOW_INSECURE=1 PGPASSWORD=… nix run --impure nixpkgs#odoo19 -- --db_host=ag56382-001.eu.clouddb.ovh.net --db_port=35458 --db_user=odoo -d odoo --stop-after-init` depuis srv-1 | générer `/run/odoo/odoo.conf` par `envsubst` dans un `ExecStartPre`, pointer `ODOO_RC` dessus (+5 lignes) |
 | 2 | Odoo 19 démarre sur PostgreSQL 17 | la même commande répond, et initialise la base | rétrograder sur `pkgs.odoo18`, qui n'a alors plus besoin de l'exception `permittedInsecurePackages` |
-| 3 | Quel uid tourne réellement | après la phase 4 : `systemctl show odoo -p User -p DynamicUser`. Le module pose `DynamicUser = true` **et** déclare `users.users.odoo` ; systemd n'alloue dynamiquement que si l'utilisateur n'existe pas, donc `owner = "odoo"` sur le secret agenix devrait être le bon | si l'uid est bel et bien dynamique, `DynamicUser = lib.mkForce false` **et** `data_dir = "/var/lib/odoo/data"`, plus l'ajout de ce chemin aux `paths` de restic (`/var/lib/private` ne le couvrirait plus) |
+| 3 | Le service lit-il son secret | après la phase 4 : le démarrage réussit ou échoue sur une erreur d'authentification | `age.secrets."odoo-env".owner = "odoo"` |
+
+**Les trois inconnues ont été levées le 2026-09-22.** `PGPASSWORD` atteint psycopg2, Odoo
+19 tourne sur PostgreSQL 17, et le secret est lu sans rien changer : systemd lit les
+`EnvironmentFile` lui-même, en root, avant de déposer les privilèges, donc l'`owner` par
+défaut d'agenix convient. Le `data_dir` est resté `/var/lib/private/odoo/data`, donc
+couvert par restic sans toucher à `restic.nix`.
 
 L'hôte et le port sont connus : `ag56382-001.eu.clouddb.ovh.net:35458`. Les points 1 et 2
 se lèvent par la même commande, avant toute écriture de module ; le point 3 est une
@@ -338,6 +344,15 @@ Les applications s'installent ensuite depuis l'interface.
   que la route `/websocket` marche.
 - Une page un peu lourde (liste de factures) se charge en un temps acceptable : c'est la
   mesure de latence qui valide ou invalide l'architecture.
+
+## Bruit connu
+
+Chaque processus Odoo émet au démarrage un `DeprecationWarning: PyPDF2 is deprecated`
+suivi d'une trace de vingt lignes, soit environ 120 lignes de journal à chaque
+redémarrage du service. C'est le coût cosmétique du choix `odoo19` : `odoo/tools/pdf/`
+importe `PyPDF2.filters` avant de choisir son implémentation. Inoffensif, mais il faut le
+savoir avant de croire à une erreur en lisant `journalctl`. Ça disparaîtra avec
+l'exception `permittedInsecurePackages`.
 
 ## Hors périmètre
 
