@@ -188,7 +188,9 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
     handle /websocket {
       reverse_proxy localhost:8072
     }
-    reverse_proxy localhost:8069
+    handle {
+      reverse_proxy localhost:8069
+    }
   '';
 
   services.odoo = {
@@ -223,7 +225,10 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
 ```
 
 Le `handle /websocket` sépare le port longpolling du port HTTP. Sans lui, Discuss et les
-notifications temps réel ne fonctionnent pas dès que `workers > 0`.
+notifications temps réel ne fonctionnent pas dès que `workers > 0`. Les deux routes sont
+dans des blocs `handle`, qui sont mutuellement exclusifs : mélanger un `handle` et un
+`reverse_proxy` nu ferait dépendre le résultat de l'ordre des directives Caddy, qui n'est
+pas celui du fichier.
 
 ### Phase 5 — initialisation, une fois, à la main
 
