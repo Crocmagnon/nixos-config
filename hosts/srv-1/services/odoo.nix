@@ -50,6 +50,15 @@
     };
   };
 
+  # Odoo ne crée l'extension unaccent que lorsqu'il crée lui-même la base. Ici c'est
+  # `ensureDatabases` qui s'en charge, donc l'étape est sautée et `unaccent = true`
+  # ci-dessus serait un mensonge : Odoo se rabat silencieusement sur une recherche
+  # accent-sensible. On se greffe sur l'unité postgresql-setup, qui tourne déjà en
+  # postgres, après la création de la base, avec psql sur le PATH.
+  systemd.services.postgresql-setup.script = lib.mkAfter ''
+    psql -d odoo -c 'CREATE EXTENSION IF NOT EXISTS unaccent'
+  '';
+
   # Épinglé pour la même raison qu'odoo19 : le défaut suit le stateVersion, et changer
   # de version majeure de PostgreSQL ne se fait pas par un simple rebuild — il faut
   # passer pg_upgrade sur le répertoire de données.
