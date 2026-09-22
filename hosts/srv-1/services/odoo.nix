@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 {
   services.caddy.virtualHosts."odoo.srv-1.augendre.info".extraConfig = ''
     import common_headers
@@ -23,53 +18,35 @@
     package = pkgs.odoo19;
     # domain reste null : Caddy fait le reverse proxy, pas le nginx du module.
     settings.options = {
-      db_host = "ag56382-001.eu.clouddb.ovh.net";
-      db_port = 35458;
       db_name = "odoo";
-      db_user = "odoo";
-      db_sslmode = "require";
-      # Surtout pas de dbfilter ici. Il a l'air d'un durcissement, c'en est le
-      # contraire : `list_dbs` ne prend son raccourci « db_name est la liste des bases
-      # exposées » que si dbfilter est vide. Avec un dbfilter, Odoo se connecte à la
-      # base `postgres` pour énumérer `pg_database` — ce qu'un hébergement mutualisé
-      # refuse. Résultat : zéro base trouvée, et « The database manager has been
-      # disabled by the administrator » sur toutes les pages. db_name seul restreint
-      # déjà à une seule base, sans rien énumérer.
       # Odoo 19 écoute sur 0.0.0.0 par défaut (corrigé en 20.0). Sans ça il répond sur
       # l'IP publique de srv-1 et le bind Tailscale du snippet (internal) ne protège
       # plus rien.
       http_interface = "127.0.0.1";
-      unaccent = true; # extension activée à la main dans l'espace client OVH
-      db_maxconn = 4; # 6 processus × 4 = 24 connexions au pire, plafond OVH à 200
+      unaccent = true;
+      # max_connections vaut 100 sur le postgres local ; 6 processus Odoo (3 HTTP,
+      # 2 cron, 1 evented) × 8 = 48, on reste au large.
+      db_maxconn = 8;
       workers = 3;
-      limit_time_real = 120; # la base est distante, les requêtes traînent
       proxy_mode = true;
-      # list_db = false est déjà le défaut du module.
-      # db_password est volontairement absent : il arrive par PGPASSWORD depuis
-      # l'EnvironmentFile, et psycopg2 laisse libpq le résoudre. Le mettre ici le
-      # graverait en clair dans le store, world-readable, dans un dépôt public.
+      # Pas de db_host/db_port/db_user/db_password : socket unix locale, authentification
+      # peer, l'utilisateur système odoo correspond au rôle odoo que le module crée.
+      # Pas de dbfilter non plus : il force Odoo à énumérer pg_database au lieu de
+      # prendre son raccourci « db_name est la liste des bases exposées ».
+      # Pas de limit_time_real : 120 s est le défaut d'Odoo, et il suffit largement une
+      # fois la base locale — c'est lui qui avait tué l'installation des 48 modules
+      # quand chaque requête coûtait 12 ms d'aller-retour vers OVH.
     };
   };
+
+  # Épinglé pour la même raison qu'odoo19 : le défaut suit le stateVersion, et changer
+  # de version majeure de PostgreSQL ne se fait pas par un simple rebuild — il faut
+  # passer pg_upgrade sur le répertoire de données.
+  services.postgresql.package = pkgs.postgresql_17;
 
   # odoo19 tire python3.12-pypdf2-3.0.1 : six CVE, fork abandonné de pypdf, aucun
   # correctif amont possible. Exception assumée, cf.
   # docs/superpowers/specs/2026-09-22-odoo-srv-1-design.md. Épinglée à la version exacte
   # pour qu'elle échoue le jour où elle n'est plus nécessaire, au lieu de traîner.
   nixpkgs.config.permittedInsecurePackages = [ "python3.12-pypdf2-3.0.1" ];
-
-  # Le module allume un PostgreSQL local en dur dont on n'a pas l'usage : la base est
-  # chez OVH, et rien d'autre sur srv-1 ne veut de postgres local.
-  services.postgresql.enable = lib.mkForce false;
-  # Mais l'unité odoo met `config.services.postgresql.package` dans son PATH, pour le
-  # pg_dump de la sauvegarde intégrée — et cette option n'a plus de valeur une fois le
-  # service désactivé. On la pose sur la version qu'OVH fait tourner : pg_dump refuse de
-  # sauvegarder un serveur plus récent que lui. Rien n'est installé pour autant, le
-  # paquet sert seulement à peupler ce PATH.
-  services.postgresql.package = pkgs.postgresql_17;
-  systemd.services.odoo = {
-    requires = lib.mkForce [ ]; # pointait sur postgresql.target, qui n'existe plus
-    after = lib.mkForce [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    serviceConfig.EnvironmentFile = config.age.secrets."odoo-env".path;
-  };
 }

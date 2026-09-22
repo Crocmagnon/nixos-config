@@ -1,196 +1,57 @@
-# Odoo sur srv-1, base PostgreSQL chez OVH
+# Odoo sur srv-1
 
 Date : 2026-09-22
-Statut : déployé sur srv-1 le 2026-09-22, en cours d'évaluation
+Statut : déployé, base PostgreSQL **locale**. La tentative avec la base chez OVH a été
+mesurée puis abandonnée — voir « Pourquoi la base n'est pas chez OVH ».
 
 ## Problème
 
-On veut évaluer Odoo pour une petite structure (~5 utilisateurs) sur srv-1, sans monter
-de PostgreSQL local : la base va rejoindre les six autres (`miniflux`, `manuels`,
-`paperless`, `wallabag`, `mealie`, `lasuitemeet`) sur l'instance OVH Web Cloud Databases
-`ag56382-001`, déclarée dans le dépôt `terraform-ovh`.
+Évaluer Odoo pour une petite structure (~5 utilisateurs) sur srv-1, avec une
+configuration qu'on garde si Odoo convainc : vhost Caddy interne, version pinnée par
+nixpkgs.
 
-Le test doit produire une configuration qu'on garde si Odoo convainc : vhost Caddy
-interne, secret agenix, version pinnée par nixpkgs. Pas de sauvegarde dédiée ni de
-monitoring pour l'instant — c'est ce qu'on ajoutera au passage en « adopté ».
+L'intention de départ était de mettre la base sur l'instance OVH Web Cloud Databases
+`ag56382-001`, là où vivent déjà `miniflux`, `paperless`, `wallabag` et `mealie`. C'est ce
+qui a été construit, déployé, puis mesuré et défait. La section suivante dit pourquoi ;
+elle est le cœur de ce document.
 
-## Contraintes découvertes
+## Pourquoi la base n'est pas chez OVH
 
-### Le module nixpkgs impose un PostgreSQL local
+Odoo émet des centaines de requêtes SQL par page, largement sérialisées. La latence par
+requête est donc multipliée, pas amortie.
 
-`services.odoo` existe (`nixos/modules/services/finance/odoo.nix`) et fournit
-`pkgs.odoo19` par défaut puisque `system.stateVersion = "25.11"`. Mais il pose en dur,
-sans condition :
-
-```nix
-services.postgresql = {
-  enable = true;
-  ensureDatabases = [ "odoo" ];
-  ensureUsers = [ { name = "odoo"; ensureDBOwnership = true; } ];
-};
-systemd.services.odoo.requires = [ "postgresql.target" ];
-```
-
-Le pointer vers une base distante demande donc de désarmer les trois : `enable`,
-`requires` et le `after` correspondant. C'est le seul coût du module, et il est payé une
-fois.
-
-Désarmer les trois ne suffit pas. L'unité met `config.services.postgresql.package` dans
-son `path`, pour le `pg_dump` de la sauvegarde intégrée d'Odoo — et cette option **n'a
-aucune valeur par défaut** une fois le service désactivé. Le `dry-build` échoue alors sur
-`The option 'services.postgresql.package' was accessed but has no value defined`.
-
-On la pose donc explicitement, sur la version que fait tourner OVH :
-
-```nix
-services.postgresql.package = pkgs.postgresql_17;
-```
-
-Ce n'est pas un contournement : `pg_dump` refuse de sauvegarder un serveur plus récent que
-lui, donc la version doit suivre celle d'OVH. Rien n'est installé pour autant, le paquet
-ne sert qu'à peupler ce `path`. Vider le `path` à la place coûterait la sauvegarde
-intégrée d'Odoo.
-
-### `odoo19` exige une exception `permittedInsecurePackages`
-
-`pkgs.odoo19` tire `python3.12-pypdf2-3.0.1`, que nixpkgs marque
-`knownVulnerabilities` avec six CVE (CVE-2026-27024, -27025, -27628, -27888, -28351,
--33699). PyPDF2 est le fork abandonné de pypdf : il n'existe aucune version corrigée en
-amont, et l'évaluation d'`odoo19` échoue donc tant que l'exception n'est pas posée.
-
-**Décision : on reste sur `odoo19` et on pose l'exception.** Deux alternatives ont été
-étudiées et écartées :
-
-- `pkgs.odoo18` ne tire pas pypdf2 — nixpkgs y applique `pythonRemoveDeps = [ "PyPDF2" ]`
-  et lui substitue `pypdf`. Écarté : on ne veut pas démarrer une version majeure en
-  retard sur une installation neuve.
-- Transposer cette substitution à `odoo19` par un `override` du jeu Python. Vérifié comme
-  évaluable, et la clôture devient propre (`pypdf-6.15.0` au lieu de `pypdf2-3.0.1`).
-  Écarté : nixpkgs fournit pypdf 6.15.0 là où Odoo 19 déclare `pypdf==5.4.0`, soit un saut
-  de version majeure dont les régressions ne se verraient qu'à la génération d'un PDF, pas
-  au build. On échangeait une CVE connue contre un risque fonctionnel non mesuré.
-
-L'exception est donc **assumée**, pas subie. Ce qu'elle implique :
-
-```nix
-nixpkgs.config.permittedInsecurePackages = [ "python3.12-pypdf2-3.0.1" ];
-```
-
-La chaîne est épinglée à la version exacte : le jour où `odoo19` cesse de tirer pypdf2,
-ou bien où nixpkgs le renomme, le build échoue au lieu de laisser l'exception traîner. Ce
-n'est pas un effet de bord, c'est la raison de l'écrire ainsi.
-
-Le module défaut déjà sur `odoo19` avec `stateVersion = "25.11"`, mais on pose
-`services.odoo.package = pkgs.odoo19;` explicitement : ce défaut dépend du
-`stateVersion`, et une bascule silencieuse de version majeure sur une base de
-comptabilité se paie en migrations non jouées.
-
-**À surveiller**, puisque la dette est réelle : Odoo 19 embarque une couche d'adaptation
-(`odoo/tools/pdf/`, essayée dans l'ordre `_pypdf2_2`, `_pypdf`, `_pypdf2_1`) et son
-`requirements.txt` prend `pypdf` dès Python 3.13. Le jour où nixpkgs construit `odoo19`
-avec python313, pypdf2 disparaît de lui-même et l'exception saute.
-
-### L'offre OVH n'est pas un PostgreSQL administrable
-
-- Pas de superuser, pas de `CREATEDB` : la base est créée par Terraform, jamais par
-  Odoo. `list_db = false` (déjà le défaut du module) désactive le gestionnaire de bases.
-- Pas de `CREATE EXTENSION` depuis le client — mais les extensions s'activent à la main
-  depuis l'espace client OVH. On active donc **`unaccent`** et on pose `unaccent = true`
-  dans la configuration Odoo : la recherche devient insensible aux accents, ce qui compte
-  sur des données françaises (« société » trouvé en tapant « societe »).
-  Odoo détecte l'extension au démarrage (`SELECT proname FROM pg_proc WHERE proname =
-  'unaccent'`) et se rabat silencieusement sur une recherche accent-sensible si elle
-  manque : se tromper ici dégrade, ça ne casse pas.
-- Le grant `admin` du module Terraform `./modules/db` fait du user le propriétaire de la
-  base : Odoo peut y créer ses tables.
-
-### Le piège du `dbfilter`
-
-Ajouter `dbfilter = "^odoo$"` ressemble à un durcissement. C'en est le contraire, et ça
-casse l'application entièrement : toutes les pages répondent *The database manager has
-been disabled by the administrator*.
-
-`odoo/service/db.py` :
-
-```python
-def list_dbs(force=False):
-    if not config['list_db'] and not force:
-        raise AccessDenied()
-    if not config['dbfilter'] and config['db_name']:
-        # ... Odoo will not fetch the list of databases available on the
-        # postgres server and instead will use the value of --database
-        return sorted(config['db_name'])
-    ...
-    db = odoo.sql_db.db_connect('postgres')   # énumère pg_database
-```
-
-Le raccourci « `db_name` est la liste des bases exposées » n'est pris **que si `dbfilter`
-est vide**. Dès qu'un `dbfilter` existe, Odoo se connecte à la base de maintenance
-`postgres` pour lister `pg_database` — ce qu'un hébergement mutualisé refuse, puisque le
-compte n'a de droits que sur sa propre base. Aucune base n'est trouvée, la requête tombe
-sur le gestionnaire de bases, et `list_db = false` affiche le message.
-
-`db_name` seul restreint déjà à une seule base (`db_name` est parsé en liste,
-`type='comma'`), et il le fait sans rien énumérer. C'est la bonne façon de restreindre
-quand on ne peut pas lister.
-
-### Le budget de connexions
-
-L'instance annonce **200 connexions simultanées**. La documentation OVH ne dit pas si
-c'est par serveur ou par base — et on n'a pas besoin de le savoir : on dimensionne pour
-que la réponse soit sans effet.
-
-Odoo ouvre un pool par processus, plafonné à `db_maxconn` :
-
-| Processus | Nombre |
-|---|---|
-| workers HTTP (`workers`) | 3 |
-| threads cron (`max_cron_threads`, défaut) | 2 |
-| processus longpolling / gevent | 1 |
-
-Soit 6 processus × `db_maxconn = 4` = **24 connexions au pire**, et moins en pratique
-puisque le pool s'ouvre paresseusement. Confortable dans les 200, même partagées avec
-les six autres bases.
-
-### Version PostgreSQL
-
-L'instance tourne en **PostgreSQL 17**. Odoo 19 exige ≥ 12 ; 17 est dans la fenêtre. À
-reconfirmer au premier démarrage, c'est gratuit.
-
-### Odoo 19 écoute sur `0.0.0.0` par défaut
-
-Relevé au premier démarrage :
+Mesure directe depuis srv-1, `psql` sur la base OVH :
 
 ```
-WARNING odoo.tools.config: missing --http-interface/http_interface, using 0.0.0.0
-by default, will change to 127.0.0.1 in 20.0
+SELECT 1;  →  10,066 ms / 9,782 ms / 9,736 ms
 ```
 
-Sans `http_interface = "127.0.0.1"`, Odoo écoute sur **toutes** les interfaces de srv-1,
-y compris l'IP publique. Toute la protection de ce design — le `bind` du snippet
-`(internal)` sur l'IP Tailscale, le filtre `client_ip` — porte sur Caddy, et serait
-purement et simplement contournée en tapant `srv-1:8069` directement.
+Une latence fixe, pas de la gigue. Mesure indirecte, par les lignes werkzeug d'Odoo (dont
+les trois derniers champs sont requêtes / temps base / temps hors base) :
 
-C'est le seul réglage de cette spec dont l'oubli est une faille et pas une gêne. Odoo 20
-corrigera le défaut ; d'ici là il est explicite.
+| Requête | Requêtes | Temps base | Par requête |
+|---|---|---|---|
+| `GET /odoo/apps` | 71 | 0,803 s | 11,3 ms |
+| `get_views` | 46 | 0,513 s | 11,2 ms |
+| `search_panel_select_range` | 39 | 0,429 s | 11,0 ms |
+| `web_read` | 15 | 0,191 s | 12,7 ms |
+| `load_menus` | 13 | 0,162 s | 12,5 ms |
+| installation du module `mail` | 5068 | 60,44 s | 11,9 ms |
 
-### La latence
+Du plus petit appel au chargement de cinq mille requêtes, tout converge sur 11–12 ms.
+**Le « temps base » d'Odoo était de la latence réseau à l'état pur** : la base OVH ne
+travaillait presque pas. Afficher la simple liste des applications coûtait 0,8 s
+d'attente ; une liste de factures, à 200–400 requêtes, en aurait coûté 2,5 à 5.
 
-Odoo est nettement plus bavard avec sa base que tout ce qui tourne déjà sur srv-1 —
-plusieurs centaines de requêtes par page. srv-1 est un dédié OVH et la clouddb est chez
-OVH : la latence devrait être faible, et paperless/miniflux/wallabag/mealie valident déjà
-le chemin. C'est malgré tout le risque principal de l'architecture, et il ne se mesure
-qu'en essayant. `limit_time_real = 120` évite qu'un worker se fasse tuer pendant qu'on
-mesure.
+La cause est structurelle et aucun réglage ne la corrige : srv-1 est un dédié OVH, mais
+`ag56382-001` vit sur l'infrastructure d'hébergement mutualisé — autre réseau, autre
+datacentre.
 
-### Le mot de passe ne peut pas passer par la configuration
-
-`services.odoo.settings` génère un INI dans le store, lisible par tous, dans un dépôt
-public. Odoo n'offre aucune variable d'environnement pour `db_password`.
-
-La sortie : laisser `db_password` vide et compter sur libpq. psycopg2 retombe sur les
-défauts libpq quand le paramètre est absent, donc `PGPASSWORD` depuis un `EnvironmentFile`
-agenix suffit. **C'est une hypothèse à vérifier avant tout le reste** (voir phase 2).
+Le symptôme le plus net est arrivé à l'installation de la Facturation depuis l'interface :
+48 modules à installer, `limit_time_real` à 120 s, et l'installation tourne dans un worker
+HTTP. Elle a été tuée au module 28, laissant 21 modules en état `to install` et la base
+inutilisable. Avec une base locale, ces 48 modules s'installent en une trentaine de
+secondes.
 
 ## Architecture
 
@@ -202,202 +63,131 @@ Caddy  odoo.srv-1.augendre.info   (import internal → bind Tailscale + filtre c
       ├─ /websocket ──► localhost:8072   (longpolling, requis par Discuss)
       └─ /         ──► localhost:8069
                               │
-                        odoo.service
-                    ODOO_RC = INI du store (pas de secret)
-                    EnvironmentFile = agenix (PGPASSWORD)
+                        odoo.service        (User=odoo)
+                     ODOO_RC = INI du store
                               │
                     ┌─────────┴──────────┐
                     ▼                    ▼
-        /var/lib/private/odoo/data   ag56382-001.eu.clouddb.ovh.net:35458
-        (filestore, pièces jointes)   base « odoo », PostgreSQL 17
-        déjà couvert par restic       sauvegardes automatiques OVH
+        /var/lib/private/odoo/data   socket unix locale, auth peer
+        (filestore)                  PostgreSQL 17, base « odoo »
 ```
 
-L'état d'Odoo est volontairement éclaté en deux : le filestore sur srv-1, les métadonnées
-chez OVH. Les deux sauvegardes ne sont pas synchronisées entre elles. C'est acceptable
-pour un test ; c'est précisément ce que règle le `pg_dump` planifié décrit en « Hors périmètre ».
+Plus de secret, plus de mot de passe : l'utilisateur système `odoo` correspond au rôle
+`odoo` que le module crée, et l'authentification `peer` sur la socket unix fait le reste.
 
-## Découpage
+## Les pièges rencontrés
 
-### Phase 1 — la base OVH (dépôt `terraform-ovh`)
+Aucun n'a été deviné, tous ont coûté un aller-retour.
 
-Dans `databases-psql.tf`, copie conforme des six blocs existants :
+### `odoo19` exige une exception `permittedInsecurePackages`
 
-```hcl
-variable "psql_odoo_password" {
-  description = "odoo password"
-  type        = string
-  sensitive   = true
-}
+`pkgs.odoo19` tire `python3.12-pypdf2-3.0.1`, marqué de six CVE (CVE-2026-27024, -27025,
+-27628, -27888, -28351, -33699). PyPDF2 est le fork abandonné de pypdf : aucun correctif
+amont n'est possible.
 
-module "db_odoo" {
-  source = "./modules/db"
+Décision assumée : on reste sur `odoo19` et on pose
+`nixpkgs.config.permittedInsecurePackages = [ "python3.12-pypdf2-3.0.1" ]`, épinglé à la
+version exacte pour que l'exception échoue le jour où elle n'est plus nécessaire, plutôt
+que de traîner.
 
-  db_name      = "odoo"
-  db_password  = var.psql_odoo_password
-  service_name = data.ovh_hosting_privatedatabase.psql.service_name
-}
+Deux alternatives étudiées et écartées : `pkgs.odoo18`, qui substitue déjà `pypdf` via
+`pythonRemoveDeps` mais démarre une version majeure en retard ; et transposer cette
+substitution à `odoo19`, vérifiée comme évaluable et donnant une clôture propre, mais
+nixpkgs fournit pypdf 6.15.0 là où Odoo 19 déclare `pypdf==5.4.0` — on échangeait une CVE
+connue contre un risque fonctionnel non mesuré.
+
+Condition de sortie : le `requirements.txt` d'Odoo 19 bascule sur `pypdf` dès Python 3.13,
+et sa couche d'adaptation (`odoo/tools/pdf/`, essayée dans l'ordre `_pypdf2_2`, `_pypdf`,
+`_pypdf2_1`) le gère déjà. L'exception saute d'elle-même quand nixpkgs construira `odoo19`
+avec python313.
+
+### Surtout pas de `dbfilter`
+
+Ajouter `dbfilter = "^odoo$"` ressemble à un durcissement. C'en est le contraire, et ça
+casse l'application entièrement : toutes les pages répondent *The database manager has
+been disabled by the administrator*.
+
+`odoo/service/db.py` :
+
+```python
+def list_dbs(force=False):
+    if not config['dbfilter'] and config['db_name']:
+        # ... use the value of --database as comma separated list of exposed databases
+        return sorted(config['db_name'])
+    ...
+    db = odoo.sql_db.db_connect('postgres')   # énumère pg_database
 ```
 
-`ovh_hosting_privatedatabase_whitelist.psql_srv_1` couvre déjà les IP de srv-1 : rien à
-ajouter côté réseau.
+Le raccourci « `db_name` est la liste des bases exposées » n'est pris **que si `dbfilter`
+est vide**. Sinon Odoo se connecte à la base de maintenance `postgres` pour lister
+`pg_database` — ce qu'un hébergement mutualisé refuse. `db_name` seul restreint déjà à une
+base (`type='comma'`, donc une liste), sans rien énumérer.
 
-Puis, **à la main dans l'espace client OVH**, activer l'extension `unaccent` sur la base
-`odoo`. Le provider Terraform OVH n'expose pas les extensions des bases privées, donc ce
-geste ne se code pas : il se documente ici.
-
-### Phase 2 — lever les inconnues
-
-La base existe désormais, mais aucun module Nix n'est écrit tant que ces trois points ne
-sont pas tranchés. Chacun a un repli connu, donc aucun n'est bloquant — mais chacun
-change le code.
-
-| # | À vérifier | Comment | Repli si ça échoue |
-|---|---|---|---|
-| 1 | `PGPASSWORD` atteint bien psycopg2 | la base créée, sans rien déployer : `env NIXPKGS_ALLOW_INSECURE=1 PGPASSWORD=… nix run --impure nixpkgs#odoo19 -- --db_host=ag56382-001.eu.clouddb.ovh.net --db_port=35458 --db_user=odoo -d odoo --stop-after-init` depuis srv-1 | générer `/run/odoo/odoo.conf` par `envsubst` dans un `ExecStartPre`, pointer `ODOO_RC` dessus (+5 lignes) |
-| 2 | Odoo 19 démarre sur PostgreSQL 17 | la même commande répond, et initialise la base | rétrograder sur `pkgs.odoo18`, qui n'a alors plus besoin de l'exception `permittedInsecurePackages` |
-| 3 | Le service lit-il son secret | après la phase 4 : le démarrage réussit ou échoue sur une erreur d'authentification | `age.secrets."odoo-env".owner = "odoo"` |
-
-**Les trois inconnues ont été levées le 2026-09-22.** `PGPASSWORD` atteint psycopg2, Odoo
-19 tourne sur PostgreSQL 17, et le secret est lu sans rien changer : systemd lit les
-`EnvironmentFile` lui-même, en root, avant de déposer les privilèges, donc l'`owner` par
-défaut d'agenix convient. Le `data_dir` est resté `/var/lib/private/odoo/data`, donc
-couvert par restic sans toucher à `restic.nix`.
-
-L'hôte et le port sont connus : `ag56382-001.eu.clouddb.ovh.net:35458`. Les points 1 et 2
-se lèvent par la même commande, avant toute écriture de module ; le point 3 est une
-vérification post-déploiement, dont le repli est connu.
-
-### Phase 3 — le secret
-
-`hosts/srv-1/age/odoo-env.age`, une ligne dans `hosts/srv-1/age/secrets.nix`. Contenu :
+### Odoo 19 écoute sur `0.0.0.0` par défaut
 
 ```
-PGPASSWORD=<le mot de passe posé en phase 1>
+WARNING odoo.tools.config: missing --http-interface/http_interface, using 0.0.0.0
+by default, will change to 127.0.0.1 in 20.0
 ```
 
-`hosts/srv-1/age/default.nix` dérive `age.secrets` de `secrets.nix` par `mapAttrs'` :
-aucune autre édition. L'`owner` dépend du résultat de la vérification 3 de la phase 2.
+Sans `http_interface = "127.0.0.1"`, Odoo écoute sur toutes les interfaces de srv-1, y
+compris l'IP publique. Le `bind` du snippet Caddy `(internal)` et son filtre `client_ip`
+seraient contournés en tapant `srv-1:8069`. C'est le seul réglage de ce document dont
+l'oubli est une faille et pas une gêne.
 
-### Phase 4 — le module
+### Le module impose un PostgreSQL local — ce qui tombe bien maintenant
 
-Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
-`hosts/srv-1/services/default.nix`.
+`services.odoo` pose en dur `services.postgresql.enable = true`, `ensureDatabases`,
+`ensureUsers` et un `requires = [ "postgresql.target" ]`. Le pointer ailleurs demandait
+trois `mkForce`, plus un `services.postgresql.package` explicite : l'unité lit cette
+option dans son `path` pour le `pg_dump` de la sauvegarde intégrée d'Odoo, et l'option
+perd toute valeur quand le service est désactivé.
 
-```nix
-{ config, lib, pkgs, ... }:
-{
-  services.caddy.virtualHosts."odoo.srv-1.augendre.info".extraConfig = ''
-    import common_headers
-    import internal
-    handle /websocket {
-      reverse_proxy localhost:8072
-    }
-    handle {
-      reverse_proxy localhost:8069
-    }
-  '';
+Avec la base locale, tout ce bricolage disparaît. On garde seulement
+`services.postgresql.package = pkgs.postgresql_17` explicite, pour la même raison qu'on
+épingle `odoo19` : le défaut suit le `stateVersion`, et changer de version majeure de
+PostgreSQL ne se fait pas par un rebuild — il faut passer `pg_upgrade` sur le répertoire
+de données.
 
-  services.odoo = {
-    enable = true;
-    package = pkgs.odoo19; # explicite : le défaut du module suit le stateVersion
-    # domain reste null : Caddy fait le reverse proxy, on ne veut pas que le module
-    # allume nginx.
-    settings.options = {
-      db_host = "ag56382-001.eu.clouddb.ovh.net";
-      db_port = 35458;
-      db_name = "odoo";
-      db_user = "odoo";
-      db_sslmode = "require";
-      # Pas de dbfilter : voir « Le piège du dbfilter »
-      http_interface = "127.0.0.1"; # défaut 0.0.0.0 en 19.0 — sans ça, Odoo court-circuite Caddy
-      unaccent = true; # extension activée à la main dans l'espace client OVH
-      db_maxconn = 4; # 6 processus × 4 = 24 connexions au pire, cf. design
-      workers = 3;
-      limit_time_real = 120; # la base est distante, les requêtes traînent
-      proxy_mode = true;
-      # list_db = false est déjà le défaut du module
-    };
-  };
+### `limit_time_real` ne se règle pas « pour compenser la latence »
 
-  # Le module allume un PostgreSQL local dont on n'a pas l'usage : la base est chez OVH.
-  services.postgresql.enable = lib.mkForce false;
-  services.postgresql.package = pkgs.postgresql_17; # pour le pg_dump du PATH d'odoo
+La valeur 120 est **le défaut d'Odoo** (`my_default=120` dans `tools/config.py`). L'écrire
+dans la configuration en croyant accommoder une base distante ne change rien. Et comme
+l'installation de modules depuis l'interface passe par un worker HTTP, c'est cette limite
+qui tue les installations longues. Avec la base locale, le défaut suffit.
 
-  # odoo19 tire python3.12-pypdf2-3.0.1 (six CVE, fork abandonné, pas de correctif
-  # amont). Exception assumée : cf. la section dédiée de ce document. Épinglée à la
-  # version exacte pour qu'elle échoue au lieu de traîner.
-  nixpkgs.config.permittedInsecurePackages = [ "python3.12-pypdf2-3.0.1" ];
-  systemd.services.odoo = {
-    requires = lib.mkForce [ ]; # pointait sur postgresql.target, qui n'existe plus
-    after = lib.mkForce [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    serviceConfig.EnvironmentFile = config.age.secrets."odoo-env".path;
-  };
-}
-```
+## Le module
 
-Le `handle /websocket` sépare le port longpolling du port HTTP. Sans lui, Discuss et les
-notifications temps réel ne fonctionnent pas dès que `workers > 0`. Les deux routes sont
-dans des blocs `handle`, qui sont mutuellement exclusifs : mélanger un `handle` et un
-`reverse_proxy` nu ferait dépendre le résultat de l'ordre des directives Caddy, qui n'est
-pas celui du fichier.
+`hosts/srv-1/services/odoo.nix`, un seul fichier, plus son import dans
+`hosts/srv-1/services/default.nix`. Le vhost Caddy y vit aussi, comme pour
+`stirling-pdf.nix`, `paperless.nix` et `miniflux.nix` : ce qui change ensemble vit
+ensemble.
 
-### Phase 5 — initialisation, une fois, à la main
-
-La base créée en phase 1 est vide.
-
-On **n'active pas** `services.odoo.autoInit` : il passe `--init=INIT --database=odoo
---db_user=odoo` en dur, où `INIT` n'est pas un module Odoo existant. Le comportement ne
-tient qu'au fait qu'Odoo logue un module inconnu et continue. Trop fragile pour une base
-de comptabilité.
-
-À la place, sur srv-1 :
-
-```
-systemctl stop odoo
-sudo -u odoo env ODOO_RC=<le fichier pointé par l'unité> \
-  odoo -d odoo -i base --stop-after-init --without-demo=all
-systemctl start odoo
-```
-
-Les applications s'installent ensuite depuis l'interface.
-
-### Phase 6 — vérification
-
-- `systemctl status odoo` vert, et les logs ne montrent ni erreur de connexion ni
-  avertissement de collation bloquant.
-- `https://odoo.srv-1.augendre.info` répond depuis Tailscale, et **ne répond pas** depuis
-  l'extérieur (le `import internal` fait les deux : `bind` sur l'IP Tailscale et filtre
-  `client_ip`).
-- Discuss reçoit un message en temps réel sans rechargement — c'est le test qui prouve
-  que la route `/websocket` marche.
-- Une page un peu lourde (liste de factures) se charge en un temps acceptable : c'est la
-  mesure de latence qui valide ou invalide l'architecture.
+Les deux routes Caddy sont dans des blocs `handle`, qui sont mutuellement exclusifs.
+Mélanger un `handle` et un `reverse_proxy` nu ferait dépendre le résultat de l'ordre des
+directives Caddy, qui n'est pas celui du fichier — et Discuss casserait silencieusement.
 
 ## Bruit connu
 
 Chaque processus Odoo émet au démarrage un `DeprecationWarning: PyPDF2 is deprecated`
-suivi d'une trace de vingt lignes, soit environ 120 lignes de journal à chaque
-redémarrage du service. C'est le coût cosmétique du choix `odoo19` : `odoo/tools/pdf/`
-importe `PyPDF2.filters` avant de choisir son implémentation. Inoffensif, mais il faut le
-savoir avant de croire à une erreur en lisant `journalctl`. Ça disparaîtra avec
-l'exception `permittedInsecurePackages`.
+suivi d'une trace de vingt lignes, soit environ 120 lignes de journal par redémarrage.
+C'est le coût cosmétique du choix `odoo19` : `odoo/tools/pdf/` importe `PyPDF2.filters`
+avant de choisir son implémentation. Inoffensif, mais il faut le savoir avant de croire à
+une erreur en lisant `journalctl`.
 
 ## Hors périmètre
 
-Assumé, à ajouter si Odoo passe de « testé » à « adopté » :
-
-- **Dump de la base dans restic.** On s'en remet aux sauvegardes automatiques d'OVH pour
-  l'instant. Le jour venu : un timer dans `odoo.nix` qui écrit
-  `pg_dump -Fc` vers `/var/lib/private/odoo/odoo.dump` à 01:30, sur le modèle de
-  l'`exporter` de paperless, plus `"odoo.service"` dans `servicesToStop` de `restic.nix`.
-  Restic passe à 02:00 et ramasse base et filestore dans le même instantané. Le filestore
-  seul est **déjà** couvert : `/var/lib/private` est dans les chemins sauvegardés.
+- **Les sauvegardes.** Rien ne sauvegarde la base pour l'instant, et c'est le point le
+  plus important de cette liste : en passant en local, la responsabilité est revenue sur
+  srv-1 et OVH ne fait plus de dump automatique. `services.postgresqlBackup` (`enable`,
+  `databases = [ "odoo" ]`, `startAt`) écrit dans `/var/backup/postgresql`, qu'il suffit
+  d'ajouter aux `paths` de `restic.nix` — plus `"odoo.service"` dans ses `servicesToStop`
+  pour que base et filestore atterrissent dans le même instantané. Le filestore seul est
+  **déjà** couvert : `/var/lib/private` est dans les chemins.
 - Addons personnalisés (`services.odoo.addons`).
 - Exposition publique.
 - Check healthchecks.
-- Mises à jour suivies / montée de version Odoo.
+- Montée de version Odoo (de `odoo19` à `odoo20` : il faut jouer les migrations).
 
-Le nom `odoo.srv-1.augendre.info` est temporaire, cohérent avec `pdf.srv-1.augendre.info`.
-Un passage en adopté justifiera un nom sans `srv-1`.
+Le nom `odoo.srv-1.augendre.info` est temporaire, sur le modèle de
+`pdf.srv-1.augendre.info`. Un passage en adopté justifiera un nom sans `srv-1`.
