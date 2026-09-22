@@ -38,6 +38,27 @@ fois.
 On garde en revanche son `path = [ config.services.postgresql.package ]` : il fournit
 `pg_dump`, dont Odoo se sert pour sa fonction de sauvegarde intégrée.
 
+### On prend `odoo18`, pas `odoo19`
+
+`pkgs.odoo19` tire `python3.12-pypdf2-3.0.1`, que nixpkgs marque
+`knownVulnerabilities` avec six CVE (CVE-2026-27024, -27025, -27628, -27888, -28351,
+-33699). PyPDF2 est le fork abandonné de pypdf : il n'existe pas de version corrigée, et
+l'évaluation d'`odoo19` échoue donc sans `permittedInsecurePackages`.
+
+`pkgs.odoo18` ne le tire pas : nixpkgs y applique `pythonRemoveDeps = [ "PyPDF2" ]` et
+lui substitue `pypdf`, le successeur maintenu. Il évalue proprement, vérifié.
+
+On ne fait **pas** l'exception `permittedInsecurePackages` : ces CVE sont dans un parseur
+PDF, et le métier d'Odoo est d'avaler des PDF en pièces jointes. C'est exactement
+l'endroit où l'exception ne se justifie pas.
+
+Accessoirement, la capture nixpkgs d'`odoo18` est plus récente que celle d'`odoo19`
+(18.0.20260420 contre 19.0.20260104) : on ne perd rien en fraîcheur.
+
+Le module défaut sur `odoo19` dès `stateVersion = "25.11"`, donc il faut poser
+`services.odoo.package = pkgs.odoo18;` explicitement. À revoir quand nixpkgs fera la même
+substitution sur `odoo19`.
+
 ### L'offre OVH n'est pas un PostgreSQL administrable
 
 - Pas de superuser, pas de `CREATEDB` : la base est créée par Terraform, jamais par
@@ -72,7 +93,7 @@ les six autres bases.
 
 ### Version PostgreSQL
 
-L'instance tourne en **PostgreSQL 17**. Odoo 19 exige ≥ 12 ; 17 est dans la fenêtre. À
+L'instance tourne en **PostgreSQL 17**. Odoo 18 exige ≥ 12 ; 17 est dans la fenêtre. À
 reconfirmer au premier démarrage, c'est gratuit.
 
 ### La latence
@@ -155,8 +176,8 @@ change le code.
 
 | # | À vérifier | Comment | Repli si ça échoue |
 |---|---|---|---|
-| 1 | `PGPASSWORD` atteint bien psycopg2 | la base créée, sans rien déployer : `PGPASSWORD=… nix run nixpkgs#odoo19 -- --db_host=ag56382-001.eu.clouddb.ovh.net --db_port=35458 --db_user=odoo -d odoo --stop-after-init` depuis srv-1 | générer `/run/odoo/odoo.conf` par `envsubst` dans un `ExecStartPre`, pointer `ODOO_RC` dessus (+5 lignes) |
-| 2 | Odoo 19 démarre sur PostgreSQL 17 | la même commande répond, et initialise la base | rétrograder sur `pkgs.odoo18` |
+| 1 | `PGPASSWORD` atteint bien psycopg2 | la base créée, sans rien déployer : `env PGPASSWORD=… nix run nixpkgs#odoo18 -- --db_host=ag56382-001.eu.clouddb.ovh.net --db_port=35458 --db_user=odoo -d odoo --stop-after-init` depuis srv-1 | générer `/run/odoo/odoo.conf` par `envsubst` dans un `ExecStartPre`, pointer `ODOO_RC` dessus (+5 lignes) |
+| 2 | Odoo 18 démarre sur PostgreSQL 17 | la même commande répond, et initialise la base | rétrograder sur `pkgs.odoo17` — mais il tire `pypdf2` lui aussi, donc ce serait un cul-de-sac : il faudrait alors une base PostgreSQL locale sur une version plus ancienne |
 | 3 | Quel uid tourne réellement | après la phase 4 : `systemctl show odoo -p User -p DynamicUser`. Le module pose `DynamicUser = true` **et** déclare `users.users.odoo` ; systemd n'alloue dynamiquement que si l'utilisateur n'existe pas, donc `owner = "odoo"` sur le secret agenix devrait être le bon | si l'uid est bel et bien dynamique, `DynamicUser = lib.mkForce false` **et** `data_dir = "/var/lib/odoo/data"`, plus l'ajout de ce chemin aux `paths` de restic (`/var/lib/private` ne le couvrirait plus) |
 
 L'hôte et le port sont connus : `ag56382-001.eu.clouddb.ovh.net:35458`. Les points 1 et 2
@@ -180,7 +201,7 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
 `hosts/srv-1/services/default.nix`.
 
 ```nix
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 {
   services.caddy.virtualHosts."odoo.srv-1.augendre.info".extraConfig = ''
     import common_headers
@@ -195,6 +216,7 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
 
   services.odoo = {
     enable = true;
+    package = pkgs.odoo18; # odoo19 tire pypdf2, marqué vulnérable — voir plus haut
     # domain reste null : Caddy fait le reverse proxy, on ne veut pas que le module
     # allume nginx.
     settings.options = {
