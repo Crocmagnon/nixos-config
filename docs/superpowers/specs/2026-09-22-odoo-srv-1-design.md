@@ -42,7 +42,13 @@ On garde en revanche son `path = [ config.services.postgresql.package ]` : il fo
 
 - Pas de superuser, pas de `CREATEDB` : la base est créée par Terraform, jamais par
   Odoo. `list_db = false` (déjà le défaut du module) désactive le gestionnaire de bases.
-- Pas de `CREATE EXTENSION` : on reste sur un Odoo sans `unaccent`, ce qui est le défaut.
+- Pas de `CREATE EXTENSION` depuis le client — mais les extensions s'activent à la main
+  depuis l'espace client OVH. On active donc **`unaccent`** et on pose `unaccent = true`
+  dans la configuration Odoo : la recherche devient insensible aux accents, ce qui compte
+  sur des données françaises (« société » trouvé en tapant « societe »).
+  Odoo détecte l'extension au démarrage (`SELECT proname FROM pg_proc WHERE proname =
+  'unaccent'`) et se rabat silencieusement sur une recherche accent-sensible si elle
+  manque : se tromper ici dégrade, ça ne casse pas.
 - Le grant `admin` du module Terraform `./modules/db` fait du user le propriétaire de la
   base : Odoo peut y créer ses tables.
 
@@ -137,6 +143,10 @@ module "db_odoo" {
 `ovh_hosting_privatedatabase_whitelist.psql_srv_1` couvre déjà les IP de srv-1 : rien à
 ajouter côté réseau.
 
+Puis, **à la main dans l'espace client OVH**, activer l'extension `unaccent` sur la base
+`odoo`. Le provider Terraform OVH n'expose pas les extensions des bases privées, donc ce
+geste ne se code pas : il se documente ici.
+
 ### Phase 2 — lever les inconnues
 
 La base existe désormais, mais aucun module Nix n'est écrit tant que ces trois points ne
@@ -192,6 +202,7 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
       db_user = "odoo";
       db_sslmode = "require";
       dbfilter = "^odoo$";
+      unaccent = true; # extension activée à la main dans l'espace client OVH
       db_maxconn = 4; # 6 processus × 4 = 24 connexions au pire, cf. design
       workers = 3;
       limit_time_real = 120; # la base est distante, les requêtes traînent
