@@ -28,7 +28,13 @@
       db_name = "odoo";
       db_user = "odoo";
       db_sslmode = "require";
-      dbfilter = "^odoo$";
+      # Surtout pas de dbfilter ici. Il a l'air d'un durcissement, c'en est le
+      # contraire : `list_dbs` ne prend son raccourci « db_name est la liste des bases
+      # exposées » que si dbfilter est vide. Avec un dbfilter, Odoo se connecte à la
+      # base `postgres` pour énumérer `pg_database` — ce qu'un hébergement mutualisé
+      # refuse. Résultat : zéro base trouvée, et « The database manager has been
+      # disabled by the administrator » sur toutes les pages. db_name seul restreint
+      # déjà à une seule base, sans rien énumérer.
       # Odoo 19 écoute sur 0.0.0.0 par défaut (corrigé en 20.0). Sans ça il répond sur
       # l'IP publique de srv-1 et le bind Tailscale du snippet (internal) ne protège
       # plus rien.

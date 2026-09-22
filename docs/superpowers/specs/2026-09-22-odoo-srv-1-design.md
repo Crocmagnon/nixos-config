@@ -104,6 +104,36 @@ avec python313, pypdf2 disparaît de lui-même et l'exception saute.
 - Le grant `admin` du module Terraform `./modules/db` fait du user le propriétaire de la
   base : Odoo peut y créer ses tables.
 
+### Le piège du `dbfilter`
+
+Ajouter `dbfilter = "^odoo$"` ressemble à un durcissement. C'en est le contraire, et ça
+casse l'application entièrement : toutes les pages répondent *The database manager has
+been disabled by the administrator*.
+
+`odoo/service/db.py` :
+
+```python
+def list_dbs(force=False):
+    if not config['list_db'] and not force:
+        raise AccessDenied()
+    if not config['dbfilter'] and config['db_name']:
+        # ... Odoo will not fetch the list of databases available on the
+        # postgres server and instead will use the value of --database
+        return sorted(config['db_name'])
+    ...
+    db = odoo.sql_db.db_connect('postgres')   # énumère pg_database
+```
+
+Le raccourci « `db_name` est la liste des bases exposées » n'est pris **que si `dbfilter`
+est vide**. Dès qu'un `dbfilter` existe, Odoo se connecte à la base de maintenance
+`postgres` pour lister `pg_database` — ce qu'un hébergement mutualisé refuse, puisque le
+compte n'a de droits que sur sa propre base. Aucune base n'est trouvée, la requête tombe
+sur le gestionnaire de bases, et `list_db = false` affiche le message.
+
+`db_name` seul restreint déjà à une seule base (`db_name` est parsé en liste,
+`type='comma'`), et il le fait sans rien énumérer. C'est la bonne façon de restreindre
+quand on ne peut pas lister.
+
 ### Le budget de connexions
 
 L'instance annonce **200 connexions simultanées**. La documentation OVH ne dit pas si
@@ -279,7 +309,7 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
       db_name = "odoo";
       db_user = "odoo";
       db_sslmode = "require";
-      dbfilter = "^odoo$";
+      # Pas de dbfilter : voir « Le piège du dbfilter »
       http_interface = "127.0.0.1"; # défaut 0.0.0.0 en 19.0 — sans ça, Odoo court-circuite Caddy
       unaccent = true; # extension activée à la main dans l'espace client OVH
       db_maxconn = 4; # 6 processus × 4 = 24 connexions au pire, cf. design
