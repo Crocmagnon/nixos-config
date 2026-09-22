@@ -35,8 +35,21 @@ Le pointer vers une base distante demande donc de désarmer les trois : `enable`
 `requires` et le `after` correspondant. C'est le seul coût du module, et il est payé une
 fois.
 
-On garde en revanche son `path = [ config.services.postgresql.package ]` : il fournit
-`pg_dump`, dont Odoo se sert pour sa fonction de sauvegarde intégrée.
+Désarmer les trois ne suffit pas. L'unité met `config.services.postgresql.package` dans
+son `path`, pour le `pg_dump` de la sauvegarde intégrée d'Odoo — et cette option **n'a
+aucune valeur par défaut** une fois le service désactivé. Le `dry-build` échoue alors sur
+`The option 'services.postgresql.package' was accessed but has no value defined`.
+
+On la pose donc explicitement, sur la version que fait tourner OVH :
+
+```nix
+services.postgresql.package = pkgs.postgresql_17;
+```
+
+Ce n'est pas un contournement : `pg_dump` refuse de sauvegarder un serveur plus récent que
+lui, donc la version doit suivre celle d'OVH. Rien n'est installé pour autant, le paquet
+ne sert qu'à peupler ce `path`. Vider le `path` à la place coûterait la sauvegarde
+intégrée d'Odoo.
 
 ### `odoo19` exige une exception `permittedInsecurePackages`
 
@@ -273,6 +286,7 @@ Un seul fichier, `hosts/srv-1/services/odoo.nix`, plus son import dans
 
   # Le module allume un PostgreSQL local dont on n'a pas l'usage : la base est chez OVH.
   services.postgresql.enable = lib.mkForce false;
+  services.postgresql.package = pkgs.postgresql_17; # pour le pg_dump du PATH d'odoo
 
   # odoo19 tire python3.12-pypdf2-3.0.1 (six CVE, fork abandonné, pas de correctif
   # amont). Exception assumée : cf. la section dédiée de ce document. Épinglée à la
