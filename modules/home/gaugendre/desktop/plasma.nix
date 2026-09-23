@@ -22,6 +22,13 @@
         HighlightWindows = false;
         LayoutName = "big_icons";
       };
+
+      # Baloo indexait le montage FUSE pCloud (1,6 To) : pour indexer le contenu il
+      # télécharge chaque fichier, et baloo_file_extractor finit bloqué en D sur une
+      # lecture FUSE. Une tâche en D ne peut pas être gelée, donc le noyau annule la
+      # mise en veille (« N tasks refusing to freeze ») -- capot fermé, la machine
+      # restait allumée. La clé est celle qu'écrit `balooctl6 config add excludeFolders`.
+      baloofilerc.General."exclude folders[$e]" = "$HOME/pCloudDrive/";
     };
   };
 
