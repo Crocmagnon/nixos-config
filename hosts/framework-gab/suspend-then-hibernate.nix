@@ -5,6 +5,15 @@
 # Pour désactiver : retirer ce fichier + sa ligne d'import dans configuration.nix.
 { config, pkgs, ... }:
 {
+  # 0) Noyau récent, dont dépend tout ce fichier : 6.18.51 a cassé l'alarme RTC (cf. point 3)
+  #    et la branche 6.18 du canal stable ne l'a pas encore réparée. Le correctif amont est
+  #    en deux morceaux — le repli « irq = RTC_IRQ » sur x86 à PIC legacy (le cas ici,
+  #    `preallocated irqs: 16` au boot) et le maintien de l'alarme quand l'événement ACPI
+  #    fixe est utilisé — et seul linuxPackages_latest a les deux.
+  #    À retirer dès que linuxPackages (26.05) embarquera le correctif.
+  #    Vérifier après reboot : test -e /sys/class/rtc/rtc0/wakealarm
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   # 1) Resume depuis le swap LUKS déjà déverrouillé dans l'initrd.
   #    Réutilise le swap déclaré dans hardware-configuration.nix (source unique).
   boot.resumeDevice = (builtins.head config.swapDevices).device;
@@ -15,6 +24,11 @@
 
   # 3) powerdevil (KDE) fait nativement le suspend-then-hibernate, sur secteur ET batterie.
   #    Déclaré ici via home-manager pour tout garder dans ce seul fichier.
+  #    Dépend entièrement de l'alarme RTC, d'où le point 0 : entre 6.18.51 et le correctif,
+  #    rtc_cmos perdait son IRQ (« error -ENXIO: IRQ index 0 not found » -> « no alarms »),
+  #    logind répondait « na » à CanSuspendThenHibernate et le KCM affichait
+  #    « the sleep mode you had previously configured is now unsupported ».
+  #    Si ce message réapparaît, c'est le noyau : test -e /sys/class/rtc/rtc0/wakealarm
   home-manager.users.gaugendre.programs.plasma.powerdevil = {
     AC.whenSleepingEnter = "standbyThenHibernate";
     battery.whenSleepingEnter = "standbyThenHibernate";

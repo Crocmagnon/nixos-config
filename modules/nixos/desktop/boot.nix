@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   ...
 }:
@@ -15,7 +16,8 @@
       efi.canTouchEfiVariables = true;
     };
 
-    kernelPackages = pkgs.linuxPackages;
+    # mkDefault : framework-gab le remplace (cf. suspend-then-hibernate.nix).
+    kernelPackages = lib.mkDefault pkgs.linuxPackages;
 
     # silence first boot output
     consoleLogLevel = 3;
