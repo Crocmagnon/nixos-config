@@ -65,7 +65,9 @@
       [ "$1" = post ] || exit 0
       [ "$SYSTEMD_SLEEP_ACTION" = hibernate ] || exit 0
       [ -r "$stamp" ] || exit 0
-      read -r start < "$stamp"; rm -f "$stamp"
+      # Chemin absolu obligatoire : les hooks systemd-sleep tournent avec un PATH minimal,
+      # un `rm` nu échoue en « command not found » et le stamp n'est jamais effacé.
+      read -r start < "$stamp"; ${pkgs.coreutils}/bin/rm -f "$stamp"
       [ $(( EPOCHSECONDS - start )) -ge "$threshold" ] || exit 0
 
       # Le hook tourne pendant que user.slice est gelée et bloque la fin de reprise :
