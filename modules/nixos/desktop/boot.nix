@@ -3,6 +3,11 @@
   ...
 }:
 {
+  # L'invite de passphrase LUKS est rendue par plymouth : en latte elle est
+  # blanche et aveuglante dans le noir. Mocha ici seulement, le reste du système
+  # suit lib/catppuccin.nix.
+  catppuccin.plymouth.flavor = "mocha";
+
   boot = {
     loader = {
       systemd-boot.consoleMode = "max";
