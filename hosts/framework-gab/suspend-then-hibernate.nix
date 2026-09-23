@@ -19,8 +19,17 @@
   boot.resumeDevice = (builtins.head config.swapDevices).device;
 
   # 2) Délai avant la bascule veille(s2idle) -> hibernation.
-  #    1min POUR TESTER — à remonter (ex. 120min) une fois le mécanisme validé.
   systemd.sleep.settings.Sleep.HibernateDelaySec = "60min";
+
+  #    Écrire l'image puis couper comme un arrêt normal, au lieu d'entrer dans l'état ACPI
+  #    S4 (le défaut, « platform »). Sur cette machine l'entrée en S4 rallume le laptop
+  #    toute seule 10 à 30 s plus tard : il redémarre et reste sur la mire LUKS, écran à
+  #    pleine luminosité — bien pire que la veille simple. Ce n'est pas une alarme
+  #    programmée (aucune minuterie WakeSystem, RTC non armé) et désarmer les six sources
+  #    de réveil S4 de /proc/acpi/wakeup n'y change rien : c'est le plateforme/EC qui
+  #    relance. Sans S4, plus de source de réveil S4. La reprise depuis l'image est
+  #    identique, elle passe par boot.resumeDevice ci-dessus.
+  systemd.sleep.settings.Sleep.HibernateMode = "shutdown";
 
   # 3) powerdevil (KDE) fait nativement le suspend-then-hibernate, sur secteur ET batterie.
   #    Déclaré ici via home-manager pour tout garder dans ce seul fichier.
