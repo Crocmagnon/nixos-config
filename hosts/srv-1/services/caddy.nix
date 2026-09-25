@@ -102,6 +102,12 @@ in
       '';
     };
   };
+  # `bind <tailscaleIp>` échoue au boot : tailscaled est "started" avant d'avoir
+  # posé l'IP sur tailscale0. Le bind non-local laisse Caddy écouter d'avance.
+  boot.kernel.sysctl = {
+    "net.ipv4.ip_nonlocal_bind" = 1;
+    "net.ipv6.ip_nonlocal_bind" = 1;
+  };
   systemd.services.caddy = {
     after = [ "tailscaled.service" ];
     wants = [ "tailscaled.service" ];
