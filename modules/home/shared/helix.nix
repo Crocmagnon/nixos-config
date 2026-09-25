@@ -22,6 +22,14 @@ in
   xdg.configFile = {
     "helix/themes/catppuccin-latte.toml".source = helixThemeFor "latte";
     "helix/themes/catppuccin-mocha.toml".source = helixThemeFor "mocha";
+
+    # calme-* : catppuccin réorganisé selon les principes de
+    # https://tonsky.me/blog/syntax-highlighting/. Posés mais pas actifs : le
+    # hook de theme-auto.nix pointe sur catppuccin-*. Pour les essayer, `:theme
+    # calme-latte` dans helix. Ils n'en surchargent que la syntaxe, donc les
+    # catppuccin-* ci-dessus doivent rester posés.
+    "helix/themes/calme-latte.toml".source = ./helix-themes/calme-latte.toml;
+    "helix/themes/calme-mocha.toml".source = ./helix-themes/calme-mocha.toml;
   };
 
   # catppuccin.toml n'est pas géré par home-manager : c'est le hook fish de

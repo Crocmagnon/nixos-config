@@ -1,0 +1,54 @@
+inherits = "catppuccin-mocha"
+
+# Coloration syntaxique selon https://tonsky.me/blog/syntax-highlighting/
+# On ne colore que ce qui est rare et porteur de sens : chaînes, constantes,
+# commentaires, et le mot-clé qui introduit une définition. Tout le reste —
+# variables, appels, types, mots-clés, opérateurs — retombe en couleur de
+# texte. Le chrome (statusline, pickers, diagnostics, markdown, diff) est
+# celui de catppuccin, hérité tel quel : l'article ne parle que du code.
+
+# Chaînes
+"string" = "green"
+"string.regexp" = "green"
+"string.special" = "green"
+"string.special.symbol" = "green"
+
+# Constantes. constant.numeric.* et constant.builtin.* suivent par héritage
+# de préfixe, catppuccin ne les définit pas.
+"constant" = "mauve"
+"constant.character" = "mauve"
+"constant.character.escape" = "mauve"
+
+# Helix n'expose aucune capture @function.definition : les queries tree-sitter
+# ne distinguent pas une définition d'un appel. On colore donc le mot-clé qui
+# introduit la définition — fn, def, lambda, func, closures comprises — plutôt
+# que son nom, ce qui laisse les appels neutres comme le veut l'article.
+"keyword.function" = "blue"
+
+# Pas de fond en thème sombre : le jaune se détache seul.
+"comment" = { fg = "yellow" }
+
+# « Légèrement, pour la séparation. »
+"punctuation" = "overlay1"
+"punctuation.special" = "overlay1"
+
+# Au repos. Ne sont listés que les scopes que catppuccin colore explicitement :
+# les sous-scopes absents suivent leur préfixe (keyword.control.* suit keyword,
+# sauf keyword.function ci-dessus).
+"attribute" = "text"
+"type" = "text"
+"type.builtin" = "text"
+"type.enum.variant" = "text"
+"constructor" = "text"
+"variable" = "text"
+"variable.parameter" = "text"
+"variable.builtin" = "text"
+"variable.other.member" = "text"
+"label" = "text"
+"keyword" = "text"
+"keyword.control.conditional" = "text"
+"operator" = "text"
+"function" = "text"
+"function.macro" = "text"
+"tag" = "text"
+"namespace" = "text"
