@@ -14,8 +14,13 @@ description = "deploy to local machine"
 run = "nh os switch .#"
 
 [tasks.srv-1]
-description = "deploy flake to server"
-run = "nh os switch .#srv-1 --target-host gaugendre@srv-1 --build-host gaugendre@srv-1 -e passwordless"
+description = "deploy to server: srv-1 fetches the pushed main from Codeberg and switches itself"
+# Built and switched on srv-1 itself: the desktops run Arch, without nix. Only what is pushed gets
+# deployed, hence the check for unpushed commits.
+run = [
+  "test -z \"$(git log --oneline @{u}..)\" || { echo 'unpushed commits: git push first' >&2; exit 1; }",
+  "ssh -t gaugendre@srv-1 sudo nixos-rebuild switch --refresh --flake 'git+https://codeberg.org/Crocmagnon/nixos-config?ref=main#srv-1'",
+]
 
 [tasks.initial-srv-1]
 description = "initial deploy to server over debian"
