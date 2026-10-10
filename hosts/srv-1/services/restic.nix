@@ -14,6 +14,8 @@ let
     "transmission.service"
     # Calibre
     "calibre-web.service"
+    # OpenClaw
+    "podman-openclaw.service"
   ];
 in
 {
@@ -33,6 +35,8 @@ in
         "/var/lib/transmission"
         "/var/lib/jellyfin"
         "/var/lib/calibre-web"
+        # Mémoire, sessions, appairages, crons et profil Chromium (cookies des sites connectés).
+        "/var/lib/openclaw"
         # "/var/lib/media"
       ];
       exclude = [
@@ -40,6 +44,13 @@ in
         # calibre-library-sync et déjà sauvegardée vers OVH par pcloud-sync.
         # Seul app.db (comptes, étagères, progression) mérite le backup.
         "/var/lib/calibre-web/library"
+        # OpenClaw : assets du Control UI et caches Chromium, régénérés au besoin.
+        "/var/lib/openclaw/cache"
+        "/var/lib/openclaw/browser/**/Cache"
+        "/var/lib/openclaw/browser/**/Code Cache"
+        "/var/lib/openclaw/browser/**/GPUCache"
+        "/var/lib/openclaw/browser/**/DawnWebGPUCache"
+        "/var/lib/openclaw/browser/**/DawnGraphiteCache"
       ];
       repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-srv-1-gaugendre";
       pruneOpts = [
