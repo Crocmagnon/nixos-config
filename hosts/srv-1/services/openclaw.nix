@@ -31,8 +31,14 @@ let
     "Qwen3.5-397B-A17B"
     "gpt-oss-120b"
   ];
-  # Les secrets restent des références "${VAR}", résolues par OpenClaw depuis
-  # l'environnement du conteneur (environmentFiles) : le store Nix n'en voit aucun.
+  # Les secrets sont des références à l'environnement du conteneur (environmentFiles),
+  # résolues par OpenClaw : le store Nix n'en voit aucun. SecretRef là où le schéma
+  # l'accepte (le doctor tient une chaîne "${VAR}" pour un secret en clair), sinon "${VAR}".
+  envRef = id: {
+    source = "env";
+    provider = "default";
+    inherit id;
+  };
   settings = {
     gateway = {
       mode = "local";
@@ -42,7 +48,7 @@ let
       publicOrigin = origin;
       auth = {
         mode = "token";
-        token = "\${OPENCLAW_GATEWAY_TOKEN}";
+        token = envRef "OPENCLAW_GATEWAY_TOKEN";
       };
       # Caddy arrive par le port publié : la Gateway voit la passerelle podman.
       trustedProxies = [ gateway ];
@@ -52,7 +58,7 @@ let
       mode = "merge";
       providers.ovhcloud = {
         baseUrl = "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1";
-        apiKey = "\${OVH_AI_ENDPOINTS_API_KEY}";
+        apiKey = envRef "OVH_AI_ENDPOINTS_API_KEY";
         api = "openai-completions";
         models = map (id: {
           inherit id;
@@ -70,12 +76,14 @@ let
     };
     channels.telegram = {
       enabled = true;
-      botToken = "\${TELEGRAM_BOT_TOKEN}";
+      botToken = envRef "TELEGRAM_BOT_TOKEN";
       dmPolicy = "allowlist";
       # L'ID n'est pas un secret mais le repo est public.
       allowFrom = [ "tg:\${TELEGRAM_OWNER_ID}" ];
       groupPolicy = "disabled";
     };
+    # Les commandes réservées au propriétaire (/config…) n'acceptent que lui.
+    commands.ownerAllowFrom = [ "telegram:\${TELEGRAM_OWNER_ID}" ];
     # L'agent n'écrit que dans la conversation en cours.
     tools.message.crossContext = {
       allowAcrossProviders = false;
@@ -99,6 +107,8 @@ let
       noSandbox = false;
       defaultProfile = "openclaw";
       profiles.openclaw.cdpPort = 18800;
+      # Aucune extension Chrome ni client CDP externe : pas besoin de l'ancienne auth.
+      extensionRelay.allowLegacyAuth = false;
     };
     # Les mises à jour passent par le tag de l'image, pas par la Gateway.
     update.checkOnStart = false;
