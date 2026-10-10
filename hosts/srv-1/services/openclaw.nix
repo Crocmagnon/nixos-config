@@ -177,7 +177,11 @@ in
     # La Gateway réécrit son fichier (Control UI, `config set`) et refuse un symlink :
     # on recopie la version Nix à chaque démarrage. Un changement fait à chaud est donc
     # perdu au redémarrage — voulu, la config vit dans ce fichier.
+    # Ses sauvegardes servent de référence : un fichier bien plus petit ou sans `meta`
+    # y est jugé écrasé par accident, et la sauvegarde restaurée par-dessus la version
+    # Nix. On les supprime d'abord.
     preStart = ''
+      rm -f ${stateDir}/openclaw.json.bak* ${stateDir}/openclaw.json.last-good ${stateDir}/openclaw.json.clobbered.*
       install -m 0600 -o ${hostUid} -g ${hostUid} ${configFile} ${stateDir}/openclaw.json
     '';
   };
