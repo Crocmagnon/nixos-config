@@ -147,3 +147,9 @@ To restrict a Caddy virtualHost to internal/Tailscale access, `import internal` 
 2. IP-based access control via `client_ip` matcher (private ranges + Tailscale CGNAT)
 
 Both are required: without `bind`, Caddy still listens on all interfaces even though the IP filter would reject external requests. Both live in the snippet so a vhost cannot import only one half.
+
+`(internal)` also refuses the OpenClaw agent's podman subnet
+(`config.host.network.agentSubnet`), which `private_ranges` would otherwise let
+through. A vhost the agent may reach imports `internal_agent` instead — same
+`bind` and IP filter, without that refusal. Both build on `(internal_base)`.
+The agent's egress (Internet + Caddy:443 only) is in `hosts/srv-1/services/openclaw.nix`.

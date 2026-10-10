@@ -46,7 +46,7 @@ in
         header * ?X-Content-Type-Options "nosniff"
       }
 
-      (internal) {
+      (internal_base) {
         bind ${config.host.network.tailscaleIp}
         @blocked not client_ip private_ranges 2a01:e0a:325:a1c0::/64 fd7a:115c:a1e0::/48 100.0.0.0/8
         respond @blocked "Access denied" 403 {
@@ -55,6 +55,20 @@ in
         tls {
           resolvers 1.1.1.1 1.0.0.1
         }
+      }
+
+      # Défaut : l'agent OpenClaw (son sous-réseau est dans private_ranges) est refusé.
+      # Un vhost ne lui est ouvert qu'en important internal_agent à la place.
+      (internal) {
+        import internal_base
+        @agent client_ip ${config.host.network.agentSubnet}
+        respond @agent "Access denied" 403 {
+          close
+        }
+      }
+
+      (internal_agent) {
+        import internal_base
       }
     '';
     virtualHosts = {

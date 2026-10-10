@@ -2,7 +2,7 @@
 {
   services.caddy.virtualHosts."reader.augendre.info".extraConfig = ''
     import common_headers
-    import internal
+    import internal_agent
     reverse_proxy localhost:8001
   '';
 
