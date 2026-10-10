@@ -66,8 +66,10 @@ in
       # Services are stopped via systemd conflicts (see below)
 
       backupCleanupCommand = ''
-        # Restart services after backup
-        systemctl start ${builtins.concatStringsSep " " servicesToStop}
+        # Restart services after backup. --no-block : ces services sont en conflicts
+        # avec ce job, leur démarrage attend donc qu'il soit arrêté ; en attendant ici,
+        # le post-stop s'interbloquait jusqu'au timeout (90 s) et le job finissait en échec.
+        systemctl start --no-block ${builtins.concatStringsSep " " servicesToStop}
       '';
     };
   };
