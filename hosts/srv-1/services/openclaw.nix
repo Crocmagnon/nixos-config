@@ -49,6 +49,11 @@ let
       auth = {
         mode = "token";
         token = envRef "OPENCLAW_GATEWAY_TOKEN";
+        rateLimit = {
+          maxAttempts = 10;
+          windowMs = 60000;
+          lockoutMs = 300000;
+        };
       };
       # Caddy arrive par le port publié : la Gateway voit la passerelle podman.
       trustedProxies = [ gateway ];
@@ -84,10 +89,21 @@ let
     };
     # Les commandes réservées au propriétaire (/config…) n'acceptent que lui.
     commands.ownerAllowFrom = [ "telegram:\${TELEGRAM_OWNER_ID}" ];
-    # L'agent n'écrit que dans la conversation en cours.
-    tools.message.crossContext = {
-      allowAcrossProviders = false;
-      allowWithinProvider = false;
+    tools = {
+      # L'agent n'écrit que dans la conversation en cours.
+      message.crossContext = {
+        allowAcrossProviders = false;
+        allowWithinProvider = false;
+      };
+      # Le fallback est trop petit pour lire du web non fiable sans se laisser
+      # détourner (audit models.small_params) : en secours, l'agent répond, mais ne
+      # navigue plus.
+      byProvider."ovhcloud/${builtins.elemAt models 1}".deny = [
+        "group:web"
+        "browser"
+      ];
+      # Sans sandbox, il n'y a rien dont s'élever.
+      elevated.enabled = false;
     };
     # Liste fermée : seuls ces plugins livrés avec l'image se chargent, donc rien
     # d'installé depuis ClawHub. Le navigateur et Telegram sont eux-mêmes des plugins.
