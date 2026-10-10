@@ -19,6 +19,11 @@ in
       format console
     '';
     globalConfig = ''
+      # Caddy trie les directives d'un site, et redir, handle ou route passent avant
+      # respond : sans ça, le refus des snippets internal (respond @blocked, @agent)
+      # ne s'applique pas aux vhosts bâtis sur l'une d'elles (odoo, test).
+      order respond first
+
       dns ovh {
         endpoint ovh-eu
         application_key {$OVH_APP_KEY}
