@@ -16,6 +16,94 @@ let
   # tailscaleIp est au format Caddy ("v4 [v6]") ; le réseau podman n'a que de l'IPv4.
   tailscaleV4 = builtins.head (lib.splitString " " net.tailscaleIp);
   ipt = "${pkgs.iptables}/bin/iptables";
+
+  version = "2026.9.9";
+  stateDir = "/var/lib/openclaw";
+  # Utilisateur `node` de l'image.
+  uid = 1000;
+  # Sans remappage, `node` (1000) serait l'UID 1000 de l'hôte, gaugendre, qui a sudo
+  # sans mot de passe : une évasion du conteneur y atterrirait. On décale tout l'espace
+  # d'UID du conteneur dans une plage que personne n'utilise sur l'hôte.
+  uidBase = 200000;
+  hostUid = toString (uidBase + uid);
+  origin = "https://ai.augendre.info";
+  models = [
+    "Qwen3.5-397B-A17B"
+    "gpt-oss-120b"
+  ];
+  # Les secrets restent des références "${VAR}", résolues par OpenClaw depuis
+  # l'environnement du conteneur (environmentFiles) : le store Nix n'en voit aucun.
+  settings = {
+    gateway = {
+      mode = "local";
+      port = 18789;
+      # "lan" = 0.0.0.0 dans le conteneur ; côté hôte, le port n'est publié que sur 127.0.0.1.
+      bind = "lan";
+      publicOrigin = origin;
+      auth = {
+        mode = "token";
+        token = "\${OPENCLAW_GATEWAY_TOKEN}";
+      };
+      # Caddy arrive par le port publié : la Gateway voit la passerelle podman.
+      trustedProxies = [ gateway ];
+      controlUi.allowedOrigins = [ origin ];
+    };
+    models = {
+      mode = "merge";
+      providers.ovhcloud = {
+        baseUrl = "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1";
+        apiKey = "\${OVH_AI_ENDPOINTS_API_KEY}";
+        api = "openai-completions";
+        models = map (id: {
+          inherit id;
+          name = id;
+          compat.supportsStore = false;
+        }) models;
+      };
+    };
+    agents.defaults = {
+      model = {
+        primary = "ovhcloud/${builtins.elemAt models 0}";
+        fallbacks = [ "ovhcloud/${builtins.elemAt models 1}" ];
+      };
+      models = lib.genAttrs (map (id: "ovhcloud/${id}") models) (_: { });
+    };
+    channels.telegram = {
+      enabled = true;
+      botToken = "\${TELEGRAM_BOT_TOKEN}";
+      dmPolicy = "allowlist";
+      # L'ID n'est pas un secret mais le repo est public.
+      allowFrom = [ "tg:\${TELEGRAM_OWNER_ID}" ];
+      groupPolicy = "disabled";
+    };
+    # L'agent n'écrit que dans la conversation en cours.
+    tools.message.crossContext = {
+      allowAcrossProviders = false;
+      allowWithinProvider = false;
+    };
+    # Liste fermée : seuls ces plugins livrés avec l'image se chargent, donc rien
+    # d'installé depuis ClawHub. Le navigateur et Telegram sont eux-mêmes des plugins.
+    plugins.allow = [
+      "browser"
+      "telegram"
+      "memory-core"
+      "device-pair"
+      "web-readability"
+      "document-extract"
+    ];
+    browser = {
+      enabled = true;
+      headless = true;
+      # Le sandbox de Chromium est une vraie protection contre une page piégée :
+      # ne le couper que s'il est prouvé qu'il ne démarre pas.
+      noSandbox = false;
+      defaultProfile = "openclaw";
+      profiles.openclaw.cdpPort = 18800;
+    };
+    # Les mises à jour passent par le tag de l'image, pas par la Gateway.
+    update.checkOnStart = false;
+  };
+  configFile = pkgs.writeText "openclaw.json" (builtins.toJSON settings);
 in
 {
   # oci-containers ne gère pas les réseaux podman.
@@ -57,5 +145,36 @@ in
     ${ipt} -t mangle -D PREROUTING -s ${subnet} -j openclaw-egress 2>/dev/null || true
     ${ipt} -t mangle -F openclaw-egress 2>/dev/null || true
     ${ipt} -t mangle -X openclaw-egress 2>/dev/null || true
+  '';
+
+  systemd.tmpfiles.rules = [ "d ${stateDir} 0700 ${hostUid} ${hostUid} - -" ];
+
+  virtualisation.oci-containers.containers.openclaw = {
+    image = "ghcr.io/openclaw/openclaw:${version}-browser";
+    volumes = [ "${stateDir}:/home/node/.openclaw" ];
+    environmentFiles = [ config.age.secrets."openclaw-env".path ];
+    ports = [ "127.0.0.1:18789:18789" ];
+    networks = [ "openclaw" ];
+    extraOptions = [
+      "--uidmap=0:${toString uidBase}:65536"
+      "--gidmap=0:${toString uidBase}:65536"
+    ];
+  };
+
+  systemd.services.podman-openclaw = {
+    requires = [ "podman-network-openclaw.service" ];
+    after = [ "podman-network-openclaw.service" ];
+    # La Gateway réécrit son fichier (Control UI, `config set`) et refuse un symlink :
+    # on recopie la version Nix à chaque démarrage. Un changement fait à chaud est donc
+    # perdu au redémarrage — voulu, la config vit dans ce fichier.
+    preStart = ''
+      install -m 0600 -o ${hostUid} -g ${hostUid} ${configFile} ${stateDir}/openclaw.json
+    '';
+  };
+
+  services.caddy.virtualHosts."ai.augendre.info".extraConfig = ''
+    import common_headers
+    import internal
+    reverse_proxy localhost:18789
   '';
 }
