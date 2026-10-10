@@ -184,6 +184,11 @@ in
     extraOptions = [
       "--uidmap=0:${toString uidBase}:65536"
       "--gidmap=0:${toString uidBase}:65536"
+      # La Gateway tient un bail sur son état (5 min). Tuée avant de l'avoir rendu, elle
+      # bloque le démarrage suivant ; elle ne sait reprendre le bail d'un processus mort
+      # que sur le même nom d'hôte, que podman change à chaque conteneur.
+      "--hostname=openclaw"
+      "--stop-timeout=60"
     ];
   };
 
