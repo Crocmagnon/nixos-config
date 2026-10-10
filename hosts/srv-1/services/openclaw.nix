@@ -126,10 +126,45 @@ let
       # Aucune extension Chrome ni client CDP externe : pas besoin de l'ancienne auth.
       extensionRelay.allowLegacyAuth = false;
     };
+    skills.load.extraDirs = [ skillsDir ];
     # Les mises à jour passent par le tag de l'image, pas par la Gateway.
     update.checkOnStart = false;
   };
   configFile = pkgs.writeText "openclaw.json" (builtins.toJSON settings);
+
+  # Ce que l'agent doit savoir des services de srv-1 pour s'en servir sans qu'on lui dicte
+  # chaque commande. Une section par service dont le token est dans openclaw-env.age.
+  skillsDir = "/opt/openclaw-skills";
+  skills = pkgs.writeTextDir "srv-1-services/SKILL.md" ''
+    ---
+    name: srv-1-services
+    description: Use the owner's self-hosted services on srv-1 (Miniflux RSS reader). Read this before reading feeds or articles.
+    ---
+
+    # Services on srv-1
+
+    Call them with `curl` from `exec`. Tokens are environment variables: never print,
+    log or send them anywhere, and only ever send them to the service they belong to.
+    `jq` is not installed; use `node -e` to reshape JSON.
+
+    ## Miniflux (RSS reader)
+
+    - Base URL: `https://reader.augendre.info/v1`, header `X-Auth-Token: $MINIFLUX_API_KEY`.
+    - Unread entries, newest first, reduced to what a summary needs (entry content is
+      large, do not load it unless asked about one article):
+
+      ```sh
+      curl -sS -H "X-Auth-Token: $MINIFLUX_API_KEY" \
+        "https://reader.augendre.info/v1/entries?status=unread&limit=100&order=published_at&direction=desc" |
+        node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{for(const e of JSON.parse(d).entries)console.log([e.id,e.feed.category.title,e.feed.title,e.title,e.url].join("\t"))})'
+      ```
+
+    - One article's content: `GET /entries/<id>`.
+    - Categories: `GET /categories`; feeds: `GET /feeds`.
+    - Mark entries read only when the owner asks: `PUT /entries` with
+      `{"entry_ids": [ids], "status": "read"}`.
+    - In summaries, link to the article's own `url`, grouped by theme or category.
+  '';
 in
 {
   # oci-containers ne gère pas les réseaux podman.
@@ -177,7 +212,10 @@ in
 
   virtualisation.oci-containers.containers.openclaw = {
     image = "ghcr.io/openclaw/openclaw:${version}-browser";
-    volumes = [ "${stateDir}:/home/node/.openclaw" ];
+    volumes = [
+      "${stateDir}:/home/node/.openclaw"
+      "${skills}:${skillsDir}:ro"
+    ];
     environmentFiles = [ config.age.secrets."openclaw-env".path ];
     ports = [ "127.0.0.1:18789:18789" ];
     networks = [ "openclaw" ];
