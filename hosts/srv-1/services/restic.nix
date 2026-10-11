@@ -29,7 +29,6 @@ in
         "/var/lib/sonarr"
         "/var/lib/prowlarr"
         "/var/lib/private" # contains prowlarr data
-        "/var/lib/odoo" # filestore odoo (pièces jointes) ; la base n'est pas encore sauvegardée
         "/var/lib/transmission"
         "/var/lib/jellyfin"
         "/var/lib/calibre-web"

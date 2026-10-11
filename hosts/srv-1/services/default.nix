@@ -15,7 +15,6 @@
     ./stirling-pdf.nix
     ./calibre-web.nix
     ./esphome.nix
-    ./odoo.nix
     # ./ftp.nix
   ];
 }

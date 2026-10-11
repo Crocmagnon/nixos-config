@@ -1,8 +1,12 @@
 # Odoo sur srv-1
 
 Date : 2026-09-22
-Statut : déployé, base PostgreSQL **locale**. La tentative avec la base chez OVH a été
-mesurée puis abandonnée — voir « Pourquoi la base n'est pas chez OVH ».
+Statut : **retiré** le 2026-10-11, jamais utilisé au-delà de l'essai. Retiré avec lui le
+PostgreSQL local, qui ne servait qu'à Odoo. L'implémentation reste dans l'historique :
+`hosts/srv-1/services/odoo.nix` au commit `49bae4b`.
+
+Avait été déployé avec une base PostgreSQL **locale**. La tentative avec la base chez OVH
+a été mesurée puis abandonnée — voir « Pourquoi la base n'est pas chez OVH ».
 
 ## Problème
 
