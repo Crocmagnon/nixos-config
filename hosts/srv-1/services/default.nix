@@ -15,6 +15,7 @@
     ./stirling-pdf.nix
     ./calibre-web.nix
     ./esphome.nix
+    ./recettes-cabas.nix
     # ./ftp.nix
   ];
 }

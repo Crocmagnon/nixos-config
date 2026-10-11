@@ -20,6 +20,7 @@ in
   "paperless-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "restic-password.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "downloader-creds-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "recettes-cabas-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "healthchecks-api-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "tailscale-auth-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "rclone-config.age".publicKeys = allUsers ++ [ systems.srv-1 ];
