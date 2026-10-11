@@ -2,7 +2,7 @@
 
 Date : 2026-10-10
 Statut : déployé le 2026-10-11 (image `2026.9.9-browser`). Écarts à l'implémentation :
-`order respond first` dans Caddy, remappage des UID, `plugins.allow`, fallback privé
+`order respond after header` dans Caddy, remappage des UID, `plugins.allow`, fallback privé
 d'outils web, skill semée dans le workspace — détaillés dans « Constats ».
 
 ## Problème
@@ -180,11 +180,12 @@ CVE-2026-25253, ClawJacked) : surveiller les releases. Après chaque montée :
   elle survit au restart et au reload du firewall.
 - **Caddy.** `redir`, `handle` et `route` passent avant `respond` : le refus des
   snippets `internal` ne s'appliquait pas à odoo ni à test. Corrigé par
-  `order respond first`, ce qui bouche aussi le même trou pour `@blocked`.
+  `order respond after header` (et non `first`, qui faisait perdre `common_headers`),
+  ce qui bouche aussi le même trou pour `@blocked`.
 - **Plugins.** Le navigateur et Telegram sont des plugins livrés : `plugins.allow` en
   liste fermée plutôt que `plugins.enabled = false`.
 - **Audit.** `gpt-oss-120b` est jugé trop petit pour du web non fiable : en secours,
-  plus de navigateur ni de web (`tools.byProvider`). Limite d'essais sur l'auth,
+  plus de navigateur, de web ni de shell (`tools.byProvider`). Limite d'essais sur l'auth,
   `tools.elevated` coupé.
 - **Bail d'état.** Tuée après 10 s, la Gateway gardait un bail de 5 min que le conteneur
   suivant, sous un autre nom d'hôte, ne pouvait reprendre : `--hostname=openclaw`,

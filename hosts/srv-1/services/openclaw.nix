@@ -95,12 +95,13 @@ let
         allowAcrossProviders = false;
         allowWithinProvider = false;
       };
-      # Le fallback est trop petit pour lire du web non fiable sans se laisser
+      # Le fallback est trop petit pour lire du contenu non fiable sans se laisser
       # détourner (audit models.small_params) : en secours, l'agent répond, mais ne
-      # navigue plus.
+      # navigue plus et n'a plus de shell (curl y lirait n'importe quelle page).
       byProvider."ovhcloud/${builtins.elemAt models 1}".deny = [
         "group:web"
         "browser"
+        "group:runtime"
       ];
       # Sans sandbox, il n'y a rien dont s'élever.
       elevated.enabled = false;
@@ -216,7 +217,13 @@ in
 
   systemd.services.podman-openclaw = {
     requires = [ "podman-network-openclaw.service" ];
-    after = [ "podman-network-openclaw.service" ];
+    # Sans la chaîne openclaw-egress, l'agent n'est plus enfermé : il s'arrête avec le
+    # firewall, et le preStart refuse de le démarrer si le saut vers la chaîne manque.
+    bindsTo = [ "firewall.service" ];
+    after = [
+      "podman-network-openclaw.service"
+      "firewall.service"
+    ];
     # La Gateway réécrit son fichier (Control UI, `config set`) et refuse un symlink :
     # on recopie la version Nix à chaque démarrage. Un changement fait à chaud est donc
     # perdu au redémarrage — voulu, la config vit dans ce fichier.
@@ -224,13 +231,16 @@ in
     # y est jugé écrasé par accident, et la sauvegarde restaurée par-dessus la version
     # Nix. On les supprime d'abord.
     preStart = ''
+      ${ipt} -t mangle -C PREROUTING -s ${subnet} -j openclaw-egress
       rm -f ${stateDir}/openclaw.json.bak* ${stateDir}/openclaw.json.last-good ${stateDir}/openclaw.json.clobbered.*
       install -m 0600 -o ${hostUid} -g ${hostUid} ${configFile} ${stateDir}/openclaw.json
+      # Sous l'UID de l'agent et non en root : le workspace est à lui, il pourrait y avoir
+      # mis un lien vers /etc, qu'un mkdir ou un chown en root suivrait. Un échec ici
+      # ne doit pas empêcher le démarrage.
       skill=${stateDir}/workspace/skills/srv-1-services
-      if [ ! -e $skill/SKILL.md ]; then
-        install -d -m 0755 -o ${hostUid} -g ${hostUid} ${stateDir}/workspace ${stateDir}/workspace/skills $skill
-        install -m 0644 -o ${hostUid} -g ${hostUid} ${skillSeed} $skill/SKILL.md
-      fi
+      ${pkgs.util-linux}/bin/setpriv --reuid=${hostUid} --regid=${hostUid} --clear-groups \
+        ${pkgs.bash}/bin/sh -c "mkdir -p $skill && { [ -e $skill/SKILL.md ] || install -m 0644 ${skillSeed} $skill/SKILL.md; }" \
+        || echo "graine de la skill srv-1-services non posée" >&2
     '';
   };
 
