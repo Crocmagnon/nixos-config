@@ -1,7 +1,9 @@
 # OpenClaw sur srv-1
 
 Date : 2026-10-10
-Statut : design validé, pas encore implémenté.
+Statut : déployé le 2026-10-11 (image `2026.9.9-browser`). Écarts à l'implémentation :
+`order respond first` dans Caddy, remappage des UID, `plugins.allow`, fallback privé
+d'outils web, skill semée dans le workspace — détaillés dans « Constats ».
 
 ## Problème
 
@@ -164,17 +166,37 @@ CVE-2026-25253, ClawJacked) : surveiller les releases. Après chaque montée :
 4. `openclaw security audit` sans finding critique.
 5. Le récap du matin des flux Miniflux, en cron OpenClaw, fait le test de bout en bout.
 
-## À vérifier à l'implémentation
+## Constats
 
-- OpenClaw accepte une config en lecture seule et la substitution de variables
-  d'environnement ; sinon, Nix fournit un fichier de départ et OpenClaw gère sa copie
-  dans `/var/lib/openclaw`.
-- Le chemin de l'état dans l'image (`/home/node/.openclaw` d'après la doc Docker) et
-  l'UID à donner à `/var/lib/openclaw`.
-- L'ordre des règles firewall face à netavark (voir Sortie).
+- **Config.** La Gateway réécrit son fichier et refuse un symlink : Nix le recopie à
+  chaque démarrage. Elle compare aussi le fichier à ses sauvegardes `.bak` et restaure
+  celle-ci si le fichier rétrécit de plus de moitié ou perd `meta` : le `preStart`
+  supprime d'abord ces sauvegardes. Les tokens sont des SecretRef (le doctor tient une
+  chaîne `${VAR}` pour un secret en clair) ; la clé OVHcloud finit malgré tout dans
+  `state/openclaw.sqlite`.
+- **État et UID.** `/home/node/.openclaw`, utilisateur `node` (1000). Sans remappage,
+  c'est l'UID 1000 de l'hôte, qui a sudo : `--uidmap=0:200000:65536`.
+- **Firewall.** La chaîne `openclaw-egress` en table `mangle` passe avant netavark ;
+  elle survit au restart et au reload du firewall.
+- **Caddy.** `redir`, `handle` et `route` passent avant `respond` : le refus des
+  snippets `internal` ne s'appliquait pas à odoo ni à test. Corrigé par
+  `order respond first`, ce qui bouche aussi le même trou pour `@blocked`.
+- **Plugins.** Le navigateur et Telegram sont des plugins livrés : `plugins.allow` en
+  liste fermée plutôt que `plugins.enabled = false`.
+- **Audit.** `gpt-oss-120b` est jugé trop petit pour du web non fiable : en secours,
+  plus de navigateur ni de web (`tools.byProvider`). Limite d'essais sur l'auth,
+  `tools.elevated` coupé.
+- **Bail d'état.** Tuée après 10 s, la Gateway gardait un bail de 5 min que le conteneur
+  suivant, sous un autre nom d'hôte, ne pouvait reprendre : `--hostname=openclaw`,
+  `--stop-timeout=60`.
+- **Skills.** Une skill montée depuis le store est refusée (fichier en lien physique).
+  La skill `srv-1-services` est semée une fois dans le workspace et appartient ensuite
+  à l'agent, qui y note ses recettes.
+- **Sauvegarde.** Le post-stop de restic s'interbloquait chaque nuit avec `conflicts`
+  (préexistant) : `systemctl start --no-block`.
 
 ## Hors périmètre
 
-Recettes & Cabas, téléchargements de PDF et autres usages : de la configuration
+Recettes & Cabas (identifiants ajoutés à `openclaw-env.age`), téléchargements de PDF et autres usages : de la configuration
 d'agent, pas de l'infrastructure. Ils viennent une fois l'agent en place, avec au
 besoin une connexion manuelle au site dans le navigateur de l'agent.
