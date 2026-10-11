@@ -31,6 +31,12 @@ let
     "Qwen3.5-397B-A17B"
     "gpt-oss-120b"
   ];
+  # context_length annoncé par /v1/models. Sans lui, OpenClaw suppose 200k : trop pour
+  # gpt-oss, qui recevait alors un historique plus long que ce qu'il accepte.
+  contextWindows = {
+    "Qwen3.5-397B-A17B" = 262144;
+    "gpt-oss-120b" = 131072;
+  };
   # Les secrets sont des références à l'environnement du conteneur (environmentFiles),
   # résolues par OpenClaw : le store Nix n'en voit aucun. SecretRef là où le schéma
   # l'accepte (le doctor tient une chaîne "${VAR}" pour un secret en clair), sinon "${VAR}".
@@ -68,7 +74,16 @@ let
         models = map (id: {
           inherit id;
           name = id;
-          compat.supportsStore = false;
+          contextWindow = contextWindows.${id};
+          # Les deux raisonnent, et le raisonnement compte dans le budget de sortie.
+          reasoning = true;
+          maxTokens = 32768;
+          compat = {
+            supportsStore = false;
+            # AI Endpoints ne renvoie l'usage en streaming que sur demande : sans lui,
+            # OpenClaw ne voit pas le contexte grossir et ne compacte jamais.
+            supportsUsageInStreaming = true;
+          };
         }) models;
       };
     };
