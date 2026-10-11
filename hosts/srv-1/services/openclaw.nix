@@ -1,0 +1,267 @@
+# Agent OpenClaw — voir docs/superpowers/specs/2026-10-10-openclaw-srv-1-design.md.
+#
+# L'agent lit des pages web arbitraires (injection de prompt) : on borne ce qu'il atteint.
+# Son identité est son sous-réseau podman ; depuis lui, seuls Internet et Caddy:443 passent.
+# Caddy refuse ensuite ce sous-réseau sur tout vhost `internal` (snippet dans caddy.nix).
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  net = config.host.network;
+  subnet = net.agentSubnet;
+  gateway = "10.89.42.1";
+  # tailscaleIp est au format Caddy ("v4 [v6]") ; le réseau podman n'a que de l'IPv4.
+  tailscaleV4 = builtins.head (lib.splitString " " net.tailscaleIp);
+  ipt = "${pkgs.iptables}/bin/iptables";
+
+  version = "2026.9.9";
+  stateDir = "/var/lib/openclaw";
+  # Utilisateur `node` de l'image.
+  uid = 1000;
+  # Sans remappage, `node` (1000) serait l'UID 1000 de l'hôte, gaugendre, qui a sudo
+  # sans mot de passe : une évasion du conteneur y atterrirait. On décale tout l'espace
+  # d'UID du conteneur dans une plage que personne n'utilise sur l'hôte.
+  uidBase = 200000;
+  hostUid = toString (uidBase + uid);
+  origin = "https://ai.augendre.info";
+  models = [
+    "Qwen3.5-397B-A17B"
+    "gpt-oss-120b"
+  ];
+  # context_length annoncé par /v1/models. Sans lui, OpenClaw suppose 200k : trop pour
+  # gpt-oss, qui recevait alors un historique plus long que ce qu'il accepte.
+  contextWindows = {
+    "Qwen3.5-397B-A17B" = 262144;
+    "gpt-oss-120b" = 131072;
+  };
+  # Les secrets sont des références à l'environnement du conteneur (environmentFiles),
+  # résolues par OpenClaw : le store Nix n'en voit aucun. SecretRef là où le schéma
+  # l'accepte (le doctor tient une chaîne "${VAR}" pour un secret en clair), sinon "${VAR}".
+  envRef = id: {
+    source = "env";
+    provider = "default";
+    inherit id;
+  };
+  settings = {
+    gateway = {
+      mode = "local";
+      port = 18789;
+      # "lan" = 0.0.0.0 dans le conteneur ; côté hôte, le port n'est publié que sur 127.0.0.1.
+      bind = "lan";
+      publicOrigin = origin;
+      auth = {
+        mode = "token";
+        token = envRef "OPENCLAW_GATEWAY_TOKEN";
+        rateLimit = {
+          maxAttempts = 10;
+          windowMs = 60000;
+          lockoutMs = 300000;
+        };
+      };
+      # Caddy arrive par le port publié : la Gateway voit la passerelle podman.
+      trustedProxies = [ gateway ];
+      controlUi.allowedOrigins = [ origin ];
+    };
+    models = {
+      mode = "merge";
+      providers.ovhcloud = {
+        baseUrl = "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1";
+        apiKey = envRef "OVH_AI_ENDPOINTS_API_KEY";
+        api = "openai-completions";
+        models = map (id: {
+          inherit id;
+          name = id;
+          contextWindow = contextWindows.${id};
+          # Les deux raisonnent, et le raisonnement compte dans le budget de sortie.
+          reasoning = true;
+          maxTokens = 32768;
+          compat = {
+            supportsStore = false;
+            # AI Endpoints ne renvoie l'usage en streaming que sur demande : sans lui,
+            # OpenClaw ne voit pas le contexte grossir et ne compacte jamais.
+            supportsUsageInStreaming = true;
+          };
+        }) models;
+      };
+    };
+    agents.defaults = {
+      model = {
+        primary = "ovhcloud/${builtins.elemAt models 0}";
+        fallbacks = [ "ovhcloud/${builtins.elemAt models 1}" ];
+      };
+      models = lib.genAttrs (map (id: "ovhcloud/${id}") models) (_: { });
+    };
+    channels.telegram = {
+      enabled = true;
+      botToken = envRef "TELEGRAM_BOT_TOKEN";
+      dmPolicy = "allowlist";
+      # L'ID n'est pas un secret mais le repo est public.
+      allowFrom = [ "tg:\${TELEGRAM_OWNER_ID}" ];
+      groupPolicy = "disabled";
+    };
+    # Les commandes réservées au propriétaire (/config…) n'acceptent que lui.
+    commands.ownerAllowFrom = [ "telegram:\${TELEGRAM_OWNER_ID}" ];
+    tools = {
+      # L'agent n'écrit que dans la conversation en cours.
+      message.crossContext = {
+        allowAcrossProviders = false;
+        allowWithinProvider = false;
+      };
+      # Le fallback est trop petit pour lire du contenu non fiable sans se laisser
+      # détourner (audit models.small_params) : en secours, l'agent répond, mais ne
+      # navigue plus et n'a plus de shell (curl y lirait n'importe quelle page).
+      byProvider."ovhcloud/${builtins.elemAt models 1}".deny = [
+        "group:web"
+        "browser"
+        "group:runtime"
+      ];
+      # Sans sandbox, il n'y a rien dont s'élever.
+      elevated.enabled = false;
+    };
+    # Liste fermée : seuls ces plugins livrés avec l'image se chargent, donc rien
+    # d'installé depuis ClawHub. Le navigateur et Telegram sont eux-mêmes des plugins.
+    plugins.allow = [
+      "browser"
+      "telegram"
+      "memory-core"
+      "device-pair"
+      "web-readability"
+      "document-extract"
+    ];
+    browser = {
+      enabled = true;
+      headless = true;
+      # Le sandbox de Chromium est une vraie protection contre une page piégée :
+      # ne le couper que s'il est prouvé qu'il ne démarre pas.
+      noSandbox = false;
+      defaultProfile = "openclaw";
+      profiles.openclaw.cdpPort = 18800;
+      # Aucune extension Chrome ni client CDP externe : pas besoin de l'ancienne auth.
+      extensionRelay.allowLegacyAuth = false;
+    };
+    # Les mises à jour passent par le tag de l'image, pas par la Gateway.
+    update.checkOnStart = false;
+  };
+  configFile = pkgs.writeText "openclaw.json" (builtins.toJSON settings);
+
+  # Graine de la skill où l'agent note comment utiliser les services de srv-1 : seulement
+  # ce qu'il ne peut pas deviner (URL, nom de la variable du token). Copiée une fois si
+  # absente, elle lui appartient ensuite : il la complète et la corrige lui-même.
+  skillSeed = pkgs.writeText "srv-1-services-SKILL.md" ''
+    ---
+    name: srv-1-services
+    description: The owner's self-hosted services on srv-1 (Miniflux RSS reader). Read before using one; update it with what you learn.
+    ---
+
+    # Services on srv-1
+
+    This skill is yours: when you work out how to do something with a service (an API
+    call, a jq-free `node -e` filter, a gotcha), write it here so next time needs no
+    discovery. Call services with `curl` from `exec`. Tokens are environment variables:
+    never print, log or send them anywhere but to their own service.
+
+    ## Miniflux (RSS reader)
+
+    - API: `https://reader.augendre.info/v1`, header `X-Auth-Token: $MINIFLUX_API_KEY`.
+    - Reference: https://miniflux.app/docs/api.html
+  '';
+in
+{
+  # oci-containers ne gère pas les réseaux podman.
+  systemd.services.podman-network-openclaw = {
+    wantedBy = [ "multi-user.target" ];
+    before = [ "podman-openclaw.service" ];
+    path = [ config.virtualisation.podman.package ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      podman network exists openclaw \
+        || podman network create --subnet ${subnet} --gateway ${gateway} openclaw
+    '';
+  };
+
+  # Table mangle et non filter : netavark insère ses propres règles dans filter/nat à
+  # chaque démarrage de conteneur, et mangle PREROUTING passe avant le routage, donc
+  # avant INPUT comme avant FORWARD. DROP et non REJECT (interdit dans mangle).
+  # Seules les connexions NEW sont filtrées : les réponses aux connexions entrantes
+  # (Caddy → port publié) doivent passer.
+  networking.firewall.extraCommands = ''
+    ${ipt} -t mangle -N openclaw-egress 2>/dev/null || ${ipt} -t mangle -F openclaw-egress
+    ${ipt} -t mangle -C PREROUTING -s ${subnet} -j openclaw-egress 2>/dev/null \
+      || ${ipt} -t mangle -I PREROUTING -s ${subnet} -j openclaw-egress
+    ${ipt} -t mangle -A openclaw-egress -m conntrack ! --ctstate NEW -j RETURN
+    ${ipt} -t mangle -A openclaw-egress -d ${gateway} -p udp --dport 53 -j RETURN
+    ${ipt} -t mangle -A openclaw-egress -d ${gateway} -p tcp --dport 53 -j RETURN
+    ${ipt} -t mangle -A openclaw-egress -d ${tailscaleV4} -p tcp --dport 443 -j RETURN
+    # Toute adresse de srv-1 (publique, tailscale, passerelle podman…) sauf ci-dessus.
+    ${ipt} -t mangle -A openclaw-egress -m addrtype --dst-type LOCAL -j DROP
+    ${ipt} -t mangle -A openclaw-egress -d ${subnet} -j RETURN
+    for dst in 100.64.0.0/10 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16; do
+      ${ipt} -t mangle -A openclaw-egress -d "$dst" -j DROP
+    done
+  '';
+  networking.firewall.extraStopCommands = ''
+    ${ipt} -t mangle -D PREROUTING -s ${subnet} -j openclaw-egress 2>/dev/null || true
+    ${ipt} -t mangle -F openclaw-egress 2>/dev/null || true
+    ${ipt} -t mangle -X openclaw-egress 2>/dev/null || true
+  '';
+
+  systemd.tmpfiles.rules = [ "d ${stateDir} 0700 ${hostUid} ${hostUid} - -" ];
+
+  virtualisation.oci-containers.containers.openclaw = {
+    image = "ghcr.io/openclaw/openclaw:${version}-browser";
+    volumes = [ "${stateDir}:/home/node/.openclaw" ];
+    environmentFiles = [ config.age.secrets."openclaw-env".path ];
+    ports = [ "127.0.0.1:18789:18789" ];
+    networks = [ "openclaw" ];
+    extraOptions = [
+      "--uidmap=0:${toString uidBase}:65536"
+      "--gidmap=0:${toString uidBase}:65536"
+      # La Gateway tient un bail sur son état (5 min). Tuée avant de l'avoir rendu, elle
+      # bloque le démarrage suivant ; elle ne sait reprendre le bail d'un processus mort
+      # que sur le même nom d'hôte, que podman change à chaque conteneur.
+      "--hostname=openclaw"
+      "--stop-timeout=60"
+    ];
+  };
+
+  systemd.services.podman-openclaw = {
+    requires = [ "podman-network-openclaw.service" ];
+    # Sans la chaîne openclaw-egress, l'agent n'est plus enfermé : il s'arrête avec le
+    # firewall, et le preStart refuse de le démarrer si le saut vers la chaîne manque.
+    bindsTo = [ "firewall.service" ];
+    after = [
+      "podman-network-openclaw.service"
+      "firewall.service"
+    ];
+    # La Gateway réécrit son fichier (Control UI, `config set`) et refuse un symlink :
+    # on recopie la version Nix à chaque démarrage. Un changement fait à chaud est donc
+    # perdu au redémarrage — voulu, la config vit dans ce fichier.
+    # Ses sauvegardes servent de référence : un fichier bien plus petit ou sans `meta`
+    # y est jugé écrasé par accident, et la sauvegarde restaurée par-dessus la version
+    # Nix. On les supprime d'abord.
+    preStart = ''
+      ${ipt} -t mangle -C PREROUTING -s ${subnet} -j openclaw-egress
+      rm -f ${stateDir}/openclaw.json.bak* ${stateDir}/openclaw.json.last-good ${stateDir}/openclaw.json.clobbered.*
+      install -m 0600 -o ${hostUid} -g ${hostUid} ${configFile} ${stateDir}/openclaw.json
+      # Sous l'UID de l'agent et non en root : le workspace est à lui, il pourrait y avoir
+      # mis un lien vers /etc, qu'un mkdir ou un chown en root suivrait. Un échec ici
+      # ne doit pas empêcher le démarrage.
+      skill=${stateDir}/workspace/skills/srv-1-services
+      ${pkgs.util-linux}/bin/setpriv --reuid=${hostUid} --regid=${hostUid} --clear-groups \
+        ${pkgs.bash}/bin/sh -c "mkdir -p $skill && { [ -e $skill/SKILL.md ] || install -m 0644 ${skillSeed} $skill/SKILL.md; }" \
+        || echo "graine de la skill srv-1-services non posée" >&2
+    '';
+  };
+
+  services.caddy.virtualHosts."ai.augendre.info".extraConfig = ''
+    import common_headers
+    import internal
+    reverse_proxy localhost:18789
+  '';
+}
