@@ -17,10 +17,6 @@
       type = lib.types.str;
       description = "Tailscale IP used in Caddy `bind` directives to expose vhosts only on the Tailscale interface.";
     };
-    agentSubnet = lib.mkOption {
-      type = lib.types.str;
-      description = "Podman subnet of the OpenClaw agent. Its identity for the egress rules and for Caddy, which refuses it on `internal` vhosts.";
-    };
   };
 
   config.host.network = {
@@ -28,6 +24,5 @@
     ipv6gw = "2001:41d0:0700:11ff:00ff:00ff:00ff:00ff";
     interface = "eno1";
     tailscaleIp = "100.108.113.85 [fd7a:115c:a1e0::2501:7166]";
-    agentSubnet = "10.89.42.0/24";
   };
 }

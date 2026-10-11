@@ -99,7 +99,7 @@ in
   services.caddy.virtualHosts = {
     "jellyfin.srv-1.augendre.info".extraConfig = ''
       import common_headers
-      import internal_agent
+      import internal
       reverse_proxy localhost:8096
     '';
 

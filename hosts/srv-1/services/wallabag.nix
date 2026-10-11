@@ -2,7 +2,7 @@
 {
   services.caddy.virtualHosts."wallabag.augendre.info".extraConfig = ''
     import common_headers
-    import internal_agent
+    import internal
     reverse_proxy localhost:8002
   '';
 

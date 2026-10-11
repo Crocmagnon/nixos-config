@@ -24,5 +24,4 @@ in
   "tailscale-auth-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "rclone-config.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "transmission-credentials.age".publicKeys = allUsers ++ [ systems.srv-1 ];
-  "openclaw-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
 }

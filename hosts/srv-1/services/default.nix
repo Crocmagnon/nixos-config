@@ -16,7 +16,6 @@
     ./calibre-web.nix
     ./esphome.nix
     ./odoo.nix
-    ./openclaw.nix
     # ./ftp.nix
   ];
 }

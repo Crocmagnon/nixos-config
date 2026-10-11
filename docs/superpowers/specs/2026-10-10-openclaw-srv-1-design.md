@@ -1,7 +1,12 @@
 # OpenClaw sur srv-1
 
 Date : 2026-10-10
-Statut : déployé le 2026-10-11 (image `2026.9.9-browser`). Écarts à l'implémentation :
+Statut : **retiré** le 2026-10-11, trop cher à l'usage pour des modèles AI Endpoints
+jugés moyens (Claude par l'API, l'alternative, l'est plus encore). L'implémentation
+reste dans l'historique : merge `2325ce4`. Seuls `order respond after header` (Caddy)
+et le `--no-block` de restic, utiles sans OpenClaw, sont restés.
+
+Avait été déployé le 2026-10-11 (image `2026.9.9-browser`). Écarts à l'implémentation :
 `order respond after header` dans Caddy, remappage des UID, `plugins.allow`, fallback privé
 d'outils web, skill semée dans le workspace — détaillés dans « Constats ».
 
