@@ -50,8 +50,11 @@ agenix -r
 `mapAttrs'`, so adding a server secret is one rule + one `agenix -e`, no module
 edit. Desktop secrets are declared in the module that consumes them.
 
-`agenix` on desktops is a wrapper (`modules/home/gaugendre/desktop/agenix.nix`)
-around the flake's pinned agenix, forcing `-i ~/.config/agenix/identity.txt`: the
+`agenix` on desktops is a wrapper around the flake's pinned agenix. The desktops now run
+Arch: there it is the fish function `agenix` from the dotfiles repo
+(`nix run --inputs-from <this repo> agenix`, nix from pacman);
+`modules/home/gaugendre/desktop/agenix.nix` is the NixOS-era version. Both force
+`-i ~/.config/agenix/identity.txt`: the
 CLI has no env var or config file for the identity, and `~/.ssh/id_ed25519` has a
 passphrase age cannot get from kwallet. That same passphrase-less age key
 (`age-keygen`, never committed -- **back it up**) is a recipient of both stores and
