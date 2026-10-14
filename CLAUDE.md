@@ -57,7 +57,8 @@ Arch: there it is the fish function `agenix` from the dotfiles repo
 `-i ~/.config/agenix/identity.txt`: the
 CLI has no env var or config file for the identity, and `~/.ssh/id_ed25519` has a
 passphrase age cannot get from kwallet. That same passphrase-less age key
-(`age-keygen`, never committed -- **back it up**) is a recipient of both stores and
+(`age-keygen`; deployed by the dotfiles repo, git-crypt-encrypted as
+`dot_config/private_agenix/encrypted_private_identity.txt`, also in Bitwarden) is a recipient of both stores and
 is what the user-session systemd services decrypt with (`age.identityPaths`, set
 once in `agenix.nix` for all desktop modules). The SSH keys stay recipients as a
 fallback (`agenix -i ~/.ssh/id_ed25519 -e ...` if the age key is lost).
