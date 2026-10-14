@@ -48,6 +48,7 @@ let
     }
   );
   stateDir = "/var/lib/recettes-cabas";
+  apiPort = 8789;
   cmd = sub: "${pkgs.downloader-go}/bin/downloader-go --headless recettes-cabas ${sub} --config ${configFile}";
   # Both units share the dynamic user (same name) and its state directory: cookies.json,
   # prefs.json (/affichage) and screenshots.
@@ -64,6 +65,13 @@ let
   };
 in
 {
+  # Home Assistant reaches the bot over Tailscale (refresh, apply).
+  services.caddy.virtualHosts."recettes-cabas.srv-1.augendre.info".extraConfig = ''
+    import common_headers
+    import internal
+    reverse_proxy localhost:${toString apiPort}
+  '';
+
   systemd.timers.recettes-cabas-recap = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
@@ -91,7 +99,8 @@ in
     wantedBy = [ "multi-user.target" ];
     wants = [ "network-online.target" ];
     serviceConfig = {
-      ExecStart = cmd "bot";
+      # The API Home Assistant calls, behind the internal vhost above.
+      ExecStart = "${cmd "bot"} --api-listen 127.0.0.1:${toString apiPort}";
       Restart = "always";
       RestartSec = 30;
     };
