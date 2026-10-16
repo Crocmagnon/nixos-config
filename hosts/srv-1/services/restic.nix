@@ -42,6 +42,9 @@ in
       ];
       repository = "s3:https://s3.sbg.io.cloud.ovh.net/restic-srv-1-gaugendre";
       pruneOpts = [
+        # Par défaut forget groupe par host+paths : chaque changement de
+        # `paths` laissait l'ancien groupe figé, conservé indéfiniment.
+        "--group-by host"
         "--keep-within-daily 7d"
         "--keep-within-weekly 1m"
       ];
@@ -66,6 +69,11 @@ in
   systemd.services.restic-backups-local = {
     conflicts = servicesToStop;
     after = servicesToStop;
+    # Le module lance backup puis `forget --prune` dans la même unité : une
+    # seule sonde couvre les deux.
+    wants = [ "healthchecks@restic-backup:start.service" ];
+    onSuccess = [ "healthchecks@restic-backup:success.service" ];
+    onFailure = [ "healthchecks@restic-backup:failure.service" ];
   };
 
 }
