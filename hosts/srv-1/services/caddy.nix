@@ -99,7 +99,12 @@ in
       '';
 
       "git.augendre.info".extraConfig = ''
-        redir https://codeberg.org/Crocmagnon
+        redir https://github.com/Crocmagnon
+      '';
+
+      # GitHub Pages serves a single custom domain per repo: the qrcode alias lands here.
+      "qrcode.augendre.info".extraConfig = ''
+        redir https://qr.augendre.info{uri}
       '';
 
       "gabnotes.org, www.gabnotes.org".extraConfig = ''

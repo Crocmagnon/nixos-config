@@ -30,7 +30,7 @@
       inputs.darwin.follows = "";
     };
     downloader = {
-      url = "git+https://codeberg.org/Crocmagnon/downloader-go";
+      url = "git+https://github.com/Crocmagnon/downloader-go";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-index-database = {
