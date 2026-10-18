@@ -1,0 +1,99 @@
+name: auto-fix
+
+# One Claude attempt at fixing a weekly flake.lock PR that pr-build reported broken.
+on:
+  workflow_run:
+    workflows: [pr-build]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read # gh run view --log-failed
+
+concurrency:
+  group: auto-fix
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_branch == 'update-flake-lock' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: update-flake-lock
+          # Pushed with the PAT so that pr-build runs again on the fix.
+          token: ${{ secrets.FLAKE_UPDATE_TOKEN }}
+
+      - name: Check this is the first attempt on the failed commit
+        id: guard
+        env:
+          FAILED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$FAILED_SHA" ]; then
+            echo "Branch moved since the failed run: the newer run decides."
+            echo go=false >> "$GITHUB_OUTPUT"
+          elif [ "$(git log -1 --format='%(trailers:key=Auto-fix,valueonly)')" = true ]; then
+            echo "The failed commit is already an auto-fix: one attempt only, a human takes over."
+            echo go=false >> "$GITHUB_OUTPUT"
+          else
+            echo go=true >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch the build error
+        if: steps.guard.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run view "${{ github.event.workflow_run.id }}" --log-failed | tail -n 300 > /tmp/build-error.log
+
+      # The srv-1 toplevel takes ~6 GiB unpacked.
+      - name: Free disk space
+        if: steps.guard.outputs.go == 'true'
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+        if: steps.guard.outputs.go == 'true'
+        with:
+          extra_nix_config: |
+            extra-substituters = https://catppuccin.cachix.org
+            extra-trusted-public-keys = catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU=
+
+      - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
+        if: steps.guard.outputs.go == 'true'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: |
+            This repository is the NixOS flake of the server srv-1 (read CLAUDE.md). A weekly
+            `nix flake update` broke its build; the end of the failed CI log is in
+            /tmp/build-error.log.
+
+            Fix the configuration so that
+            `nix build .#nixosConfigurations.srv-1.config.system.build.toplevel` succeeds again.
+            Never edit flake.lock, never pin an input back, never comment out a service: adapt the
+            config to the new inputs. A stale fixed-output hash is fixed by replacing the
+            `specified` value with the `got` one. Run the build to check your fix. Leave the
+            changes uncommitted.
+
+            If you cannot fix it, change nothing.
+          claude_args: >-
+            --max-turns 30
+            --allowedTools "Read,Edit,Glob,Grep,Bash(nix build:*),Bash(nix eval:*),Bash(git diff:*),Bash(git status:*)"
+
+      - name: Commit and push the fix
+        if: steps.guard.outputs.go == 'true'
+        run: |
+          git restore flake.lock
+          if git diff --quiet; then
+            echo "Claude changed nothing: a human takes over."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -a -m "fix srv-1 build after flake.lock update" -m "Auto-fix: true"
+          git push origin update-flake-lock

@@ -72,6 +72,13 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
 - Typical red check on the weekly PR: a pinned fixed-output hash that a bump invalidates, e.g.
   `caddy.withPlugins` in `hosts/srv-1/services/caddy.nix` on a caddy bump. Copy the `got:` hash
   from the report into the file and push on `update-flake-lock`; `pr-build` reruns.
+- `.github/workflows/auto-fix.yml`: when `pr-build` fails on `update-flake-lock`, Claude
+  (`anthropics/claude-code-action`, `CLAUDE_CODE_OAUTH_TOKEN` secret from `claude setup-token`,
+  valid one year) gets the end of the failed log and may only read, edit and run `nix build` /
+  `nix eval`. The workflow itself commits with an `Auto-fix: true` trailer and pushes with the
+  PAT, so `pr-build` rebuilds and reports. **One attempt per bump**: it does nothing when the
+  failed commit already carries that trailer, or when the branch moved since the failed run.
+  It never merges; the required check stays the gate.
 - `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**

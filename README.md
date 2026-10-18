@@ -45,6 +45,9 @@ srv-1 récupère depuis GitHub la branche courante (déjà poussée) et se recon
 - Sur chaque PR vers `main` et à chaque push, `pr-build` builde srv-1 avant et après et poste un
   commentaire, mis à jour à chaque run : le diff de paquets (dix), ou l'erreur de build si la PR
   ne builde pas. Ce check est obligatoire pour merger.
+- Si `pr-build` échoue sur la PR hebdo, `auto-fix` donne l'erreur à Claude, qui tente **une**
+  correction, poussée sur la PR et rebuildée par `pr-build`. Si elle échoue aussi, la main
+  revient à un humain.
 - Chaque nuit à 04:00, srv-1 applique `main` (`hosts/srv-1/auto-upgrade.nix`) et redémarre
   entre 04:00 et 06:00 si le kernel ou l'initrd a changé.
 - Renovate (`renovate.json`) met à jour les GitHub Actions épinglées par SHA, une fois par mois,
@@ -55,6 +58,8 @@ Réglages faits à la main, une seule fois :
 - Secret `FLAKE_UPDATE_TOKEN` : fine-grained PAT limité à ce repo, *Contents* et *Pull
   requests* en lecture/écriture. À recréer à son expiration
   (`gh secret set FLAKE_UPDATE_TOKEN -R Crocmagnon/nixos-config`).
+- Secret `CLAUDE_CODE_OAUTH_TOKEN` : `claude setup-token`, valable un an, à recréer ensuite
+  (`gh secret set CLAUDE_CODE_OAUTH_TOKEN -R Crocmagnon/nixos-config`).
 - Règle de protection de `main` qui exige le check `build` de `pr-build`.
 - GitHub : installer l'app [Renovate](https://github.com/apps/renovate) sur ce repo, si ce
   n'est pas déjà fait.
