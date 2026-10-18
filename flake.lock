@@ -76,11 +76,11 @@
         "rev": "ad717c5e67abccbd848d647b4e90a4918ee7175a",
         "revCount": 85,
         "type": "git",
-        "url": "https://codeberg.org/Crocmagnon/downloader-go"
+        "url": "https://github.com/Crocmagnon/downloader-go"
       },
       "original": {
         "type": "git",
-        "url": "https://codeberg.org/Crocmagnon/downloader-go"
+        "url": "https://github.com/Crocmagnon/downloader-go"
       }
     },
     "home-manager": {

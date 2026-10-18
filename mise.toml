@@ -14,13 +14,13 @@ description = "deploy to local machine"
 run = "nh os switch .#"
 
 [tasks.srv-1]
-description = "deploy to server: srv-1 fetches the pushed current branch from Codeberg and switches itself"
+description = "deploy to server: srv-1 fetches the pushed current branch from GitHub and switches itself"
 # Built and switched on srv-1 itself: the desktops run Arch, without nix. Only what is pushed gets
 # deployed, hence the check for unpushed commits. The current branch is deployed, so a feature
 # branch can be tried on the server before it is merged.
 run = [
   "test -z \"$(git log --oneline @{u}..)\" || { echo 'unpushed commits: git push first' >&2; exit 1; }",
-  "ref=$(git branch --show-current) && test -n \"$ref\" || { echo 'detached HEAD: check out a branch' >&2; exit 1; }; ssh -t gaugendre@srv-1 sudo nixos-rebuild switch --refresh --flake \"git+https://codeberg.org/Crocmagnon/nixos-config?ref=$ref#srv-1\"",
+  "ref=$(git branch --show-current) && test -n \"$ref\" || { echo 'detached HEAD: check out a branch' >&2; exit 1; }; ssh -t gaugendre@srv-1 sudo nixos-rebuild switch --refresh --flake \"git+https://github.com/Crocmagnon/nixos-config?ref=$ref#srv-1\"",
 ]
 
 [tasks.initial-srv-1]
