@@ -5,11 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build Commands
 
 ```bash
-# Rebuild and switch (uses nh, auto-detects hostname)
-nh os switch .
+# Deploy: srv-1 fetches the pushed current branch from GitHub and switches itself
+mise run srv-1
 
-# Rebuild without switching (dry run)
-nixos-rebuild dry-build --flake .#<hostname>
+# Build without switching (dry run)
+nixos-rebuild dry-build --flake .#srv-1
 
 # Check flake validity
 nix flake check
@@ -23,125 +23,72 @@ nix flake update <input-name>
 
 ## Secrets Management
 
-Secrets are managed with agenix. Two independent secret stores:
+Secrets are managed with agenix, in `hosts/srv-1/age` (system-level, decrypted at
+boot with the host SSH key).
 
-The directories are named `age/`, not `secrets/`: Claude Code refuses to read
+The directory is named `age/`, not `secrets/`: Claude Code refuses to read
 anything under a path segment called `secrets`, which blocked reading the rules
-files themselves. `.claude/settings.json` denies what actually matters instead --
+file itself. `.claude/settings.json` denies what actually matters instead --
 running `age`/`agenix` and reading `*.age`.
 
 ```bash
-# srv-1 (system-level, decrypted at boot with the host SSH key)
 cd hosts/srv-1/age
 agenix -e <secret-name>.age
 
-# desktops (home-manager module, decrypted in the user session ->
-# $XDG_RUNTIME_DIR/agenix/).
-cd modules/home/gaugendre/desktop/age
-agenix -e <secret-name>.age
-
-# After changing recipients: `agenix -r` in EACH of the three rules directories
-# (hosts/srv-1/age, .../desktop/age, .../desktop/age/fonts) -- the fonts rules
-# file is standalone, the parent one does not reference it.
+# After changing recipients
 agenix -r
 ```
 
 `hosts/srv-1/age/default.nix` derives `age.secrets` from `secrets.nix` by
 `mapAttrs'`, so adding a server secret is one rule + one `agenix -e`, no module
-edit. Desktop secrets are declared in the module that consumes them.
+edit.
 
-`agenix` on desktops is a wrapper around the flake's pinned agenix. The desktops now run
-Arch: there it is the fish function `agenix` from the dotfiles repo
-(`nix run --inputs-from <this repo> agenix`, nix from pacman);
-`modules/home/gaugendre/desktop/agenix.nix` is the NixOS-era version. Both force
-`-i ~/.config/agenix/identity.txt`: the
-CLI has no env var or config file for the identity, and `~/.ssh/id_ed25519` has a
-passphrase age cannot get from kwallet. That same passphrase-less age key
-(`age-keygen`; deployed by the dotfiles repo, git-crypt-encrypted as
-`dot_config/private_agenix/encrypted_private_identity.txt`, also in Bitwarden) is a recipient of both stores and
-is what the user-session systemd services decrypt with (`age.identityPaths`, set
-once in `agenix.nix` for all desktop modules). The SSH keys stay recipients as a
-fallback (`agenix -i ~/.ssh/id_ed25519 -e ...` if the age key is lost).
-
-`age/fonts/` is a third rules file holding the licensed OTFs. It is a separate
-file (so it needs its own `agenix -r`) but its recipients are the parent's, read
-back out of it -- one list to maintain.
-
-Updating an **existing** font needs no `age` by hand: when stdin isn't a TTY agenix
-swaps its editor for `cp -- /dev/stdin`, which is binary-safe.
-
-```bash
-cd modules/home/gaugendre/desktop/age/fonts
-agenix -e ComicCode-Bold.otf.age < ~/Downloads/ComicCode-Bold.otf
-agenix -d ComicCode-Bold.otf.age > /tmp/ComicCode-Bold.otf
-```
-
-Adding a **new** font is the chicken-and-egg case: `secrets.nix` derives its rules
-from `readDir`, so the rule only exists once the `.age` does, and `agenix -e` on a
-name with no rule fails. Create that first file with `age` directly, then agenix
-owns it:
-
-```bash
-nix eval --raw --impure \
-  --expr 'builtins.concatStringsSep "\n" (import ./../secrets.nix)."ro-github-token.age".publicKeys' \
-  | age -R - -o NewFont.otf.age ~/Downloads/NewFont.otf
-```
-
-`fonts.nix` picks up any `*.age` in the directory by `readDir`, so that single file
-is the whole change -- no module edit. `agenix -r` rekeys binaries fine.
+The desktops run Arch: there `agenix` is the fish function `agenix` from the
+dotfiles repo (`nix run --inputs-from <this repo> agenix`, nix from pacman), which
+forces `-i ~/.config/agenix/identity.txt`: the CLI has no env var or config file
+for the identity, and `~/.ssh/id_ed25519` has a passphrase age cannot get from
+kwallet. That passphrase-less age key (`age-keygen`; deployed by the dotfiles
+repo, git-crypt-encrypted as
+`dot_config/private_agenix/encrypted_private_identity.txt`, also in Bitwarden) is
+a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
+(`agenix -i ~/.ssh/id_ed25519 -e ...` if the age key is lost).
 
 ## Architecture
 
-This is a NixOS flake configuration for three machines:
-- **framework-gab**: Framework laptop (AMD AI 300 series)
-- **desktop-gab**: Desktop workstation (Gigabyte B650)
-- **srv-1**: Server (uses disko for disk management, agenix for secrets)
+This is a NixOS flake configuration for a single machine, **srv-1** (server, uses
+disko for disk management, agenix for secrets). The former desktops
+(framework-gab, desktop-gab) now run Arch and are configured elsewhere.
 
 ### Module Hierarchy
 
-**System-level** (`modules/nixos/`):
-- `common/` → Base config for **all** machines (nix settings, fish, basic packages, home-manager setup)
-  - `default.nix` → Entry point, imports `save-disk.nix`, `home-manager.nix`, `users.nix`
-  - `users.nix` → Common user definition (gaugendre + root), SSH keys, passwordless sudo
-  - `home-manager.nix` → Base HM config for gaugendre + root
-- `desktop/` → Config for **desktop machines only** (desktop-specific features, does NOT import common)
-  - `default.nix` → Entry point, imports locale, fonts, audio, iphone, boot, docker, plasma, desktop HM, users, vpn, uv-python, nrfconnect, flatpak. Also holds the desktop packages (Kate, FreeCAD, etc.), Firefox, Steam, KDE Connect
-  - `users.nix` → Desktop-specific user groups (`networkmanager`, `dialout`)
-  - `home-manager.nix` → Desktop-only HM additions (imports `modules/home/gaugendre/desktop/`)
-  - `plasma.nix`, `audio.nix`, `boot.nix`, `locale.nix`, `fonts.nix`, `docker.nix`, `iphone.nix`, `vpn.nix`, `uv-python.nix`, `nrfconnect.nix`, `rotatrix.nix`, `virt.nix`, `flatpak.nix`
+**System-level** (`modules/nixos/common/`): base config (nix settings, fish, basic packages, home-manager setup)
+- `default.nix` → Entry point, imports `save-disk.nix`, `home-manager.nix`, `users.nix`
+- `users.nix` → User definition (gaugendre + root), SSH keys, passwordless sudo
+- `home-manager.nix` → HM config for gaugendre + root
 
 **Home-manager** (`modules/home/`):
-- `gaugendre/home.nix` → Base user config for all machines (imports `shared/`, `git.nix`)
-- `gaugendre/desktop/` → Desktop-only HM modules (krunner-autostart, konsole, kwallet-ssh, email, zed, vscode, plasma, rust, go, lua, devenv, ai-agents)
-- `gaugendre/desktop/ai-agents.nix` → Claude Code config (gaugendre only — not shared with root)
-- `shared/` → Reusable modules for **all** users (fish, bat, eza, starship, helix, fresh) — imported by both gaugendre and root
+- `gaugendre/home.nix` → User config (imports `shared/`, `git.nix`)
+- `shared/` → Reusable modules for both users (fish, bat, eza, starship, helix, fresh, theme-auto) — imported by both gaugendre and root
 - `root/home.nix` → Root user HM config
 
 **Shared helpers** (`lib/`):
-- `identity.nix` → Single source of truth for `fullName` / `email`. Imported via `let identity = import .../lib/identity.nix` in git, email account, Caddy ACME, etc.
+- `identity.nix` → Single source of truth for `fullName` / `email`. Imported via `let identity = import .../lib/identity.nix` in git, Caddy ACME, etc.
 
-**Host-specific** (`hosts/<hostname>/`):
-- `configuration.nix` → Entry point, imports hardware + `modules/nixos/common` + `modules/nixos/desktop` (desktops) or `modules/nixos/common` only (servers)
-- `srv-1/network-vars.nix` → Declares `host.network.{ipv6,ipv6gw,interface,tailscaleIp}` options (typed, via `lib.mkOption`). Consumed by `network.nix` and Caddy vhosts as `config.host.network.*`.
-- `srv-1/services/default.nix` → Aggregates all service imports for srv-1. `configuration.nix` just imports `./services`.
+**Host-specific** (`hosts/srv-1/`):
+- `configuration.nix` → Entry point, imports hardware + `modules/nixos/common`
+- `network-vars.nix` → Declares `host.network.{ipv6,ipv6gw,interface,tailscaleIp}` options (typed, via `lib.mkOption`). Consumed by `network.nix` and Caddy vhosts as `config.host.network.*`.
+- `services/default.nix` → Aggregates all service imports. `configuration.nix` just imports `./services`.
 
 ### Key Patterns
 
-- Desktops import both `modules/nixos/common` and `modules/nixos/desktop`. Servers import `modules/nixos/common` only.
 - Home-manager is configured via `modules/nixos/common/home-manager.nix` with `useGlobalPkgs = true`
-- Desktop HM additions are in `modules/nixos/desktop/home-manager.nix`
-- Catppuccin theming is enabled on desktops (`catppuccin.enable = true`). srv-1 does **not** load `catppuccin.nixosModules.catppuccin` at the NixOS level (only the home-manager module via gaugendre).
-- The **terminal** stack does not use the fixed `lib/catppuccin.nix` flavor: it follows the system light/dark theme at runtime. kitty reads the XDG portal and applies `~/.config/kitty/*-theme.auto.conf`; herdr relays OSC 11 to pane children; fish, bat and claude detect it themselves; a fish hook (`__theme_auto`, registered on `--on-variable fish_terminal_color_theme`) drives starship, eza and helix. The shared logic lives in `modules/home/shared/theme-auto.nix` — that placement is deliberate, and is why SSH sessions to srv-1 follow too. Each replaced upstream module is switched off individually (`catppuccin.{kitty,fish,bat,starship,eza,helix}.enable = false`). `lib/catppuccin.nix` stays `latte` as the fallback for everything else (zed, vscode, thunderbird, plymouth, sddm) and whenever the terminal does not answer. See `docs/superpowers/specs/2026-09-18-terminal-theme-auto-switch-design.md`.
+- srv-1 does **not** load `catppuccin.nixosModules.catppuccin` at the NixOS level (only the home-manager module, for gaugendre and root).
+- The **terminal** stack does not use the fixed `lib/catppuccin.nix` flavor: it follows the light/dark theme of the terminal the SSH session comes from, at runtime. fish, bat and claude detect it themselves; a fish hook (`__theme_auto`, registered on `--on-variable fish_terminal_color_theme`) drives starship, eza and helix. The shared logic lives in `modules/home/shared/theme-auto.nix`. Each replaced upstream module is switched off individually (`catppuccin.{fish,bat,starship,eza,helix}.enable = false`). `lib/catppuccin.nix` stays `latte` as the fallback whenever the terminal does not answer. See `docs/superpowers/specs/2026-09-18-terminal-theme-auto-switch-design.md`.
 - helix needs `editor.true-color = true`: `COLORTERM` is not forwarded over SSH and the `xterm-256color` terminfo does not advertise RGB, so on srv-1 helix silently rejected every Catppuccin theme and fell back to its default one.
 - helix's theme name is the constant `catppuccin`; `~/.config/helix/themes/catppuccin.toml` only holds an `inherits` line and is **not** managed by home-manager (a `home.activation` seeds it). `SIGUSR1` makes helix re-read `config.toml` and re-apply the theme *named* there, discarding any runtime `:theme`, which is why the indirection lives in the file rather than the name.
 - `calme-{latte,mocha}` (`modules/home/shared/helix-themes/`) are installed but **not** the default — the `theme-auto.nix` hook points at `catppuccin-*`; reach them with `:theme calme-latte`. They are catppuccin reorganised along <https://tonsky.me/blog/syntax-highlighting/>: only strings, constants, comments and the keyword that *introduces* a definition get a colour, everything else falls back to the text colour. They `inherits` the `catppuccin-*` themes — which must therefore stay installed — and override nothing but the syntax section, so UI chrome, markdown markup and diff colours are still catppuccin's. Helix exposes no `@function.definition` capture (no query has one), so a theme cannot tell a definition from a call: `keyword.function` (`fn`, `def`, `lambda`, `func`, closures included) is what marks a definition instead. `class`, `trait`, `impl` and go's `type` sit in the catch-all `@keyword` alongside `pub`/`global`/`as` and are out of reach without patching the queries. In latte the comment background carries the signal rather than the foreground (catppuccin's `yellow` on a pale yellow background would sit at ~2:1 contrast), which also means `cursorline` is hidden on comment lines.
-- A running kitty will not pick up a **content** change to a theme file across a rebuild: `ThemeColors.refresh()` only re-reads when the mtime grows, and nix store mtimes are fixed. Restart kitty after a rebuild that changes theme content. Flavor switching itself is live.
-- `overlays/unstable-packages.nix` replaces a fixed list of packages (btop, uv, claude-code, gopls, koreader…) by their nixpkgs-unstable version, under their usual `pkgs.<package>` name. To get another one from unstable, add it to that list.
-- `nh os switch .` is the preferred rebuild command (wraps nixos-rebuild with niceties)
-- Proprietary AppImages (`rotatrix.nix`) are packaged with a fixed-output `runCommand` that curls the vendor URL + `appimageTools.wrapType2`. The binary and the license-gated download key are never committed (public repo); the key sits in `/etc/rotatrix-key` and reaches the builder through `nix.settings.extra-sandbox-paths` — see "Proprietary AppImages" in `README.md`. `wrapType2` only symlinks the binary, so the `.desktop` and icons must be installed by hand via `extraInstallCommands` (pull them out with `appimageTools.extract`).
-- udev: `services.udev.extraRules` lands in `/etc/udev/rules.d/99-local.rules`, which runs **after** systemd's `73-seat-late.rules`, so a `TAG+="uaccess"` there is silently ignored. Use `GROUP`/`MODE` (`rotatrix.nix`), or ship a rules file numbered below 70 via `services.udev.packages` (`nrfconnect.nix`). The `plugdev` group does not exist on NixOS.
-- Autostart of a **graphical** app: install its `.desktop` into `$out/etc/xdg/autostart` (`/etc/xdg/autostart` is in `environment.pathsToLink`, so it lands in `/run/current-system/sw/etc/xdg/autostart`), not a `systemd.user.services` unit on `graphical-session.target` — that unit starts before Plasma has published `DISPLAY`/`WAYLAND_DISPLAY` into the user systemd manager, which breaks anything touching X (cost us a `pynput` `ImportError` in `rotatrix.nix`). A systemd user unit is still right for a display-less daemon (`modules/home/gaugendre/desktop/krunner-autostart.nix`).
-- `flake.nix` uses a local `mkHost` helper to factor common modules (`home-manager`, `unstable-packages` overlay). Hosts only declare their `extraModules` (and `extraOverlays` for srv-1).
+- `overlays/unstable-packages.nix` replaces a fixed list of packages (btop, esphome, gh, mise…) by their nixpkgs-unstable version, under their usual `pkgs.<package>` name. To get another one from unstable, add it to that list.
+- `flake.nix` uses a local `mkHost` helper to factor common modules (`home-manager`, `unstable-packages` overlay). The host only declares its `extraModules` and `extraOverlays`.
 
 ### Caddy Internal Access (srv-1)
 

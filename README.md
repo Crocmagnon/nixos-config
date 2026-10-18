@@ -1,108 +1,40 @@
 # nixos-config
 
+Configuration NixOS de **srv-1**, le seul hôte encore sous NixOS. Les desktops tournent sous
+Arch (`arch-config` et les dotfiles chezmoi) et ne lisent rien de ce repo, sauf la fonction fish
+`agenix` des dotfiles, qui épingle agenix sur ce flake (`nix run --inputs-from`).
+
 ## Directory Structure
 
-- **`hosts/`**: Machine-specific configurations. Each subdirectory corresponds to a hostname (e.g., `framework-gab`, `srv-1`) and contains the entry point (`configuration.nix`) for that system.
-- **`modules/`**:
-    - **`modules/nixos/common/`**: Base config for **all** machines (nix settings, fish, basic packages, users, home-manager setup)
-    - **`modules/nixos/desktop/`**: Config for **desktop machines only** (Plasma, audio, fonts, locale, iphone, boot, docker, vpn, uv-python, nrfconnect, rotatrix, desktop packages, desktop users, desktop home-manager)
-    - **`modules/home/gaugendre/`**: User-specific Home Manager configuration entry point.
-    - **`modules/home/gaugendre/desktop/`**: Home Manager modules for **desktop machines only** (krunner-autostart, konsole, kwallet-ssh, email, zed, vscode, plasma, rust, go, lua, devenv, ai-agents).
-    - **`modules/home/shared/`**: Reusable Home Manager modules shared across **all** users (fish, bat, eza, starship, helix, fresh).
-    - **`modules/home/root/`**: Root user Home Manager configuration.
-- **`lib/`**: Shared helpers — `identity.nix` exposes `fullName` / `email` as a single source of truth (consumed by git, email account, Caddy ACME).
-- **`overlays/`**: Custom Nixpkgs overlays to modify or extend packages.
+- **`hosts/srv-1/`** : point d'entrée (`configuration.nix`), disque (disko), réseau, secrets
+  (`age/`) et services (`services/`).
+- **`modules/nixos/common/`** : base système (réglages nix, fish, paquets de base, utilisateurs,
+  home-manager).
+- **`modules/home/gaugendre/`** : configuration Home Manager de gaugendre.
+- **`modules/home/shared/`** : modules Home Manager partagés par gaugendre et root (fish, bat,
+  eza, starship, helix, fresh, theme-auto).
+- **`modules/home/root/`** : configuration Home Manager de root.
+- **`lib/`** : `identity.nix` (`fullName` / `email`) et `catppuccin.nix` (saveur partagée).
+- **`overlays/`** : overlays nixpkgs (paquets tirés de nixpkgs-unstable, downloader).
 
 ## Module Hierarchy
 
-### All machines
 ```
-modules/nixos/common/
-  default.nix → save-disk.nix, home-manager.nix, users.nix
-                                → modules/home/gaugendre/home.nix (base: CLI tools, git, ssh, gpg)
-                                  → modules/home/shared/ (fish, bat, eza, starship, helix, fresh)
-                                → modules/home/root/home.nix
-                                  → modules/home/shared/ (fish, bat, eza, starship, helix, fresh)
-```
-
-### Desktop machines (framework-gab, desktop-gab)
-```
-hosts import both modules/nixos/common and modules/nixos/desktop
-
-modules/nixos/desktop/
-  default.nix → locale, fonts, audio, iphone, boot, docker, plasma, vpn, uv-python, nrfconnect,
-                rotatrix
-              → desktop packages (Kate, FreeCAD...), Firefox, Steam, KDE Connect
-              → users.nix (desktop user groups: networkmanager, dialout)
-              → home-manager.nix
-                  → modules/home/gaugendre/desktop/ (krunner-autostart, konsole, kwallet-ssh,
-                    email, zed, vscode, plasma, rust, go, lua, devenv,
-                    ai-agents (Claude Code, gaugendre only))
+hosts/srv-1/configuration.nix
+  → modules/nixos/common/
+      default.nix → save-disk.nix, home-manager.nix, users.nix
+                      → modules/home/gaugendre/home.nix → modules/home/shared/
+                      → modules/home/root/home.nix      → modules/home/shared/
+  → hosts/srv-1/age, hosts/srv-1/services
 ```
 
-### Server (srv-1)
+## Deploy
+
 ```
-modules/nixos/common/ only → no desktop config leaks in
+mise run srv-1
 ```
 
-## Adding a New Machine
-
-### New Desktop
-
-1. Create `hosts/<hostname>/hardware-configuration.nix` (generate on target with `nixos-generate-config`)
-2. Create `hosts/<hostname>/configuration.nix`:
-    ```nix
-    { ... }:
-    {
-      imports = [
-        ./hardware-configuration.nix
-        ../../modules/nixos/common
-        ../../modules/nixos/desktop
-      ];
-      networking.hostName = "<hostname>";
-      # Host-specific config here (e.g., fingerprint reader, GPU, cooling)
-      system.stateVersion = "25.11";
-    }
-    ```
-3. Add to `flake.nix` via the `mkHost` helper:
-    ```nix
-    nixosConfigurations.<hostname> = mkHost {
-      extraModules = [
-        ./hosts/<hostname>/configuration.nix
-        # nixos-hardware.nixosModules.<board> if applicable
-        catppuccin.nixosModules.catppuccin
-      ];
-    };
-    ```
-    `mkHost` already wires `home-manager`, `system`, `specialArgs`, and the `unstable-packages` overlay. Pass `extraOverlays = [ ... ]` if you need additional overlays.
-4. Build: `nixos-rebuild dry-build --flake .#<hostname>`
-
-### New Server
-
-1. Create `hosts/<hostname>/hardware-configuration.nix`
-2. Create `hosts/<hostname>/configuration.nix`:
-    ```nix
-    { ... }:
-    {
-      imports = [
-        ./hardware-configuration.nix
-        ../../modules/nixos/common
-      ];
-      networking.hostName = "<hostname>";
-      # Server-specific config (services, users, etc.)
-      system.stateVersion = "25.11";
-    }
-    ```
-3. Add to `flake.nix` via `mkHost` (omit `catppuccin.nixosModules.catppuccin` unless you want NixOS-level theming):
-    ```nix
-    nixosConfigurations.<hostname> = mkHost {
-      extraModules = [
-        ./hosts/<hostname>/configuration.nix
-        # disko.nixosModules.disko, agenix.nixosModules.default if needed
-      ];
-    };
-    ```
-4. Build: `nixos-rebuild dry-build --flake .#<hostname>`
+srv-1 récupère depuis GitHub la branche courante (déjà poussée) et se reconstruit lui-même.
 
 ## Update secrets
 ```
@@ -115,66 +47,10 @@ sous un segment de chemin nommé `secrets`, ce qui bloquait la lecture des fichi
 eux-mêmes. `.claude/settings.json` interdit à la place ce qui compte vraiment — exécuter
 `age`/`agenix` et lire les `*.age`.
 
-Pour un secret binaire (les polices sous licence de `modules/home/gaugendre/desktop/age/fonts/`),
-agenix bascule sur `cp -- /dev/stdin` quand stdin n'est pas un TTY — donc pas d'éditeur, et
-c'est binary-safe :
-
-```
-cd modules/home/gaugendre/desktop/age/fonts
-agenix -e MaPolice.otf.age < ~/Downloads/MaPolice.otf
-agenix -d MaPolice.otf.age > /tmp/MaPolice.otf
-```
-
-Ça ne vaut que pour une police **déjà** présente : les règles de `fonts/secrets.nix` sont
-dérivées d'un `readDir`, donc pour une **nouvelle** police il faut créer le premier `.age`
-avec `age` (aucune règle n'existe encore, `agenix -e` refuserait) :
-
-```
-nix eval --raw --impure \
-  --expr 'builtins.concatStringsSep "\n" (import ./../secrets.nix)."ro-github-token.age".publicKeys' \
-  | age -R - -o NouvellePolice.otf.age ~/Downloads/NouvellePolice.otf
-```
-
-La commande `agenix` des desktops est un wrapper (`modules/home/gaugendre/desktop/agenix.nix`)
-qui force `-i ~/.config/agenix/identity.txt`, l'identité age dédiée sans passphrase —
-sinon age réclame la passphrase de `~/.ssh/id_ed25519`. **Cette clé est à sauvegarder** :
-sans elle (et sans la clé SSH, toujours destinataire), plus aucun secret n'est déchiffrable.
-
-## Proprietary AppImages
-
-Some desktop apps aren't in nixpkgs and are only distributed as a license-gated AppImage
-(currently: Rotatrix, `modules/nixos/desktop/rotatrix.nix`). Neither the binary nor the download
-key is committed — this repository is public. The module downloads the AppImage in a fixed-output
-derivation whose builder reads the key from `/etc/rotatrix-key`, bind-mounted into the build
-sandbox via `nix.settings.extra-sandbox-paths`. The key never enters the Nix store.
-
-Setup is needed **once per machine**, and nothing on version bumps:
-
-```
-printf '%s' RTX-XXXXXXXX | sudo tee /etc/rotatrix-key >/dev/null
-sudo chown root:nixbld /etc/rotatrix-key && sudo chmod 440 /etc/rotatrix-key  # readable by the build user
-```
-
-On the very first rebuild the sandbox mapping isn't in `nix.conf` yet, so pass it once (fish; the
-`$NIX_CONFIG` prefix keeps the `access-tokens` line `github-token.nix` exports):
-
-```
-env NIX_CONFIG="$NIX_CONFIG"\n"extra-sandbox-paths = /etc/rotatrix-key?" nh os switch .
-```
-
-On a version bump, only `version` and `outputHash` in the module change:
-
-```
-nix hash file --sri ~/Downloads/Rotatrix-linux-x86_64.AppImage
-```
-
-`nix flake check` and evaluation still work on a machine without the key — only building the
-package needs it, and it fails with an explicit message.
-
-Rotatrix installs its FreeCAD addon by copying it out of the extracted AppImage, so it lands in
-`~/.local/share/FreeCAD/v1-1/Mod/rotatrix_freecad` with the store's read-only permissions (dir
-mode 555). It cannot overwrite that on a version bump — delete the directory before first launch
-of the new version so the addon gets reinstalled.
+Sur les desktops, `agenix` est la fonction fish des dotfiles, qui force
+`-i ~/.config/agenix/identity.txt` : une identité age dédiée, sans passphrase. Sans elle, age
+réclame la passphrase de `~/.ssh/id_ed25519`. **Cette clé est à sauvegarder** : sans elle (et
+sans la clé SSH, toujours destinataire), plus aucun secret n'est déchiffrable.
 
 ## Pre-commit hooks
 
