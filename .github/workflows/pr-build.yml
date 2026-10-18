@@ -85,6 +85,13 @@ jobs:
           } > report.md
           gh pr comment "${{ github.event.pull_request.number }}" --edit-last --create-if-none --body-file report.md
 
+      # auto-fix hands this log to Claude instead of rebuilding to see the error.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.head.outcome == 'failure'
+        with:
+          name: build-log
+          path: build.log
+
       - name: Fail on a broken build
         if: steps.head.outcome == 'failure'
         run: exit 1

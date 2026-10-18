@@ -74,11 +74,12 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   from the report into the file and push on `update-flake-lock`; `pr-build` reruns.
 - `.github/workflows/auto-fix.yml`: when `pr-build` fails on `update-flake-lock`, Claude
   (`anthropics/claude-code-action`, `CLAUDE_CODE_OAUTH_TOKEN` secret from `claude setup-token`,
-  valid one year) gets one attempt at a fix. Two jobs: Claude runs with no write credential
-  (`persist-credentials: false`, read-only `GITHUB_TOKEN`) and only exact Bash commands (the
-  srv-1 `nix build`, `git status`) -- a prefix rule such as `nix eval:*` would allow
-  `--expr`/`--option`, i.e. arbitrary code on the runner; its diff goes out as an artifact, and
-  a fresh runner applies it and pushes it with the PAT, so `pr-build` rebuilds and reports.
+  valid one year) gets one attempt at a fix from the `build-log` artifact `pr-build` uploads on
+  failure. Two jobs: Claude runs with no write credential (`persist-credentials: false`,
+  read-only `GITHUB_TOKEN`), no nix and no Bash (Read/Edit/Glob/Grep only; a Bash prefix rule
+  such as `nix eval:*` would allow `--expr`/`--option`, i.e. arbitrary code on the runner); its
+  diff goes out as an artifact, and a fresh runner applies it and pushes it with the PAT. The
+  `pr-build` run that push starts is the check of the fix.
   **One attempt per bump**: only a failed commit that touches nothing but `flake.lock` gets one,
   and only on a run's first attempt -- once a fix (Claude's or yours) is on top, or on a manual
   re-run, nothing happens. It never merges; the required check stays the gate. To trigger it
