@@ -76,10 +76,11 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   (`anthropics/claude-code-action`, `CLAUDE_CODE_OAUTH_TOKEN` secret from `claude setup-token`,
   valid one year) gets one attempt at a fix from the `build-log` artifact `pr-build` uploads on
   failure. Two jobs: Claude runs with no write credential (`persist-credentials: false`,
-  read-only `GITHUB_TOKEN`), no nix and no Bash (Read/Edit/Glob/Grep only; a Bash prefix rule
-  such as `nix eval:*` would allow `--expr`/`--option`, i.e. arbitrary code on the runner); its
-  diff goes out as an artifact, and a fresh runner applies it and pushes it with the PAT. The
-  `pr-build` run that push starts is the check of the fix.
+  read-only `GITHUB_TOKEN`). It drafts a first patch from the log without building, then checks
+  and iterates with the srv-1 `nix build` (Read/Edit/Glob/Grep plus that exact command, with and
+  without `-L`; a Bash prefix rule such as `nix build:*` or `nix eval:*` would allow
+  `--expr`/`--option`, i.e. arbitrary code on the runner). Its diff goes out as an artifact, and
+  a fresh runner applies it and pushes it with the PAT; `pr-build` then rebuilds and reports.
   **One attempt per bump**: only a failed commit that touches nothing but `flake.lock` gets one,
   and only on a run's first attempt -- once a fix (Claude's or yours) is on top, or on a manual
   re-run, nothing happens. It never merges; the required check stays the gate. To trigger it

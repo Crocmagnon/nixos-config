@@ -26,7 +26,7 @@ jobs:
       github.event.workflow_run.head_branch == 'update-flake-lock' &&
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     outputs:
       patch: ${{ steps.diff.outputs.patch }}
     steps:
@@ -54,8 +54,21 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
-      # No Bash and no nix: Claude edits from the log, and the pr-build run started by the push
-      # is the check (a prefix rule like `nix eval:*` would mean arbitrary code on the runner).
+      # The srv-1 toplevel takes ~6 GiB unpacked.
+      - name: Free disk space
+        if: steps.guard.outputs.go == 'true'
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+        if: steps.guard.outputs.go == 'true'
+        with:
+          extra_nix_config: |
+            extra-substituters = https://catppuccin.cachix.org
+            extra-trusted-public-keys = catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU=
+
+      # The log gives Claude its first patch without a build; the build lets it check and iterate.
+      # Exact Bash commands only: a prefix rule like `nix build:*` or `nix eval:*` would allow
+      # `--expr`/`--option`, i.e. arbitrary code on the runner.
       - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
         if: steps.guard.outputs.go == 'true'
         with:
@@ -68,7 +81,8 @@ jobs:
 
             Fix the configuration so that
             `nix build .#nixosConfigurations.srv-1.config.system.build.toplevel` succeeds again.
-            You cannot build here: the CI rebuilds your change once it is pushed. Never edit
+            Start from the log, then check your fix with that build (the first one downloads ~5 GiB
+            from the cache, later ones are incremental) and iterate until it succeeds. Never edit
             flake.lock, never pin an input back, never comment out a service: adapt the config to
             the new inputs. A stale fixed-output hash is fixed by replacing
             the `specified` value with the `got` one. Leave the changes uncommitted.
@@ -76,7 +90,7 @@ jobs:
             If you cannot fix it, change nothing.
           claude_args: >-
             --max-turns 30
-            --allowedTools "Read,Edit,Glob,Grep"
+            --allowedTools "Read,Edit,Glob,Grep,Bash(nix build .#nixosConfigurations.srv-1.config.system.build.toplevel),Bash(nix build -L .#nixosConfigurations.srv-1.config.system.build.toplevel)"
 
       - name: Extract the patch
         id: diff
