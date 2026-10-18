@@ -1,0 +1,90 @@
+name: pr-build
+
+# No paths filter: this check is required on main, and a skipped required check blocks the PR.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TOPLEVEL: nixosConfigurations.srv-1.config.system.build.toplevel
+    steps:
+      # Both srv-1 toplevels take ~12 GiB unpacked: the runner lacks the room without dropping its
+      # preinstalled toolchains.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+          df -h /
+
+      # The default ref is the PR merged into main: what main becomes once merged.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+        with:
+          # catppuccin.cachix.org saves rebuilding whiskers (import-from-derivation at eval time).
+          extra_nix_config: |
+            extra-substituters = https://catppuccin.cachix.org
+            extra-trusted-public-keys = catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU=
+
+      # Build rather than diff .drv files: dix on .drv files compares the build closure (patches,
+      # tarballs, bootstrap), not what runs on srv-1.
+      - name: Build base srv-1
+        run: nix build "github:${{ github.repository }}/${{ github.event.pull_request.base.sha }}#$TOPLEVEL" --out-link old
+
+      - name: Build PR srv-1
+        id: head
+        continue-on-error: true
+        shell: bash # -o pipefail, so tee does not hide a failed build
+        run: nix build ".#$TOPLEVEL" --out-link new 2>&1 | tee build.log
+
+      - name: Post report
+        shell: bash
+        run: |
+          {
+            echo "## srv-1 build report"
+            echo
+            echo "Commit ${{ github.event.pull_request.head.sha }}, [run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+            echo
+            if [ "${{ steps.head.outcome }}" = success ]; then
+              nix run --inputs-from . nixpkgs#dix -- --color never old new > dix.txt
+              echo '```'
+              # GitHub caps a comment at 65,536 characters.
+              head -c 60000 dix.txt
+              if [ "$(wc -c < dix.txt)" -gt 60000 ]; then
+                echo
+                echo "… truncated, full output in the run logs"
+              fi
+              echo '```'
+            else
+              echo "> [!CAUTION]"
+              echo "> srv-1 does not build: **not mergeable as is.**"
+              echo
+              echo '```'
+              # specified/got: the expected and actual hash of a stale fixed-output derivation.
+              grep -E '^error:|^ +(specified|got):' build.log | head -n 40 || true
+              echo '```'
+              echo
+              echo "<details><summary>End of the build log</summary>"
+              echo
+              echo '```'
+              tail -n 60 build.log | head -c 20000
+              echo '```'
+              echo "</details>"
+            fi
+          } > report.md
+          gh pr comment "${{ github.event.pull_request.number }}" --edit-last --create-if-none --body-file report.md
+
+      - name: Fail on a broken build
+        if: steps.head.outcome == 'failure'
+        run: exit 1

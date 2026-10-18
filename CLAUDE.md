@@ -56,16 +56,22 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
 ## Automatic Updates
 
 - `.github/workflows/update-flake-lock.yml` runs `nix flake update` every Monday at 03:00 UTC and
-  opens (or force-updates) the PR `flake.lock: update` on the fixed branch `update-flake-lock`.
-  Its body is `dix` between srv-1's toplevel built before and after: runtime package and version
-  changes. Both are really built (~5 GiB from the cache): `dix` on unbuilt `.drv` files diffs
-  the *build* closure (patches, tarballs, bootstrap gcc) and drowns the signal. Merging stays
-  manual.
-- If the updated build fails, the job fails (GitHub emails the failure) and the PR is neither
-  opened nor touched. Typical cause: a pinned fixed-output hash that a bump invalidates, e.g.
-  `caddy.withPlugins` in `hosts/srv-1/services/caddy.nix` on a caddy bump. Fix it by hand:
-  `nix flake update`, take the `got:` hash from the build error, commit lock + hash on a branch
-  and open the PR.
+  pushes it to the fixed branch `update-flake-lock`, opening the PR `flake.lock: update`. If that
+  PR is still open, it adds a commit on top of its branch (fix-up commits are kept, never
+  force-pushed); otherwise it restarts the branch from `main`. It pushes with the
+  `FLAKE_UPDATE_TOKEN` secret (fine-grained PAT, this repo only, Contents + Pull requests
+  read/write): what `GITHUB_TOKEN` pushes triggers no workflow, so `pr-build` would not run.
+  When the PAT expires, the job fails on authentication: create a new one and
+  `gh secret set FLAKE_UPDATE_TOKEN`.
+- `.github/workflows/pr-build.yml` runs on every PR to `main` and every push to it. It builds srv-1
+  at the PR base and at the PR merged into `main`, then posts a single, edited-in-place comment:
+  `dix` between both runtime closures (~5 GiB from the cache; `dix` on unbuilt `.drv` files
+  diffs the *build* closure and drowns the signal), or, if the PR does not build, its `error:`
+  lines and the end of the log, and the check goes red. The check is required on `main`, hence
+  no paths filter (a skipped required check blocks the PR).
+- Typical red check on the weekly PR: a pinned fixed-output hash that a bump invalidates, e.g.
+  `caddy.withPlugins` in `hosts/srv-1/services/caddy.nix` on a caddy bump. Copy the `got:` hash
+  from the report into the file and push on `update-flake-lock`; `pr-build` reruns.
 - `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**

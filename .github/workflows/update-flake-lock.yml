@@ -2,83 +2,52 @@ name: update flake.lock
 
 on:
   schedule:
-    - cron: "0 3 * * 1" # lundi 03:00 UTC
+    - cron: "0 3 * * 1" # Monday 03:00 UTC
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      # Not GITHUB_TOKEN: pushes and PRs made with it trigger no workflow, so pr-build would not run.
+      GH_TOKEN: ${{ secrets.FLAKE_UPDATE_TOKEN }}
     steps:
-      # Les deux toplevels de srv-1 pèsent ~12 Gio décompressés : le runner n'a pas la place
-      # sans retirer ses toolchains préinstallées.
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
-          df -h /
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ secrets.FLAKE_UPDATE_TOKEN }}
 
       - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
-        with:
-          # catppuccin.cachix.org évite de rebuilder whiskers (import-from-derivation à l'éval).
-          extra_nix_config: |
-            extra-substituters = https://catppuccin.cachix.org
-            extra-trusted-public-keys = catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU=
 
-      # Builder plutôt que comparer les .drv : dix sur des .drv compare le closure de build
-      # (patchs, tarballs, bootstrap), pas ce qui tourne sur srv-1.
-      - name: Build current srv-1
-        run: nix build .#nixosConfigurations.srv-1.config.system.build.toplevel --out-link old
-
-      - name: Update flake.lock
-        id: update
+      - name: Update flake.lock and open the PR
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # An open PR keeps its branch, fix-up commits included: never rewrite it from main.
+          pr=$(gh pr list --head update-flake-lock --base main --state open --json number --jq '.[0].number')
+          if [ -n "$pr" ]; then
+            git fetch origin update-flake-lock:update-flake-lock
+            git switch update-flake-lock
+          else
+            git switch -c update-flake-lock
+          fi
+
           nix flake update 2> update.log || { cat update.log; exit 1; }
           cat update.log
-          # Rien n'a bougé : pas de build, et la PR existante reste telle quelle.
-          if git diff --quiet flake.lock; then echo changed=false; else echo changed=true; fi >> "$GITHUB_OUTPUT"
+          if git diff --quiet flake.lock; then
+            echo "flake.lock unchanged"
+            exit 0
+          fi
 
-      - name: Build updated srv-1
-        if: steps.update.outputs.changed == 'true'
-        run: nix build .#nixosConfigurations.srv-1.config.system.build.toplevel --out-link new
-
-      - name: Write PR body
-        if: steps.update.outputs.changed == 'true'
-        run: |
-          nix run --inputs-from . nixpkgs#dix -- --color never old new > dix.txt
-          cat dix.txt
-          {
-            echo '## Changements sur srv-1'
-            echo
-            echo '```'
-            # Limite GitHub : 65 536 caractères pour le corps de PR.
-            head -c 60000 dix.txt
-            if [ "$(wc -c < dix.txt)" -gt 60000 ]; then
-              echo
-              echo '… tronqué, sortie complète dans les logs du run'
-            fi
-            echo '```'
-            echo
-            echo '## Inputs'
-            echo
-            echo '```'
-            grep -v '^warning:' update.log || true
-            echo '```'
-            echo
-            echo "Run : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          } > pr-body.md
-
-      - if: steps.update.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          branch: update-flake-lock
-          base: main
-          title: "flake.lock: update"
-          commit-message: "flake.lock: update"
-          add-paths: flake.lock
-          body-path: pr-body.md
-          delete-branch: true
+          git commit -m "flake.lock: update" -m "$(grep -v '^warning:' update.log || true)" flake.lock
+          if [ -n "$pr" ]; then
+            git push origin update-flake-lock
+          else
+            # No open PR: whatever the branch holds is a leftover of a merged or closed one.
+            git push --force origin update-flake-lock
+            gh pr create --base main --head update-flake-lock --title "flake.lock: update" \
+              --body "Weekly \`nix flake update\`. The \`pr-build\` workflow posts the build report and package diff."
+          fi
