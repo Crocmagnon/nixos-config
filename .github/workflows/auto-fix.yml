@@ -55,11 +55,6 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
-      # The srv-1 toplevel takes ~6 GiB unpacked.
-      - name: Free disk space
-        if: steps.guard.outputs.go == 'true'
-        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
-
       - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
         if: steps.guard.outputs.go == 'true'
         with:
@@ -90,6 +85,7 @@ jobs:
 
             If you cannot fix it, change nothing.
           claude_args: >-
+            --model opus
             --max-turns 30
             --allowedTools "Read,Edit,Glob,Grep,Bash(nix build .#nixosConfigurations.srv-1.config.system.build.toplevel),Bash(nix build -L .#nixosConfigurations.srv-1.config.system.build.toplevel)"
 
