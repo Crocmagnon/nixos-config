@@ -44,11 +44,15 @@ srv-1 récupère depuis GitHub la branche courante (déjà poussée) et se recon
   `gh workflow run update-flake-lock.yml`.
 - Chaque nuit à 04:00, srv-1 applique `main` (`hosts/srv-1/auto-upgrade.nix`) et redémarre
   entre 04:00 et 06:00 si le kernel ou l'initrd a changé.
+- Renovate (`renovate.json`) met à jour les GitHub Actions épinglées par SHA, une fois par mois,
+  en une seule PR groupée. `flake.lock` n'est pas de son ressort : le manager nix est désactivé.
 
 Réglages faits à la main, une seule fois :
 
 - GitHub, *Settings → Actions → General* : cocher « Allow GitHub Actions to create and approve
   pull requests », sinon le workflow ne peut pas ouvrir la PR.
+- GitHub : installer l'app [Renovate](https://github.com/apps/renovate) sur ce repo, si ce
+  n'est pas déjà fait.
 - healthchecks : le check `nixos-upgrade` est créé au premier run ; régler sa période (1 jour)
   et sa grâce.
 
