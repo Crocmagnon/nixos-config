@@ -9,10 +9,11 @@
     randomizedDelaySec = "30min";
     # Reboot seulement si kernel, initrd ou modules changent ; sinon simple switch.
     allowReboot = true;
-    # Hors fenêtre, un upgrade qui demande un reboot est sauté (rien n'est appliqué)
-    # et l'unité sort quand même en succès : seul le journal le dit.
+    # Hors fenêtre, un upgrade qui demande un reboot devient l'entrée de boot par défaut sans
+    # être activé (appliqué au prochain reboot, quel qu'il soit), et l'unité sort en succès.
     rebootWindow = {
-      lower = "04:00";
+      # 03:59 : le module teste `heure > lower` strictement, 04:00 raterait un run à 04:00.
+      lower = "03:59";
       upper = "06:00";
     };
   };

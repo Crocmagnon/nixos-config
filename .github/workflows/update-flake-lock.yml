@@ -35,14 +35,21 @@ jobs:
         run: nix build .#nixosConfigurations.srv-1.config.system.build.toplevel --out-link old
 
       - name: Update flake.lock
-        run: nix flake update 2> update.log; cat update.log
+        id: update
+        run: |
+          nix flake update 2> update.log || { cat update.log; exit 1; }
+          cat update.log
+          # Rien n'a bougé : pas de build, et la PR existante reste telle quelle.
+          if git diff --quiet flake.lock; then echo changed=false; else echo changed=true; fi >> "$GITHUB_OUTPUT"
 
       - name: Build updated srv-1
+        if: steps.update.outputs.changed == 'true'
         run: nix build .#nixosConfigurations.srv-1.config.system.build.toplevel --out-link new
 
       - name: Write PR body
+        if: steps.update.outputs.changed == 'true'
         run: |
-          nix run nixpkgs#dix -- --color never old new > dix.txt
+          nix run --inputs-from . nixpkgs#dix -- --color never old new > dix.txt
           cat dix.txt
           {
             echo '## Changements sur srv-1'
@@ -59,13 +66,14 @@ jobs:
             echo '## Inputs'
             echo
             echo '```'
-            grep -v '^warning:' update.log
+            grep -v '^warning:' update.log || true
             echo '```'
             echo
             echo "Run : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } > pr-body.md
 
-      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+      - if: steps.update.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           branch: update-flake-lock
           base: main

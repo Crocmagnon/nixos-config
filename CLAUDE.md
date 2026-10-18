@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Deploy: srv-1 fetches the pushed current branch from GitHub and switches itself
 mise run srv-1
 
-# Build without switching (dry run)
-nixos-rebuild dry-build --flake .#srv-1
+# Build without switching (dry run; works with the nix from pacman on Arch)
+nix build .#nixosConfigurations.srv-1.config.system.build.toplevel --dry-run
 
 # Check flake validity
 nix flake check
@@ -70,10 +70,13 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**
   A branch tried with `mise run srv-1` is replaced by `main` the next night.
-- Reboots only when kernel, initrd or modules change, and only within 04:00–06:00. Outside that
-  window an upgrade that needs a reboot is skipped entirely (nothing applied) yet the unit
-  succeeds -- e.g. when restic runs past 06:00. Check `journalctl -u nixos-upgrade` for
-  "Outside of configured reboot window, skipping."
+- Reboots only when kernel, initrd or modules change, and only within 04:00–06:00. The module
+  always runs `nixos-rebuild boot` first: outside the window (e.g. restic ran past 06:00) the new
+  generation becomes the boot default but is **not activated**, and the unit still succeeds
+  ("Outside of configured reboot window, skipping." in the journal, also in the healthchecks
+  ping body). The next reboot -- the next in-window night, or any manual or provider reboot --
+  applies it. If that happens every night, srv-1 silently stops updating with green pings:
+  compare `readlink /run/booted-system/kernel` with `readlink /nix/var/nix/profiles/system/kernel`.
 - Reported to healthchecks as `nixos-upgrade` (start/success/failure, like restic). The check is
   created by the first run; its period (1 day) and grace are set by hand in the healthchecks UI.
 
