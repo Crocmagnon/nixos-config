@@ -27,7 +27,7 @@ seulement le diff de `flake.lock`.
 - Auto-merge de la PR : le merge reste manuel.
 - Déploiement poussé depuis la CI (SSH, deploy-rs, colmena…) : srv-1 tire lui-même.
 - Commentaire de diff sur les PR écrites à la main : seule la PR de bump est concernée.
-- Builder le système en CI ou mettre en place un cache binaire.
+- Mettre en place un cache binaire.
 
 ## Anti-objectifs
 
@@ -78,6 +78,14 @@ Validation : `nix flake check` passe et
 le ménage, hors entrées `flake.lock` retirées. Si le drvPath change, l'expliquer.
 
 ## Partie 2 — bump hebdo avec diff de paquets
+
+> **Révision (2026-10-18, décision de l'utilisateur)** : le prototype a montré que dix sur des
+> `.drv` non buildés compare le closure de *build* (patchs, tarballs, bootstrap gcc : ~500
+> lignes, 49 Ko pour un mois de nixpkgs), pas ce qui tourne sur srv-1. Le workflow **builde**
+> donc les deux toplevels (avant et après) et lance dix sur les closures runtime. Cela coûte
+> environ 5 Gio de téléchargement depuis le cache et une libération de disque sur le runner.
+> Les étapes 2, 4 et 5 ci-dessous s'entendent avec `nix build` à la place de `nix eval
+> …drvPath`.
 
 Un workflow `.github/workflows/update-flake-lock.yml` :
 

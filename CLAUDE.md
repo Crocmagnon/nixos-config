@@ -57,8 +57,15 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
 
 - `.github/workflows/update-flake-lock.yml` runs `nix flake update` every Monday at 03:00 UTC and
   opens (or force-updates) the PR `flake.lock: update` on the fixed branch `update-flake-lock`.
-  Its body is `dix` between srv-1's toplevel `drvPath` before and after: package and version
-  changes, computed without building. Merging stays manual.
+  Its body is `dix` between srv-1's toplevel built before and after: runtime package and version
+  changes. Both are really built (~5 GiB from the cache): `dix` on unbuilt `.drv` files diffs
+  the *build* closure (patches, tarballs, bootstrap gcc) and drowns the signal. Merging stays
+  manual.
+- If the updated build fails, the job fails (GitHub emails the failure) and the PR is neither
+  opened nor touched. Typical cause: a pinned fixed-output hash that a bump invalidates, e.g.
+  `caddy.withPlugins` in `hosts/srv-1/services/caddy.nix` on a caddy bump. Fix it by hand:
+  `nix flake update`, take the `got:` hash from the build error, commit lock + hash on a branch
+  and open the PR.
 - `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**

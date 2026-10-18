@@ -36,6 +36,22 @@ mise run srv-1
 
 srv-1 récupère depuis GitHub la branche courante (déjà poussée) et se reconstruit lui-même.
 
+## Mises à jour automatiques
+
+- Chaque lundi, le workflow `update-flake-lock` met `flake.lock` à jour, builde srv-1 avant
+  et après, et ouvre la PR `flake.lock: update` avec le diff de paquets (dix). Si la PR n'est
+  pas mergée avant le run suivant, elle est mise à jour, pas dupliquée. Lancement manuel :
+  `gh workflow run update-flake-lock.yml`.
+- Chaque nuit à 04:00, srv-1 applique `main` (`hosts/srv-1/auto-upgrade.nix`) et redémarre
+  entre 04:00 et 06:00 si le kernel ou l'initrd a changé.
+
+Réglages faits à la main, une seule fois :
+
+- GitHub, *Settings → Actions → General* : cocher « Allow GitHub Actions to create and approve
+  pull requests », sinon le workflow ne peut pas ouvrir la PR.
+- healthchecks : le check `nixos-upgrade` est créé au premier run ; régler sa période (1 jour)
+  et sa grâce.
+
 ## Update secrets
 ```
 cd hosts/srv-1/age
