@@ -6,6 +6,7 @@
     ./hardware-configuration.nix
     ./boot.nix
     ./network.nix
+    ./auto-upgrade.nix
     ../../modules/nixos/common
     ./age
     ./services
