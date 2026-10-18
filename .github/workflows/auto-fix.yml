@@ -1,6 +1,8 @@
 name: auto-fix
 
 # One Claude attempt at fixing a weekly flake.lock PR that pr-build reported broken.
+# Two jobs: Claude runs with no write credential at all; a fresh runner applies its patch and
+# pushes it with the PAT, so that pr-build runs again on the fix.
 on:
   workflow_run:
     workflows: [pr-build]
@@ -8,7 +10,6 @@ on:
 
 permissions:
   contents: read
-  actions: read # gh run view --log-failed
 
 concurrency:
   group: auto-fix
@@ -16,40 +17,34 @@ concurrency:
 
 jobs:
   fix:
+    # run_attempt == 1: re-running a failed pr-build by hand never triggers a new attempt.
     if: >-
       github.event.workflow_run.conclusion == 'failure' &&
       github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.run_attempt == 1 &&
       github.event.workflow_run.head_branch == 'update-flake-lock' &&
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      patch: ${{ steps.diff.outputs.patch }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: update-flake-lock
-          # Pushed with the PAT so that pr-build runs again on the fix.
-          token: ${{ secrets.FLAKE_UPDATE_TOKEN }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
+          persist-credentials: false
 
-      - name: Check this is the first attempt on the failed commit
+      # Only the bot's own bump gets an attempt: once a fix (Claude's or a human's) is on top,
+      # its failure is for a human.
+      - name: Check the failed commit is a flake.lock bump
         id: guard
-        env:
-          FAILED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          if [ "$(git rev-parse HEAD)" != "$FAILED_SHA" ]; then
-            echo "Branch moved since the failed run: the newer run decides."
-            echo go=false >> "$GITHUB_OUTPUT"
-          elif [ "$(git log -1 --format='%(trailers:key=Auto-fix,valueonly)')" = true ]; then
-            echo "The failed commit is already an auto-fix: one attempt only, a human takes over."
-            echo go=false >> "$GITHUB_OUTPUT"
-          else
+          if [ "$(git diff --name-only HEAD~1 HEAD)" = flake.lock ]; then
             echo go=true >> "$GITHUB_OUTPUT"
+          else
+            echo "The failed commit is not a bare flake.lock bump: a human takes over."
           fi
-
-      - name: Fetch the build error
-        if: steps.guard.outputs.go == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run view "${{ github.event.workflow_run.id }}" --log-failed | tail -n 300 > /tmp/build-error.log
 
       # The srv-1 toplevel takes ~6 GiB unpacked.
       - name: Free disk space
@@ -63,6 +58,8 @@ jobs:
             extra-substituters = https://catppuccin.cachix.org
             extra-trusted-public-keys = catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU=
 
+      # Exact Bash commands, no prefix rules: `nix eval --expr`/`--option` would mean arbitrary
+      # code on the runner.
       - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
         if: steps.guard.outputs.go == 'true'
         with:
@@ -70,30 +67,62 @@ jobs:
           github_token: ${{ github.token }}
           prompt: |
             This repository is the NixOS flake of the server srv-1 (read CLAUDE.md). A weekly
-            `nix flake update` broke its build; the end of the failed CI log is in
-            /tmp/build-error.log.
+            `nix flake update` broke its build. Run
+            `nix build -L .#nixosConfigurations.srv-1.config.system.build.toplevel` to see the
+            error.
 
-            Fix the configuration so that
-            `nix build .#nixosConfigurations.srv-1.config.system.build.toplevel` succeeds again.
-            Never edit flake.lock, never pin an input back, never comment out a service: adapt the
-            config to the new inputs. A stale fixed-output hash is fixed by replacing the
-            `specified` value with the `got` one. Run the build to check your fix. Leave the
-            changes uncommitted.
+            Fix the configuration so that this build succeeds again, and run it to check your
+            fix. Never edit flake.lock, never pin an input back, never comment out a service:
+            adapt the config to the new inputs. A stale fixed-output hash is fixed by replacing
+            the `specified` value with the `got` one. Leave the changes uncommitted.
 
             If you cannot fix it, change nothing.
           claude_args: >-
             --max-turns 30
-            --allowedTools "Read,Edit,Glob,Grep,Bash(nix build:*),Bash(nix eval:*),Bash(git diff:*),Bash(git status:*)"
+            --allowedTools "Read,Edit,Glob,Grep,Bash(nix build .#nixosConfigurations.srv-1.config.system.build.toplevel),Bash(nix build -L .#nixosConfigurations.srv-1.config.system.build.toplevel),Bash(git status)"
 
-      - name: Commit and push the fix
+      - name: Extract the patch
+        id: diff
         if: steps.guard.outputs.go == 'true'
         run: |
-          git restore flake.lock
-          if git diff --quiet; then
+          git diff -- . ':!flake.lock' > fix.patch
+          if [ -s fix.patch ]; then
+            echo patch=true >> "$GITHUB_OUTPUT"
+          else
             echo "Claude changed nothing: a human takes over."
+          fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.diff.outputs.patch == 'true'
+        with:
+          name: fix-patch
+          path: fix.patch
+
+  push:
+    needs: fix
+    if: needs.fix.outputs.patch == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: update-flake-lock
+          token: ${{ secrets.FLAKE_UPDATE_TOKEN }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fix-patch
+
+      - name: Commit and push the fix
+        env:
+          FAILED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$FAILED_SHA" ]; then
+            echo "Branch moved since the failed run: the patch is stale, dropping it."
             exit 0
           fi
+          git apply fix.patch
+          rm fix.patch
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -a -m "fix srv-1 build after flake.lock update" -m "Auto-fix: true"
+          git commit -a -m "fix srv-1 build after flake.lock update" -m "Patch by Claude (auto-fix workflow)."
           git push origin update-flake-lock

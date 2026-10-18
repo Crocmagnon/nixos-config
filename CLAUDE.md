@@ -74,11 +74,15 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   from the report into the file and push on `update-flake-lock`; `pr-build` reruns.
 - `.github/workflows/auto-fix.yml`: when `pr-build` fails on `update-flake-lock`, Claude
   (`anthropics/claude-code-action`, `CLAUDE_CODE_OAUTH_TOKEN` secret from `claude setup-token`,
-  valid one year) gets the end of the failed log and may only read, edit and run `nix build` /
-  `nix eval`. The workflow itself commits with an `Auto-fix: true` trailer and pushes with the
-  PAT, so `pr-build` rebuilds and reports. **One attempt per bump**: it does nothing when the
-  failed commit already carries that trailer, or when the branch moved since the failed run.
-  It never merges; the required check stays the gate.
+  valid one year) gets one attempt at a fix. Two jobs: Claude runs with no write credential
+  (`persist-credentials: false`, read-only `GITHUB_TOKEN`) and only exact Bash commands (the
+  srv-1 `nix build`, `git status`) -- a prefix rule such as `nix eval:*` would allow
+  `--expr`/`--option`, i.e. arbitrary code on the runner; its diff goes out as an artifact, and
+  a fresh runner applies it and pushes it with the PAT, so `pr-build` rebuilds and reports.
+  **One attempt per bump**: only a failed commit that touches nothing but `flake.lock` gets one,
+  and only on a run's first attempt -- once a fix (Claude's or yours) is on top, or on a manual
+  re-run, nothing happens. It never merges; the required check stays the gate. To trigger it
+  again on the same bump, close and reopen the PR.
 - `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**
