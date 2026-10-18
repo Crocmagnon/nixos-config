@@ -53,6 +53,23 @@ repo, git-crypt-encrypted as
 a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
 (`agenix -i ~/.ssh/id_ed25519 -e ...` if the age key is lost).
 
+## Automatic Updates
+
+- `.github/workflows/update-flake-lock.yml` runs `nix flake update` every Monday at 03:00 UTC and
+  opens (or force-updates) the PR `flake.lock: update` on the fixed branch `update-flake-lock`.
+  Its body is `dix` between srv-1's toplevel `drvPath` before and after: package and version
+  changes, computed without building. Merging stays manual.
+- `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
+  (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
+  Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**
+  A branch tried with `mise run srv-1` is replaced by `main` the next night.
+- Reboots only when kernel, initrd or modules change, and only within 04:00–06:00. Outside that
+  window an upgrade that needs a reboot is skipped entirely (nothing applied) yet the unit
+  succeeds -- e.g. when restic runs past 06:00. Check `journalctl -u nixos-upgrade` for
+  "Outside of configured reboot window, skipping."
+- Reported to healthchecks as `nixos-upgrade` (start/success/failure, like restic). The check is
+  created by the first run; its period (1 day) and grace are set by hand in the healthchecks UI.
+
 ## Architecture
 
 This is a NixOS flake configuration for a single machine, **srv-1** (server, uses

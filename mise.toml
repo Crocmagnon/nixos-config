@@ -6,7 +6,8 @@ run = "nix flake update"
 description = "deploy to server: srv-1 fetches the pushed current branch from GitHub and switches itself"
 # Built and switched on srv-1 itself: the desktops run Arch, without nix. Only what is pushed gets
 # deployed, hence the check for unpushed commits. The current branch is deployed, so a feature
-# branch can be tried on the server before it is merged.
+# branch can be tried on the server before it is merged -- until the nightly auto-upgrade puts
+# main back (hosts/srv-1/auto-upgrade.nix).
 run = [
   "test -z \"$(git log --oneline @{u}..)\" || { echo 'unpushed commits: git push first' >&2; exit 1; }",
   "ref=$(git branch --show-current) && test -n \"$ref\" || { echo 'detached HEAD: check out a branch' >&2; exit 1; }; ssh -t gaugendre@srv-1 sudo nixos-rebuild switch --refresh --flake \"git+https://github.com/Crocmagnon/nixos-config?ref=$ref#srv-1\"",
