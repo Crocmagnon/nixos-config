@@ -33,18 +33,19 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-          fetch-depth: 2
+          fetch-depth: 0 # merge base with main for the guard
           persist-credentials: false
 
-      # Only the bot's own bump gets an attempt: once a fix (Claude's or a human's) is on top,
-      # its failure is for a human.
-      - name: Check the failed commit is a flake.lock bump
+      # Only a PR that still changes nothing but flake.lock gets an attempt: once a fix (Claude's
+      # or a human's) is in, its failure is for a human. Compared with main, not HEAD~1, so that
+      # merging main into the branch ("Update branch") does not count as a fix.
+      - name: Check the PR only bumps flake.lock
         id: guard
         run: |
-          if [ "$(git diff --name-only HEAD~1 HEAD)" = flake.lock ]; then
+          if [ "$(git diff --name-only origin/main...HEAD)" = flake.lock ]; then
             echo go=true >> "$GITHUB_OUTPUT"
           else
-            echo "The failed commit is not a bare flake.lock bump: a human takes over."
+            echo "The PR changes more than flake.lock: a human takes over."
           fi
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

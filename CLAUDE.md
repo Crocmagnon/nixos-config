@@ -81,9 +81,10 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   without `-L`; a Bash prefix rule such as `nix build:*` or `nix eval:*` would allow
   `--expr`/`--option`, i.e. arbitrary code on the runner). Its diff goes out as an artifact, and
   a fresh runner applies it and pushes it with the PAT; `pr-build` then rebuilds and reports.
-  **One attempt per bump**: only a failed commit that touches nothing but `flake.lock` gets one,
-  and only on a run's first attempt -- once a fix (Claude's or yours) is on top, or on a manual
-  re-run, nothing happens. It never merges; the required check stays the gate. To trigger it
+  **One attempt per bump**: only a PR that, compared with `main`, still changes nothing but
+  `flake.lock` gets one, and only on a run's first attempt -- once a fix (Claude's or yours) is
+  in, or on a manual re-run, nothing happens. Merging `main` into the branch ("Update branch")
+  does not count as a fix. It never merges; the required check stays the gate. To trigger it
   again on the same bump, close and reopen the PR.
 - `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
