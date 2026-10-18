@@ -85,6 +85,7 @@ jobs:
 
             If you cannot fix it, change nothing.
           claude_args: >-
+            --model opus
             --max-turns 30
             --allowedTools "Read,Edit,Glob,Grep,Bash(nix build .#nixosConfigurations.srv-1.config.system.build.toplevel),Bash(nix build -L .#nixosConfigurations.srv-1.config.system.build.toplevel)"
 
