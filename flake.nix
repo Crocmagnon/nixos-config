@@ -2,18 +2,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixos-hardware = {
-      url = "github:NixOS/nixos-hardware/master";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    plasma-manager = {
-      url = "github:nix-community/plasma-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
     };
     catppuccin = {
       url = "github:catppuccin/nix/release-26.05";
@@ -37,18 +28,15 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
   };
 
   outputs =
     {
       nixpkgs,
       nixpkgs-unstable,
-      nixos-hardware,
       disko,
       agenix,
       home-manager,
-      catppuccin,
       downloader,
       nix-index-database,
       ...
@@ -76,22 +64,6 @@
     in
     {
       nixosConfigurations = {
-        framework-gab = mkHost {
-          extraModules = [
-            ./hosts/framework-gab/configuration.nix
-            nixos-hardware.nixosModules.framework-amd-ai-300-series
-            catppuccin.nixosModules.catppuccin
-          ];
-        };
-
-        desktop-gab = mkHost {
-          extraModules = [
-            ./hosts/desktop-gab/configuration.nix
-            nixos-hardware.nixosModules.gigabyte-b650
-            catppuccin.nixosModules.catppuccin
-          ];
-        };
-
         # nixos-anywhere --flake .#srv-1 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix <hostname>
         srv-1 = mkHost {
           extraModules = [

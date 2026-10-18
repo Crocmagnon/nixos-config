@@ -2,17 +2,6 @@
 description = "update flake.lock"
 run = "nix flake update"
 
-[tasks.all]
-description = "deploy to all machines"
-run = [
-  { task = "localhost" },
-  { task = "srv-1" },
-]
-
-[tasks.localhost]
-description = "deploy to local machine"
-run = "nh os switch .#"
-
 [tasks.srv-1]
 description = "deploy to server: srv-1 fetches the pushed current branch from GitHub and switches itself"
 # Built and switched on srv-1 itself: the desktops run Arch, without nix. Only what is pushed gets
