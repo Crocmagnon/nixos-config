@@ -39,7 +39,9 @@
               # https://serverfault.com/questions/768901/is-there-a-way-to-make-journalctl-show-logs-from-the-last-time-foo-service-ran
               # Slight tweak -- needs InactiveExitTimestamp ?
               LAST_TIMESTAMP=$(systemctl show --property InactiveExitTimestamp --value "$MONITOR_UNIT")
-              LOGS=$(journalctl --no-pager -u "$MONITOR_UNIT" --since "$LAST_TIMESTAMP")
+              # Last 100 kB only: hc-ping.com keeps no more, and a whole nixos-upgrade log
+              # (several MB) passed to curl as one argument hit "Argument list too long".
+              LOGS=$(journalctl --no-pager -u "$MONITOR_UNIT" --since "$LAST_TIMESTAMP" | tail -c 100000)
 
               # This will be 1 in case of error
               # Healthchecks supports "fail" or 1 for this:
