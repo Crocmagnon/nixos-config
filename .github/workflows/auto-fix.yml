@@ -65,7 +65,7 @@ jobs:
       # The log gives Claude its first patch without a build; the build lets it check and iterate.
       # Exact Bash commands only: a prefix rule like `nix build:*` or `nix eval:*` would allow
       # `--expr`/`--option`, i.e. arbitrary code on the runner.
-      - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
+      - uses: anthropics/claude-code-action@5eb090f3c3afd701a0672cd32981197ca27688f6 # v1.0.253
         if: steps.guard.outputs.go == 'true'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
