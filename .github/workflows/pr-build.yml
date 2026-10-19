@@ -4,6 +4,9 @@ name: pr-build
 on:
   pull_request:
     branches: [main]
+    # closed: a PR merged (admin bypass) or closed mid-build starts a run in the same concurrency
+    # group, which cancels the build; that run then skips its own job.
+    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: read
@@ -15,6 +18,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
