@@ -18,7 +18,6 @@
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.darwin.follows = "";
     };
     downloader = {
       url = "git+https://github.com/Crocmagnon/downloader-go";
