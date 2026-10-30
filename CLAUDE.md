@@ -86,6 +86,11 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   in, or on a manual re-run, nothing happens. Merging `main` into the branch ("Update branch")
   does not count as a fix. It never merges; the required check stays the gate. To trigger it
   again on the same bump, close and reopen the PR.
+- Podman images (`virtualisation.oci-containers`) are pinned as `image = "name:version@sha256:…";`
+  and bumped by Renovate (`renovate.json`, regex manager, one grouped `containers` PR every
+  Monday). Keep that exact one-line form: Renovate only sees images that match it. Never use a
+  floating tag (`latest`, `stable`): `oci-containers` only pulls a missing image, so it would
+  never update.
 - `hosts/srv-1/auto-upgrade.nix`: `system.autoUpgrade` applies `github:Crocmagnon/nixos-config`
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**

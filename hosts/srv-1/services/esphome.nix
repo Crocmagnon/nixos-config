@@ -39,7 +39,7 @@ let
 in
 {
   virtualisation.oci-containers.containers.esphome = {
-    image = "ghcr.io/esphome/esphome:stable";
+    image = "ghcr.io/esphome/esphome:2026.10.1@sha256:eab8cd6b4f51077c3883af4cedc058280ddc34a94f3b2ffee23e9d2cd5f1db64";
     volumes = [ "${stateDir}:${stateDir}" ];
 
     # HOME explicite : sinon le cache ESP-IDF atterrit dans /root du conteneur

@@ -5,11 +5,27 @@
     "schedule:monthly",
     "helpers:pinGitHubActionDigests"
   ],
-  "enabledManagers": ["github-actions"],
+  "enabledManagers": ["github-actions", "custom.regex"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Images of virtualisation.oci-containers",
+      "managerFilePatterns": ["/\\.nix$/"],
+      "matchStrings": [
+        "image = \"(?<depName>[^:\"]+):(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\";"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "groupName": "containers",
+      "schedule": ["* 0-3 * * 1"]
     }
   ]
 }
