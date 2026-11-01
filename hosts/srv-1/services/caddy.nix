@@ -25,6 +25,13 @@ in
       # common_headers s'applique encore aux réponses de respond.
       order respond after header
 
+      # Pas de HTTP/3 : quic-go ferme une connexion inactive au bout de 30 s sans
+      # prévenir le client, et Safari iOS (via Tailscale) la réutilise au Back :
+      # « le serveur ne répond pas » jusqu'au refresh.
+      servers {
+        protocols h1 h2
+      }
+
       dns ovh {
         endpoint ovh-eu
         application_key {$OVH_APP_KEY}
