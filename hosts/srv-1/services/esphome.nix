@@ -4,8 +4,14 @@
 # fait lui-même l'OTA (et le flash USB) sur le LAN. srv-1 ne fait que compiler,
 # ce qui sort du Home Assistant Green les ~5,7 Go de cache PlatformIO.
 # Aucune route Tailscale à approuver : srv-1 n'a jamais besoin de joindre les
-# ESP, c'est HA qui flashe. Il faut en revanche une grant tag:home -> tag:nix
-# sur le port 6055 pour que le peer-link passe.
+# ESP, c'est HA qui flashe. Il faut en revanche une grant Tailscale de chaque
+# HA vers tag:nix, sur le port de son builder, pour que le peer-link passe.
+#
+# Deux builders, un par HA : en --remote-build-only, le device-builder
+# n'accepte qu'UN appairage, par conception ("exactly one pairing is
+# allowed"). Le HA de la maison (tag:home) compile sur le port 6055, celui des
+# parents (tag:parents) sur le 6056. Chacun a son état, donc son identité et
+# ses builds : le HA des parents ne voit rien de ceux de la maison.
 #
 # Pourquoi un conteneur et pas services.esphome / le paquet nixpkgs :
 # à chaque build, ESPHome installe le framework ESP-IDF en téléchargeant des
@@ -24,21 +30,20 @@
 # fournit que l'environnement FHS et le device-builder lui-même (>= 2026.6.0).
 #
 # Appairage (une fois) :
-#   1. journalctl -u podman-esphome -f  → relever l'empreinte et la clé
+#   1. journalctl -u podman-esphome -f (ou podman-esphome-parents)
+#      → relever l'empreinte et la clé
 #   2. dans l'add-on : Paramètres → Envoyer les compilations → "Pair with a
-#      build server", saisir <ip-tailscale-srv-1>:6055 (mDNS ne traverse pas
-#      Tailscale, la découverte automatique ne verra rien)
+#      build server", saisir <ip-tailscale-srv-1> et le port du builder
+#      (mDNS ne traverse pas Tailscale, la découverte automatique ne verra rien)
 # La fenêtre dure 15 min ; passé ce délai le process sort et le conteneur
 # redémarre, ce qui régénère une NOUVELLE clé.
 { ... }:
 let
-  # Contient l'identité peer-link et l'état de build : doit rester persistant,
-  # sinon l'appairage est à refaire. Monté au même chemin dans le conteneur
-  # pour que les chemins de cache restent lisibles entre l'hôte et le log.
-  stateDir = "/var/lib/esphome";
-in
-{
-  virtualisation.oci-containers.containers.esphome = {
+  # stateDir contient l'identité peer-link et l'état de build : il doit rester
+  # persistant, sinon l'appairage est à refaire. Monté au même chemin dans le
+  # conteneur pour que les chemins de cache restent lisibles entre l'hôte et
+  # le log.
+  builder = stateDir: port: {
     image = "ghcr.io/esphome/esphome:2026.10.1@sha256:eab8cd6b4f51077c3883af4cedc058280ddc34a94f3b2ffee23e9d2cd5f1db64";
     volumes = [ "${stateDir}:${stateDir}" ];
 
@@ -53,6 +58,10 @@ in
       # publié par Docker, lui, contournerait allowedTCPPorts.
       "--remote-build-host"
       "tailscale0"
+      # Explicite : si le port est pris, le builder en choisit un autre
+      # silencieusement, et l'appairage viserait le mauvais.
+      "--remote-build-port"
+      (toString port)
       stateDir
     ];
 
@@ -66,4 +75,13 @@ in
       "--entrypoint=esphome-device-builder"
     ];
   };
+in
+{
+  virtualisation.oci-containers.containers = {
+    esphome = builder "/var/lib/esphome" 6055;
+    esphome-parents = builder "/var/lib/esphome-parents" 6056;
+  };
+
+  # Podman refuse de monter un dossier hôte absent.
+  systemd.tmpfiles.rules = [ "d /var/lib/esphome-parents 0700 root root -" ];
 }
