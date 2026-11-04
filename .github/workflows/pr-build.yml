@@ -36,7 +36,11 @@ jobs:
 
       # Build rather than diff .drv files: dix on .drv files compares the build closure (patches,
       # tarballs, bootstrap), not what runs on srv-1.
+      # main can stop building on its own (a fixed-output hash that drifts upstream): the PR is
+      # still judged on its own build, so that a PR fixing it can go green.
       - name: Build base srv-1
+        id: base
+        continue-on-error: true
         run: nix build "github:${{ github.repository }}/${{ github.event.pull_request.base.sha }}#$TOPLEVEL" --out-link old
 
       - name: Build PR srv-1
@@ -53,7 +57,9 @@ jobs:
             echo
             echo "Commit ${{ github.event.pull_request.head.sha }}, [run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
             echo
-            if [ "${{ steps.head.outcome }}" = success ]; then
+            if [ "${{ steps.head.outcome }}" = success ] && [ "${{ steps.base.outcome }}" != success ]; then
+              echo "srv-1 builds, but its base \`${{ github.event.pull_request.base.sha }}\` does not: no diff."
+            elif [ "${{ steps.head.outcome }}" = success ]; then
               nix run --inputs-from . nixpkgs#dix -- --color never old new > dix.txt
               echo '```'
               # GitHub caps a comment at 65,536 characters.
