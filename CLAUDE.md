@@ -68,7 +68,9 @@ a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
   `dix` between both runtime closures (~5 GiB from the cache; `dix` on unbuilt `.drv` files
   diffs the *build* closure and drowns the signal), or, if the PR does not build, its `error:`
   lines and the end of the log, and the check goes red. The check is required on `main`, hence
-  no paths filter (a skipped required check blocks the PR).
+  no paths filter (a skipped required check blocks the PR). A base that no longer builds (a
+  `withPlugins` hash drifts upstream with no input change) does not fail the check: only the PR
+  build does, and the report then has no `dix`.
 - Typical red check on the weekly PR: a pinned fixed-output hash that a bump invalidates, e.g.
   `caddy.withPlugins` in `hosts/srv-1/services/caddy.nix` on a caddy bump. Copy the `got:` hash
   from the report into the file and push on `update-flake-lock`; `pr-build` reruns.
