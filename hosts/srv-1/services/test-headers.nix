@@ -1,7 +1,7 @@
 {
   virtualisation.oci-containers.containers = {
     test = {
-      image = "python:3.15-slim@sha256:94d3426f1def7db4a106a232ac121bfd975393e5dfd40a619b955fae45fe7913";
+      image = "python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928";
       ports = [ "127.0.0.1:9001:8080" ];
       volumes = [
         "${./test_headers.py}:/app/app.py"
