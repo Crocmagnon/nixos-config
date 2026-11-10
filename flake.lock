@@ -67,11 +67,11 @@
         "nixpkgs-pw": "nixpkgs-pw"
       },
       "locked": {
-        "lastModified": 1792747520,
-        "narHash": "sha256-WSwID4DcszmgTr3xU/8aZGT+J8Iza2qn3AlTz4BIgdw=",
+        "lastModified": 1794338898,
+        "narHash": "sha256-1zAQ/zV4A/Nt0Yiu9aMs9mJlfjFYcg9iBEqlEtOg7EM=",
         "ref": "refs/heads/main",
-        "rev": "884ff77bbb3b654b2c7f52dc875ce00e449734f0",
-        "revCount": 88,
+        "rev": "17c253eda0a5a54e1225984647d630dc8401b709",
+        "revCount": 89,
         "type": "git",
         "url": "https://github.com/Crocmagnon/downloader-go"
       },
