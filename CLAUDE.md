@@ -39,7 +39,8 @@ agenix -e <secret-name>.age
 agenix -r
 ```
 
-`hosts/srv-1/age/default.nix` derives `age.secrets` from `secrets.nix` by
+`hosts/srv-1/age/default.nix` derives `age.secrets` from `agenix-rules.nix` (the rules file the
+agenix CLI discovers; `secrets.nix` is deprecated) by
 `mapAttrs'`, so adding a server secret is one rule + one `agenix -e`, no module
 edit.
 
