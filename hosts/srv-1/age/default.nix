@@ -2,7 +2,7 @@
 let
   secrets = lib.mapAttrs' (
     name: value: lib.nameValuePair (lib.strings.removeSuffix ".age" name) { file = ./${name}; }
-  ) (import ./secrets.nix);
+  ) (import ./agenix-rules.nix);
 in
 {
   age.secrets = lib.attrsets.recursiveUpdate secrets {
