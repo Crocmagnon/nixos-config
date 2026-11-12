@@ -11,6 +11,15 @@
     reverse_proxy localhost:9002
   '';
 
+  # NixOS 26.11 ships paperless-ngx 3.0 (https://docs.paperless-ngx.com/migration-v3/, reviewed
+  # 2026-11). Upgrading requires 2.20.15, which 26.05 runs. Beyond the inline notes below:
+  # - SQLite, no barcode scanner/encryption/consume scripts/OIDC: those v3 changes don't apply.
+  # - Search moves to Tantivy, the index is rebuilt on first start. A bare term no longer
+  #   matches notes or custom fields (use notes.note: / custom_fields.value:); no saved view
+  #   relies on that, and `created:[-3 month to now]` is still valid syntax.
+  # - Allauth computes the client IP differently: if login returns 403 behind Caddy, set
+  #   PAPERLESS_TRUSTED_PROXIES = "127.0.0.1" (and PAPERLESS_ALLAUTH_TRUSTED_PROXY_COUNT = 1).
+  # - Task history is wiped by the migration.
   services.paperless = {
     enable = true;
     port = 9002;
@@ -51,10 +60,16 @@
       PAPERLESS_DATE_PARSER_LANGUAGES = "fr+en";
       PAPERLESS_CONSUMER_ENABLE_BARCODES = true;
       PAPERLESS_CONSUMER_BARCODE_STRING = "PATCHT";
+      # A duplicate (same checksum as an existing document, trash included) is refused and, with
+      # this, also removed from the consumption dir instead of lingering there (v2 consumer.py).
+      # paperless-ngx 3 imports duplicates by default; this setting keeps refusing and deleting them.
+      PAPERLESS_CONSUMER_DELETE_DUPLICATES = true;
       PAPERLESS_TASK_WORKERS = 1;
       PAPERLESS_OCR_USER_ARGS = {
         invalidate_digital_signatures = true;
       };
+      # Removed in paperless-ngx 3 (NixOS 26.11): drop this line, its v3 equivalent
+      # PAPERLESS_ARCHIVE_FILE_GENERATION = "auto" is the default there.
       PAPERLESS_OCR_SKIP_ARCHIVE_FILE = "with_text";
       PAPERLESS_WEBSERVER_WORKERS = 1;
       PAPERLESS_FILENAME_FORMAT = "{{ created_year }}/{{ correspondent }}/{{ title }}";
