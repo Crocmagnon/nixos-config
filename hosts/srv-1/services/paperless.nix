@@ -38,9 +38,16 @@
       PAPERLESS_USE_X_FORWARD_PORT = true;
       PAPERLESS_TIME_ZONE = "Europe/Paris";
       # Not setting this, so tesseract (and ocrmypdf, and paperless) gets downloaded from cache instead of built from source.
+      # On nixos-26.05 the module passes this setting to tesseract's enableLanguages, with no way
+      # around it. nixos-unstable adds `services.paperless.tesseractLanguages`, defaulting to this
+      # setting: once srv-1 is on a release that has it (26.11 expected), set
+      #   tesseractLanguages = null;            # keep the cached all-languages build
+      #   PAPERLESS_OCR_LANGUAGE = "fra";        # French OCR, no rebuild
+      # and drop PAPERLESS_DATE_PARSER_LANGUAGES below, which then follows the OCR language.
+      # Check: services.paperless.package.outPath must not change.
       # PAPERLESS_OCR_LANGUAGE = "fra";
-      # The date parser defaults to the OCR language (eng): set it apart so French month names
-      # ("25 septembre 2026") are recognised. A plain env var, no rebuild.
+      # Meanwhile the date parser defaults to the OCR language (eng): set it apart so French month
+      # names ("25 septembre 2026") are recognised. A plain env var, no rebuild.
       PAPERLESS_DATE_PARSER_LANGUAGES = "fr+en";
       PAPERLESS_CONSUMER_ENABLE_BARCODES = true;
       PAPERLESS_CONSUMER_BARCODE_STRING = "PATCHT";
