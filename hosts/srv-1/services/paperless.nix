@@ -39,6 +39,9 @@
       PAPERLESS_TIME_ZONE = "Europe/Paris";
       # Not setting this, so tesseract (and ocrmypdf, and paperless) gets downloaded from cache instead of built from source.
       # PAPERLESS_OCR_LANGUAGE = "fra";
+      # The date parser defaults to the OCR language (eng): set it apart so French month names
+      # ("25 septembre 2026") are recognised. A plain env var, no rebuild.
+      PAPERLESS_DATE_PARSER_LANGUAGES = "fr+en";
       PAPERLESS_CONSUMER_ENABLE_BARCODES = true;
       PAPERLESS_CONSUMER_BARCODE_STRING = "PATCHT";
       PAPERLESS_TASK_WORKERS = 1;
@@ -48,7 +51,9 @@
       PAPERLESS_OCR_SKIP_ARCHIVE_FILE = "with_text";
       PAPERLESS_WEBSERVER_WORKERS = 1;
       PAPERLESS_FILENAME_FORMAT = "{{ created_year }}/{{ correspondent }}/{{ title }}";
-      PAPERLESS_IGNORE_DATES = "1995-10-24,1995-10-16";
+      # Dates printed on many documents but never their issue date: births (Gabriel, Claire,
+      # Juliette) and job start dates (OVH, Ax'home).
+      PAPERLESS_IGNORE_DATES = "1995-10-24,1995-10-16,2025-08-02,2023-04-03,2026-01-05";
       PAPERLESS_CONVERT_MEMORY_LIMIT = 32;
     };
   };
