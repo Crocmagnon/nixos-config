@@ -1,5 +1,7 @@
 {
   inputs = {
+    # TODO(26.11): nixos-26.11 here, release-26.11 for home-manager and catppuccin (wait for
+    # those branches to exist).
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {

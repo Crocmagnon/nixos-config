@@ -77,6 +77,10 @@ let
   };
 in
 {
+  # TODO(26.11): Podman 6 drops BoltDB and iptables; upstream advises `nixos-rebuild boot` and a
+  # reboot to finish the migration. auto-upgrade boots first, but only reboots on a kernel/initrd
+  # change: if that release doesn't bring one, reboot by hand. --network=host, so the new podman
+  # DNS/firewall handling doesn't matter here.
   virtualisation.oci-containers.containers = {
     esphome = builder "/var/lib/esphome" 6055;
     esphome-parents = builder "/var/lib/esphome-parents" 6056;

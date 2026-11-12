@@ -1,6 +1,9 @@
 {
   services.stirling-pdf = {
     enable = true;
+    # TODO(26.11): stirling-pdf 3.1 marks its default build unfree (proprietary login and extras).
+    # Switch to the MIT build: `package = pkgs.stirling-pdf-free;`. It has no built-in login,
+    # which changes nothing here: login is disabled below and the vhost is `import internal`.
     environment = {
       SERVER_HOST = "127.0.0.1";
       # SERVER_SSL_ENABLED = "false";

@@ -54,6 +54,13 @@ repo, git-crypt-encrypted as
 a recipient of the srv-1 store. The SSH keys stay recipients as a fallback
 (`agenix -i ~/.ssh/id_ed25519 -e ...` if the age key is lost).
 
+## NixOS Release Upgrades
+
+What to change or check when moving to the next NixOS release is left in comments next to the
+affected config, flagged `TODO(<release>)`, e.g. `TODO(26.11)`. Before the upgrade,
+`git grep 'TODO(26.11)'` lists them; resolve each and remove its flag. Notes found while
+reviewing release notes go there too, not in a separate checklist.
+
 ## Automatic Updates
 
 - `.github/workflows/update-flake-lock.yml` runs `nix flake update` every Monday at 03:00 UTC and

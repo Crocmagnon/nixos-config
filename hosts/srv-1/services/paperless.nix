@@ -11,7 +11,7 @@
     reverse_proxy localhost:9002
   '';
 
-  # NixOS 26.11 ships paperless-ngx 3.0 (https://docs.paperless-ngx.com/migration-v3/, reviewed
+  # TODO(26.11): NixOS 26.11 ships paperless-ngx 3.0 (https://docs.paperless-ngx.com/migration-v3/, reviewed
   # 2026-11). Upgrading requires 2.20.15, which 26.05 runs. Beyond the inline notes below:
   # - SQLite, no barcode scanner/encryption/consume scripts/OIDC: those v3 changes don't apply.
   # - Search moves to Tantivy, the index is rebuilt on first start. A bare term no longer
@@ -46,7 +46,7 @@
       PAPERLESS_USE_X_FORWARD_HOST = true;
       PAPERLESS_USE_X_FORWARD_PORT = true;
       PAPERLESS_TIME_ZONE = "Europe/Paris";
-      # Not setting this, so tesseract (and ocrmypdf, and paperless) gets downloaded from cache instead of built from source.
+      # TODO(26.11): not setting this, so tesseract (and ocrmypdf, and paperless) gets downloaded from cache instead of built from source.
       # On nixos-26.05 the module passes this setting to tesseract's enableLanguages, with no way
       # around it. nixos-unstable adds `services.paperless.tesseractLanguages`, defaulting to this
       # setting: once srv-1 is on a release that has it (26.11 expected), set
@@ -68,7 +68,7 @@
       PAPERLESS_OCR_USER_ARGS = {
         invalidate_digital_signatures = true;
       };
-      # Removed in paperless-ngx 3 (NixOS 26.11): drop this line, its v3 equivalent
+      # TODO(26.11): removed in paperless-ngx 3: drop this line, its v3 equivalent
       # PAPERLESS_ARCHIVE_FILE_GENERATION = "auto" is the default there.
       PAPERLESS_OCR_SKIP_ARCHIVE_FILE = "with_text";
       PAPERLESS_WEBSERVER_WORKERS = 1;

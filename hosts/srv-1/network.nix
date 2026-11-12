@@ -38,5 +38,8 @@ in
       interface = net.interface;
     };
   };
+  # TODO(26.11): fail2ban 1.1.0 -> 1.1.1 has a few breaking changes
+  # (https://github.com/fail2ban/fail2ban/blob/1.1.1/ChangeLog); defaults only here, so just check
+  # `journalctl -u fail2ban` after the upgrade.
   services.fail2ban.enable = true;
 }

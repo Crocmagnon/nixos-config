@@ -7,10 +7,11 @@ let
   };
 in
 {
+  # TODO(26.11): check each entry still needs unstable once stable has caught up, including the
+  # fresh-editor oniguruma workaround below.
   inherit (unstable)
     btop
     prek
-    esphome
     gh
     mise
     ;
