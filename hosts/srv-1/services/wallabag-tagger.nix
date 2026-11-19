@@ -16,7 +16,11 @@
       "network-online.target"
       "healthchecks@wallabag-tagger:start.service"
     ];
-    after = [ "network-online.target" ];
+    # Ordering only: wait for Wallabag when both start together (boot), never start it.
+    after = [
+      "network-online.target"
+      "podman-wallabag.service"
+    ];
     onSuccess = [ "healthchecks@wallabag-tagger:success.service" ];
     onFailure = [ "healthchecks@wallabag-tagger:failure.service" ];
     path = [ pkgs.claude-code ];
