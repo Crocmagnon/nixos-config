@@ -8,7 +8,7 @@
 
   virtualisation.oci-containers.containers = {
     wallabag = {
-      image = "wallabag/wallabag:2.6.16@sha256:5f758bc85c416f695c05099ba58f58ae7ffa1e7e6a1ba3ff865a51e3c18399b7";
+      image = "wallabag/wallabag:2.6.17@sha256:9055d92d6e7973abea2d902ecb5459f6063fce05595eaef37f6750e49ff8cdee";
       environmentFiles = [ config.age.secrets."wallabag-env".path ];
       volumes = [
         "images:/var/www/wallabag/web/assets/images"
