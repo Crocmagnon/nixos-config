@@ -11,6 +11,7 @@ in
   # fresh-editor oniguruma workaround below.
   inherit (unstable)
     btop
+    claude-code
     prek
     gh
     mise

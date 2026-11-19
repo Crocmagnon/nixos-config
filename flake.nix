@@ -25,6 +25,10 @@
       url = "git+https://github.com/Crocmagnon/downloader-go";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    wallabag-tagger = {
+      url = "github:Crocmagnon/wallabag-tagger";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -39,6 +43,7 @@
       agenix,
       home-manager,
       downloader,
+      wallabag-tagger,
       nix-index-database,
       ...
     }@inputs:
@@ -74,6 +79,7 @@
           ];
           extraOverlays = [
             (import ./overlays/playwright-downloader.nix { inherit downloader; })
+            (import ./overlays/wallabag-tagger.nix { inherit wallabag-tagger; })
           ];
         };
       };
