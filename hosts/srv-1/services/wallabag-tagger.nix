@@ -30,6 +30,7 @@
       ExecStart = "${pkgs.wallabag-tagger}/bin/wallabag-tagger";
       DynamicUser = true;
       StateDirectory = "wallabag-tagger";
+      WorkingDirectory = "/var/lib/wallabag-tagger";
       # WALLABAG_CLIENT_ID, WALLABAG_CLIENT_SECRET, WALLABAG_USERNAME, WALLABAG_PASSWORD,
       # CLAUDE_CODE_OAUTH_TOKEN.
       EnvironmentFile = config.age.secrets."wallabag-tagger-env".path;
