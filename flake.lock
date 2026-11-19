@@ -191,7 +191,28 @@
         "home-manager": "home-manager",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_2",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "wallabag-tagger": "wallabag-tagger"
+      }
+    },
+    "wallabag-tagger": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795125347,
+        "narHash": "sha256-WNa/AKUyRs9PTUYNl/KBxytP8newayCk7OqtRAXbFRE=",
+        "owner": "Crocmagnon",
+        "repo": "wallabag-tagger",
+        "rev": "a82ca495dd1707843abebb973811cf311bcf9803",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Crocmagnon",
+        "repo": "wallabag-tagger",
+        "type": "github"
       }
     }
   },
