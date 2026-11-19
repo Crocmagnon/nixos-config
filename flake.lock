@@ -202,11 +202,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795125347,
-        "narHash": "sha256-WNa/AKUyRs9PTUYNl/KBxytP8newayCk7OqtRAXbFRE=",
+        "lastModified": 1795126278,
+        "narHash": "sha256-EPUih+1On8e9JbiFrHmewH5RFtqrOHWkr7DyF0n4X/s=",
         "owner": "Crocmagnon",
         "repo": "wallabag-tagger",
-        "rev": "a82ca495dd1707843abebb973811cf311bcf9803",
+        "rev": "48200c8929ace49514e04774430bc9624b939f36",
         "type": "github"
       },
       "original": {
