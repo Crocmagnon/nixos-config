@@ -31,10 +31,10 @@ let
       subcommand = "lcl-checking";
       var = "$LCL";
     };
-    zeplug = {
+    tohmo = {
       calendar = "*-*-15 13:00";
-      subcommand = "zeplug";
-      var = "$ZEPLUG";
+      subcommand = "tohmo";
+      var = "$TOHMO";
     };
     # octopus = {
     #   calendar = "";
