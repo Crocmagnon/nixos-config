@@ -182,6 +182,26 @@
         "type": "github"
       }
     },
+    "readlist-tagger": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795286280,
+        "narHash": "sha256-w5FK2QpVJFgjYtdE7N1QWvl2lny/E9xZcNc8/N98mCE=",
+        "owner": "Crocmagnon",
+        "repo": "readlist-tagger",
+        "rev": "f817498d6fea347710cdff6e7ac5f7a6238fff7f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Crocmagnon",
+        "repo": "readlist-tagger",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -192,27 +212,7 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "wallabag-tagger": "wallabag-tagger"
-      }
-    },
-    "wallabag-tagger": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1795126278,
-        "narHash": "sha256-EPUih+1On8e9JbiFrHmewH5RFtqrOHWkr7DyF0n4X/s=",
-        "owner": "Crocmagnon",
-        "repo": "wallabag-tagger",
-        "rev": "48200c8929ace49514e04774430bc9624b939f36",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Crocmagnon",
-        "repo": "wallabag-tagger",
-        "type": "github"
+        "readlist-tagger": "readlist-tagger"
       }
     }
   },
