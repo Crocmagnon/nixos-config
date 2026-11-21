@@ -4,6 +4,7 @@
     ./miniflux.nix
     ./test-headers.nix
     ./wallabag.nix
+    ./readeck.nix
     ./wallabag-tagger.nix
     ./filebeat.nix
     ./paperless.nix
