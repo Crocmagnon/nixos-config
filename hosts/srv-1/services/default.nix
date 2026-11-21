@@ -5,6 +5,7 @@
     ./test-headers.nix
     ./wallabag.nix
     ./readeck.nix
+    ./wallabag-tagger.nix
     ./readeck-tagger.nix
     ./filebeat.nix
     ./paperless.nix
