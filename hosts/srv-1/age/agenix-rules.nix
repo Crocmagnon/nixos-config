@@ -16,6 +16,7 @@ in
   "miniflux-db.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "ovh-ldp-token.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "wallabag-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "readeck-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "wallabag-tagger-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "s3-restic-srv-1-creds.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "paperless-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];

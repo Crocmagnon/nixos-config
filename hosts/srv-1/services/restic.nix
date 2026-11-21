@@ -28,7 +28,10 @@ in
         "/var/lib/radarr"
         "/var/lib/sonarr"
         "/var/lib/prowlarr"
-        "/var/lib/private" # contains prowlarr data
+        # prowlarr et readeck (DynamicUser : /var/lib/readeck n'est qu'un lien,
+        # restic ne le suit pas). Readeck y stocke le contenu des articles, sa
+        # base PostgreSQL est chez OVH.
+        "/var/lib/private"
         "/var/lib/transmission"
         "/var/lib/jellyfin"
         "/var/lib/calibre-web"
