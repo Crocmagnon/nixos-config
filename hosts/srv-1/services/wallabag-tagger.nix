@@ -1,5 +1,5 @@
 # Tags unread Wallabag articles by theme with Claude, for offline filtering on KoReader.
-# See Crocmagnon/wallabag-tagger's docs/superpowers/specs/2026-11-19-wallabag-tagger-design.md.
+# See Crocmagnon/readlist-tagger's docs/superpowers/specs/2026-11-19-wallabag-tagger-design.md.
 { config, pkgs, ... }:
 {
   systemd.timers.wallabag-tagger = {

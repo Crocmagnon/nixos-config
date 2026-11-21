@@ -6,6 +6,7 @@
     ./wallabag.nix
     ./readeck.nix
     ./wallabag-tagger.nix
+    ./readeck-tagger.nix
     ./filebeat.nix
     ./paperless.nix
     ./healthchecks.nix
