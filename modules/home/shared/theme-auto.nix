@@ -3,7 +3,7 @@
 # c'est ce qui fait que les sessions SSH vers srv-1 suivent aussi, puisque la
 # requête OSC 11 traverse sshd comme n'importe quels octets sur le pty.
 #
-# Voir docs/superpowers/specs/2026-09-18-terminal-theme-auto-switch-design.md
+# Conception : dans l'historique git, docs/superpowers/specs/2026-09-18-terminal-theme-auto-switch-design.md
 {
   config,
   lib,
