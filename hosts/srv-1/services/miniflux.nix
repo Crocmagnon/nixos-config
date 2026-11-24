@@ -29,6 +29,12 @@
       CREATE_ADMIN = false;
       FETCHER_ALLOW_PRIVATE_NETWORKS = 1;
       INTEGRATION_ALLOW_PRIVATE_NETWORKS = 1;
+      # Connexion OIDC via Authelia (authelia.nix) ; OAUTH2_CLIENT_SECRET est dans miniflux-db.
+      OAUTH2_PROVIDER = "oidc";
+      OAUTH2_CLIENT_ID = "miniflux";
+      OAUTH2_REDIRECT_URL = "https://reader.augendre.info/oauth2/oidc/callback";
+      OAUTH2_OIDC_DISCOVERY_ENDPOINT = "https://auth.srv-1.augendre.info";
+      OAUTH2_USER_CREATION = 0;
     };
   };
 }
