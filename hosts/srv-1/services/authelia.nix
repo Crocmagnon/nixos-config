@@ -129,8 +129,10 @@ in
 
   # Authelia ne relit pas le fichier des utilisateurs, et `file.watch` ne verrait pas le changement :
   # agenix fait pointer /run/agenix vers un nouveau dossier au lieu de réécrire le fichier.
-  # Le .age change de chemin dans le store quand son contenu change, ce qui redémarre l'unité.
-  systemd.services.authelia-main.restartTriggers = [ config.age.secrets."authelia-users".file ];
+  # Son empreinte (et non son chemin, qui est celui de tout le dépôt) ne change qu'avec lui.
+  systemd.services.authelia-main.restartTriggers = [
+    (builtins.hashFile "sha256" config.age.secrets."authelia-users".file)
+  ];
 
   services.caddy.virtualHosts."auth.srv-1.augendre.info".extraConfig = ''
     import common_headers
