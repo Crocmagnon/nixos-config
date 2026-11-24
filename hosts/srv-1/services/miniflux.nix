@@ -28,7 +28,9 @@
       FETCH_YOUTUBE_WATCH_TIME = 0;
       POLLING_PARSING_ERROR_LIMIT = "50";
       CREATE_ADMIN = false;
-      FETCHER_ALLOW_PRIVATE_NETWORKS = 1;
+      # Pas de flux sur le réseau local : sinon tout compte (Claire, depuis l'OIDC) ferait lire à srv-1
+      # les services de localhost, sans auth depuis le portail (*arr, Calibre-web).
+      FETCHER_ALLOW_PRIVATE_NETWORKS = 0;
       INTEGRATION_ALLOW_PRIVATE_NETWORKS = 1;
       # Connexion OIDC via Authelia (authelia.nix) ; OAUTH2_CLIENT_SECRET est dans miniflux-db.
       OAUTH2_PROVIDER = "oidc";
@@ -40,4 +42,9 @@
       DISABLE_LOCAL_AUTH = 1;
     };
   };
+
+  # Le secret client OIDC est dans miniflux-db : redémarrer quand il change (même principe qu'Authelia).
+  systemd.services.miniflux.restartTriggers = [
+    (builtins.hashFile "sha256" config.age.secrets."miniflux-db".file)
+  ];
 }
