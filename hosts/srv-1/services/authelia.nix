@@ -91,18 +91,10 @@ in
       };
 
       identity_providers.oidc = {
+        # Clients OIDC (Readeck, Miniflux, Paperless) : ouverts au groupe famille (Claire). Readeck et
+        # Miniflux lui créent un compte à sa première connexion. Le portail exige group:admins.
         authorization_policies = {
-          admins_one_factor = {
-            default_policy = "deny";
-            rules = [
-              {
-                policy = "one_factor";
-                subject = "group:admins";
-              }
-            ];
-          };
-          # Paperless : le seul service ouvert au groupe famille (Claire).
-          paperless = {
+          admins_et_famille = {
             default_policy = "deny";
             rules = [
               {
@@ -120,7 +112,7 @@ in
             client_id = "readeck";
             client_name = "Readeck";
             client_secret = "$pbkdf2-sha512$310000$E/1jGuUBjdUidFoQcRqf4Q$vrrGGVANn1li9EqUvEK/MZNmduRROxjoqDp0nwe7GngLRz.HTjz.59MCuKjRkyhcliTrgTq5CpzMbEpEuYyVkQ";
-            authorization_policy = "admins_one_factor";
+            authorization_policy = "admins_et_famille";
             consent_mode = "implicit"; # nos propres apps : pas d'écran de consentement
             redirect_uris = [ "https://readeck.augendre.info/login/oidc" ];
             scopes = [
@@ -137,7 +129,7 @@ in
             client_id = "miniflux";
             client_name = "Miniflux";
             client_secret = "$pbkdf2-sha512$310000$myTRgc3WbJCoTid5Afv9qQ$xVgyegwRRAzAPtzI6eyr0dMdId2DhsB8VLF7TMXDB2hgnhdbniK6ONb8OZ1hR/j0jYYSCZcTkhGDps8Fc1pnsg";
-            authorization_policy = "admins_one_factor";
+            authorization_policy = "admins_et_famille";
             consent_mode = "implicit"; # nos propres apps : pas d'écran de consentement
             redirect_uris = [ "https://reader.augendre.info/oauth2/oidc/callback" ];
             scopes = [
@@ -151,7 +143,7 @@ in
             client_id = "paperless";
             client_name = "Paperless";
             client_secret = "$pbkdf2-sha512$310000$njU3whPMnNU4V5UGSSUkLw$gWhmHruh4Ba41pNdRUtYpnAXFB0fswLh9UdYVCkhX/8P3y88Yg3XL4.ec9r9xEErog//yDJrswmRd4kqRnUvJg";
-            authorization_policy = "paperless";
+            authorization_policy = "admins_et_famille";
             consent_mode = "implicit";
             # provider_id "authelia" dans PAPERLESS_SOCIALACCOUNT_PROVIDERS (paperless-env).
             redirect_uris = [ "https://paperless.augendre.info/accounts/oidc/authelia/login/callback/" ];

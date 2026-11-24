@@ -33,9 +33,10 @@
               "admin"
             ]
           ];
-          # Rattache le compte existant (username ou email) sans en créer de nouveau. À chaque
-          # connexion, Readeck réécrit aussi username et email depuis Authelia.
-          provisioning = false;
+          # Crée le compte (rôle user) à la première connexion, ou rattache un compte existant de
+          # même username ou email : vérifier qu'aucun compte local ne porte le nom d'un nouvel
+          # utilisateur Authelia. Readeck réécrit aussi username et email à chaque connexion.
+          provisioning = true;
         }
       ];
     };

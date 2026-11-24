@@ -35,7 +35,7 @@
       OAUTH2_CLIENT_ID = "miniflux";
       OAUTH2_REDIRECT_URL = "https://reader.augendre.info/oauth2/oidc/callback";
       OAUTH2_OIDC_DISCOVERY_ENDPOINT = "https://auth.srv-1.augendre.info";
-      OAUTH2_USER_CREATION = 0;
+      OAUTH2_USER_CREATION = 1; # compte créé à la première connexion OIDC (Claire)
       # Retour arrière : retirer cette ligne ET les OAUTH2_* dans le même déploiement.
       DISABLE_LOCAL_AUTH = 1;
     };
