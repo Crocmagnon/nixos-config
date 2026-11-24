@@ -1,6 +1,7 @@
 {
   imports = [
     ./caddy.nix
+    ./authelia.nix
     ./miniflux.nix
     ./test-headers.nix
     ./readeck.nix

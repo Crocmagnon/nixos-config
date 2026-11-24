@@ -26,4 +26,9 @@ in
   "tailscale-auth-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "rclone-config.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "transmission-credentials.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "authelia-jwt.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "authelia-storage-key.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "authelia-oidc-hmac.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "authelia-oidc-jwk.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "authelia-users.age".publicKeys = allUsers ++ [ systems.srv-1 ];
 }

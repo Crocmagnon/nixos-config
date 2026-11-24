@@ -19,6 +19,24 @@
         port = 8006;
         base_url = "https://readeck.augendre.info";
       };
+      # Connexion OIDC via Authelia (authelia.nix). Le secret client vient de readeck-env
+      # (READECK_AUTH_OIDC_PROVIDERS_0_CLIENT_SECRET : l'index 0 fusionne avec ce provider).
+      auth.oidc.providers = [
+        {
+          name = "Authelia";
+          url = "https://auth.srv-1.augendre.info";
+          client_id = "readeck";
+          # Readeck réécrit le groupe du compte à chaque connexion : sans ça, admin → user.
+          groups = [
+            [
+              "admins"
+              "admin"
+            ]
+          ];
+          # Rattache le compte existant (username ou email) sans en créer de nouveau.
+          provisioning = false;
+        }
+      ];
     };
   };
 }

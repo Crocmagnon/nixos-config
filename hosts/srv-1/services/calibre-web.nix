@@ -24,6 +24,11 @@ in
     listen.ip = "127.0.0.1";
     listen.port = 8005;
     options.calibreLibrary = libraryDir;
+    # Connexion par l'en-tête posé par le portail Authelia (`import sso` ci-dessous).
+    options.reverseProxyAuth = {
+      enable = true;
+      header = "Remote-User";
+    };
   };
 
   # Le module a un ExecStartPre qui échoue si metadata.db est absent : dépendre
@@ -68,6 +73,15 @@ in
   services.caddy.virtualHosts."books.srv-1.augendre.info".extraConfig = ''
     import common_headers
     import internal
-    reverse_proxy localhost:${toString config.services.calibre-web.listen.port}
+    # KOReader lit l'OPDS en auth Basic et ne sait pas passer le portail. Sans forward_auth,
+    # rien ne retirerait un Remote-User forgé par le client : on le retire ici.
+    handle /opds* {
+      request_header -Remote-User
+      reverse_proxy localhost:${toString config.services.calibre-web.listen.port}
+    }
+    handle {
+      import sso
+      reverse_proxy localhost:${toString config.services.calibre-web.listen.port}
+    }
   '';
 }

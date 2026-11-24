@@ -35,6 +35,7 @@ in
         "/var/lib/transmission"
         "/var/lib/jellyfin"
         "/var/lib/calibre-web"
+        "/var/lib/authelia-main"
         # "/var/lib/media"
       ];
       exclude = [

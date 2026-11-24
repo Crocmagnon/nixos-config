@@ -17,6 +17,7 @@
   services.caddy.virtualHosts."pdf.srv-1.augendre.info".extraConfig = ''
     import common_headers
     import internal
+    import sso
     reverse_proxy localhost:8004
   '';
 }

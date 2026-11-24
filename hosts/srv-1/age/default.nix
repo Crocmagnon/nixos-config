@@ -12,5 +12,10 @@ in
     # calibre-library-sync tourne en calibre-web et doit lire le remote pcloud-gab.
     # pcloud-sync tourne en root et continue de pouvoir le lire.
     rclone-config.owner = "calibre-web";
+    authelia-jwt.owner = "authelia-main";
+    authelia-storage-key.owner = "authelia-main";
+    authelia-oidc-hmac.owner = "authelia-main";
+    authelia-oidc-jwk.owner = "authelia-main";
+    authelia-users.owner = "authelia-main";
   };
 }
