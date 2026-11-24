@@ -35,6 +35,8 @@
       OAUTH2_REDIRECT_URL = "https://reader.augendre.info/oauth2/oidc/callback";
       OAUTH2_OIDC_DISCOVERY_ENDPOINT = "https://auth.srv-1.augendre.info";
       OAUTH2_USER_CREATION = 0;
+      # Retour arrière : retirer cette ligne ET les OAUTH2_* dans le même déploiement.
+      DISABLE_LOCAL_AUTH = 1;
     };
   };
 }
