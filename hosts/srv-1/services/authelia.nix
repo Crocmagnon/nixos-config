@@ -3,7 +3,8 @@
 #
 # - Portail et fournisseur OIDC sur auth.srv-1.augendre.info (wildcard DNS *.srv-1 → Tailscale).
 # - Clients OIDC : readeck, miniflux. Derrière le portail (`import sso`) : calibre-web, stirling.
-# - Ajouter un utilisateur : éditer authelia-users.age (hash : `authelia crypto hash generate argon2`).
+# - Ajouter un utilisateur : éditer authelia-users.age (hash : `authelia crypto hash generate argon2`),
+#   puis déployer : Authelia redémarre seul (restartTriggers ci-dessous).
 #
 # Retirer Authelia (les comptes locaux des apps n'ont jamais été supprimés) :
 #   1. miniflux.nix : retirer DISABLE_LOCAL_AUTH et les OAUTH2_* dans le MÊME déploiement.
@@ -125,6 +126,11 @@ in
       };
     };
   };
+
+  # Authelia ne relit pas le fichier des utilisateurs, et `file.watch` ne verrait pas le changement :
+  # agenix fait pointer /run/agenix vers un nouveau dossier au lieu de réécrire le fichier.
+  # Le .age change de chemin dans le store quand son contenu change, ce qui redémarre l'unité.
+  systemd.services.authelia-main.restartTriggers = [ config.age.secrets."authelia-users".file ];
 
   services.caddy.virtualHosts."auth.srv-1.augendre.info".extraConfig = ''
     import common_headers
