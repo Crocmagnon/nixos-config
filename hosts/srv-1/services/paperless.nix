@@ -8,6 +8,10 @@
   services.caddy.virtualHosts."paperless.augendre.info".extraConfig = ''
     import common_headers
     import internal
+    # Admin Django gardée, mais sans son formulaire de mot de passe : on y entre avec la session
+    # ouverte par l'OIDC (PAPERLESS_DISABLE_REGULAR_LOGIN ne couvre pas l'admin).
+    @adminLogin path /admin/login /admin/login/*
+    respond @adminLogin 403
     reverse_proxy localhost:9002
   '';
 
@@ -86,6 +90,10 @@
       # Rattacher un compte existant : « Mon profil » → connecter Authelia. Pas de création de compte.
       PAPERLESS_APPS = "allauth.socialaccount.providers.openid_connect";
       PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS = false;
+      # Login web par mot de passe coupé (comptes rattachés). L'API l'accepte toujours : les apps
+      # mobiles, et le secours si Authelia tombe.
+      PAPERLESS_DISABLE_REGULAR_LOGIN = true;
+      PAPERLESS_REDIRECT_LOGIN_TO_SSO = true;
     };
   };
 }
