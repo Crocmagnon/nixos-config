@@ -5,7 +5,9 @@
     # Switch to the MIT build: `package = pkgs.stirling-pdf-free;`. It has no built-in login,
     # which changes nothing here: login is disabled below and the vhost is `import internal`.
     environment = {
-      SERVER_HOST = "127.0.0.1";
+      # Spring Boot : SERVER_ADDRESS (SERVER_HOST était ignoré, Stirling écoutait sur tout le tailnet
+      # sans passer par le portail).
+      SERVER_ADDRESS = "127.0.0.1";
       # SERVER_SSL_ENABLED = "false";
       SERVER_PORT = 8004;
       SECURITY_ENABLELOGIN = "false";
