@@ -1,6 +1,25 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   mediaDir = "/var/lib/media";
+  # Login des *arr remplacé par le portail Authelia (`import sso`). `External` désactive toute auth
+  # applicative (même la clé d'API est servie par /initialize.json) : ils ne doivent écouter que
+  # sur localhost, sinon tout le tailnet (trustedInterfaces) les atteint sans portail. Les trois
+  # réglages vont ensemble, d'où ce bloc commun.
+  arrs = [
+    "prowlarr"
+    "sonarr"
+    "radarr"
+  ];
+  arrBase = {
+    enable = true;
+    settings.auth.method = "External";
+    settings.server.bindaddress = "127.0.0.1";
+  };
   transmissionCredFile = config.age.secrets."transmission-credentials".path;
 in
 {
@@ -32,39 +51,29 @@ in
   };
   # Jellyfin écoute sur toutes les interfaces par défaut, donc sur tout le tailnet (interface de
   # confiance) sans passer par Caddy. Le module n'a pas d'option : on impose l'adresse d'écoute
-  # dans network.xml (que Jellyfin crée au premier démarrage) avant chaque lancement.
-  # Découverte automatique (UDP 7359) coupée aussi : Infuse passe par le domaine.
+  # dans network.xml avant chaque lancement. Découverte automatique (UDP 7359) coupée aussi :
+  # Infuse passe par le domaine. En échec fermé : fichier créé s'il manque (réinstallation), et
+  # Jellyfin ne démarre pas si le résultat n'est pas celui attendu.
   systemd.services.jellyfin.serviceConfig.ExecStartPre = pkgs.writeShellScript "jellyfin-bind-localhost" ''
+    set -eu
+    x=${pkgs.xmlstarlet}/bin/xmlstarlet
     f=${config.services.jellyfin.configDir}/network.xml
-    [ -e "$f" ] || exit 0
-    ${pkgs.xmlstarlet}/bin/xmlstarlet ed -L \
+    [ -e "$f" ] || echo '<NetworkConfiguration><LocalNetworkAddresses /><AutoDiscovery /></NetworkConfiguration>' >"$f"
+    $x ed -L \
       -d '/NetworkConfiguration/LocalNetworkAddresses/*' \
       -s '/NetworkConfiguration/LocalNetworkAddresses' -t elem -n string -v 127.0.0.1 \
       -u '/NetworkConfiguration/AutoDiscovery' -v false \
       "$f"
+    [ "$($x sel -t -v 'count(/NetworkConfiguration/LocalNetworkAddresses/string)' "$f")" = 1 ]
+    [ "$($x sel -t -v '/NetworkConfiguration/LocalNetworkAddresses/string' "$f")" = 127.0.0.1 ]
+    [ "$($x sel -t -v '/NetworkConfiguration/AutoDiscovery' "$f")" = false ]
   '';
 
-  # Login des *arr remplacé par le portail Authelia (`import sso`). `External` désactive toute auth
-  # applicative (même la clé d'API est servie par /initialize.json) : ils ne doivent écouter que
-  # sur localhost, sinon tout le tailnet (trustedInterfaces) les atteint sans portail.
-  services.prowlarr = {
-    enable = true;
-    settings.auth.method = "External";
-    settings.server.bindaddress = "127.0.0.1";
-    # group = "media"; # this setting doesn't exist
-  };
-
-  services.sonarr = {
-    enable = true;
-    settings.auth.method = "External";
-    settings.server.bindaddress = "127.0.0.1";
+  services.prowlarr = arrBase; # no `group` option for prowlarr
+  services.sonarr = arrBase // {
     group = "media";
   };
-
-  services.radarr = {
-    enable = true;
-    settings.auth.method = "External";
-    settings.server.bindaddress = "127.0.0.1";
+  services.radarr = arrBase // {
     group = "media";
   };
 
@@ -72,9 +81,7 @@ in
     enable = true;
     group = "media";
 
-    # Load credentials from secrets file before starting
-    # Expected JSON format: {"rpc-password": "your-password"}
-    # The rpc-username defaults to "transmission" in settings below
+    # JSON merged into settings.json at start: rpc-username (gaugendre) and rpc-password.
     credentialsFile = transmissionCredFile;
     openFirewall = true;
 
@@ -125,27 +132,6 @@ in
       reverse_proxy localhost:8096
     '';
 
-    "prowlarr.srv-1.augendre.info".extraConfig = ''
-      import common_headers
-      import internal
-      import sso
-      reverse_proxy localhost:${builtins.toString config.services.prowlarr.settings.server.port}
-    '';
-
-    "sonarr.srv-1.augendre.info".extraConfig = ''
-      import common_headers
-      import internal
-      import sso
-      reverse_proxy localhost:${builtins.toString config.services.sonarr.settings.server.port}
-    '';
-
-    "radarr.srv-1.augendre.info".extraConfig = ''
-      import common_headers
-      import internal
-      import sso
-      reverse_proxy localhost:${builtins.toString config.services.radarr.settings.server.port}
-    '';
-
     "transmission.srv-1.augendre.info".extraConfig = ''
       import common_headers
       import internal
@@ -158,5 +144,18 @@ in
         header_up Authorization "Basic {env.TRANSMISSION_BASIC_AUTH}"
       }
     '';
-  };
+  }
+  // lib.listToAttrs (
+    map (
+      name:
+      lib.nameValuePair "${name}.srv-1.augendre.info" {
+        extraConfig = ''
+          import common_headers
+          import internal
+          import sso
+          reverse_proxy localhost:${toString config.services.${name}.settings.server.port}
+        '';
+      }
+    ) arrs
+  );
 }
