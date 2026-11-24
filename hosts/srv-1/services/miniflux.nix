@@ -20,7 +20,8 @@
       WORKER_POOL_SIZE = 10;
       BATCH_SIZE = 20;
       BASE_URL = "https://reader.augendre.info/";
-      WEBAUTHN = 1;
+      # Passkeys Miniflux désactivées (le SSO les remplace) mais gardées en base : remettre 1 pour les retrouver.
+      WEBAUTHN = 0;
       RUN_MIGRATIONS = 1;
       HTTPS = 1;
       DISABLE_HSTS = 1;
