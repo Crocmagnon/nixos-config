@@ -3,7 +3,7 @@
     enable = true;
     # TODO(26.11): stirling-pdf 3.1 marks its default build unfree (proprietary login and extras).
     # Switch to the MIT build: `package = pkgs.stirling-pdf-free;`. It has no built-in login,
-    # which changes nothing here: login is disabled below and the vhost is `import internal`.
+    # which changes nothing here: login is disabled below and the vhost is behind the Authelia portal.
     environment = {
       # Spring Boot : SERVER_ADDRESS (SERVER_HOST était ignoré, Stirling écoutait sur tout le tailnet
       # sans passer par le portail).

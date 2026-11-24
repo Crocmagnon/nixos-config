@@ -21,7 +21,7 @@ in
     globalConfig = ''
       # Caddy trie les directives d'un site, et redir, handle ou route passent avant
       # respond : sans ça, le refus du snippet internal (respond @blocked) ne s'applique
-      # pas aux vhosts bâtis sur l'une d'elles (odoo, test). Après header, pour que
+      # pas aux vhosts bâtis sur l'une d'elles (test, calibre-web). Après header, pour que
       # common_headers s'applique encore aux réponses de respond.
       order respond after header
 

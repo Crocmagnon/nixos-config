@@ -2,17 +2,19 @@
 # Conception : dans l'historique git, docs/superpowers/specs/2026-11-24-sso-{authelia,paperless}-design.md
 #
 # - Portail et fournisseur OIDC sur auth.srv-1.augendre.info (wildcard DNS *.srv-1 → Tailscale).
-# - Clients OIDC : readeck, miniflux. Derrière le portail (`import sso`) : calibre-web, stirling,
+# - Clients OIDC : readeck, miniflux, paperless. Derrière le portail (`import sso`) : calibre-web, stirling,
 #   prowlarr, radarr, sonarr, transmission.
 # - Ajouter un utilisateur : éditer authelia-users.age (hash : `authelia crypto hash generate argon2`),
 #   puis déployer : Authelia redémarre seul (restartTriggers ci-dessous).
 #
-# Retirer Authelia (les comptes locaux des apps n'ont jamais été supprimés) :
+# Retirer Authelia (les comptes locaux d'avant n'ont jamais été supprimés ; ceux créés par l'OIDC,
+# comme ceux de Claire dans Readeck et Miniflux, n'ont pas de mot de passe connu : en définir un) :
 #   1. miniflux.nix : retirer DISABLE_LOCAL_AUTH et les OAUTH2_* dans le MÊME déploiement, et
 #      remettre WEBAUTHN = 1 (passkeys Miniflux, toujours en base).
-#   2. readeck.nix : retirer `auth.oidc`. Le compte reste marqué externe (login par mot de passe
-#      OK, mais l'UI refuse d'en changer le mot de passe, le username ou l'email). Pour le libérer :
-#      UPDATE "user" SET ext_id = NULL, ext_info = NULL; sur la base PostgreSQL de Readeck.
+#   2. readeck.nix : retirer `auth.oidc` ET READECK_AUTH_OIDC_PROVIDERS_0_CLIENT_SECRET de
+#      readeck-env dans le même déploiement (le secret seul crée un provider incomplet et Readeck
+#      refuse de démarrer). Les comptes restent marqués externes (l'UI refuse d'en changer mot de
+#      passe, username, email) : `readeck user -u <nom> -detach` les libère.
 #      Garder readeck d'unstable : redescendre en 0.22 après les migrations 0.23 n'est pas sûr.
 #   3. calibre-web.nix : retirer reverseProxyAuth (le module remet le réglage à 0 en base).
 #      paperless.nix : retirer les PAPERLESS_* du SSO et le blocage de /admin/login/, et
@@ -21,10 +23,11 @@
 #      et le `header_up Authorization` de Transmission (sa demande de mot de passe revient).
 #   5. Retirer les `import sso`, ce fichier (et avec lui le snippet (sso)), son import dans
 #      default.nix, le chemin restic, les secrets authelia-* et caddy-transmission-env
-#      (agenix-rules.nix, default.nix, EnvironmentFile de caddy.nix).
+#      (agenix-rules.nix, default.nix, EnvironmentFile de caddy.nix), la section SSO de CLAUDE.md
+#      et le commentaire OIDC de readeck dans overlays/unstable-packages.nix.
 #   6. Facultatif : rm -rf /var/lib/authelia-main sur srv-1. Rien à faire côté DNS.
-#   Mots de passe locaux oubliés : `readeck user -password`, `miniflux -reset-password`,
-#   `calibre-web -s user:pass`.
+#   Mots de passe locaux oubliés : `readeck user -u <nom> -p <mdp>`, `miniflux -reset-password`,
+#   `calibre-web -s user:pass`, `paperless-manage changepassword <nom>`.
 { config, ... }:
 let
   secret = name: config.age.secrets."authelia-${name}".path;
@@ -43,6 +46,8 @@ in
     settings = {
       server.address = "tcp://127.0.0.1:${toString port}/";
       log.format = "text";
+      # Pas debug (défaut du module) : chaque requête du portail y logue utilisateur, IP et URL.
+      log.level = "info";
 
       authentication_backend = {
         file.path = secret "users";

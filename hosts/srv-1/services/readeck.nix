@@ -41,4 +41,9 @@
       ];
     };
   };
+
+  # Le secret client OIDC est dans readeck-env : redémarrer quand il change (même principe qu'Authelia).
+  systemd.services.readeck.restartTriggers = [
+    (builtins.hashFile "sha256" config.age.secrets."readeck-env".file)
+  ];
 }
