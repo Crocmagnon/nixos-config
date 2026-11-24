@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   mediaDir = "/var/lib/media";
   transmissionCredFile = config.age.secrets."transmission-credentials".path;
@@ -30,6 +30,17 @@ in
     enable = true;
     group = "media";
   };
+  # Jellyfin écoute sur toutes les interfaces par défaut, donc sur tout le tailnet (interface de
+  # confiance) sans passer par Caddy. Le module n'a pas d'option : on impose l'adresse d'écoute
+  # dans network.xml (que Jellyfin crée au premier démarrage) avant chaque lancement.
+  systemd.services.jellyfin.serviceConfig.ExecStartPre = pkgs.writeShellScript "jellyfin-bind-localhost" ''
+    f=${config.services.jellyfin.configDir}/network.xml
+    [ -e "$f" ] || exit 0
+    ${pkgs.xmlstarlet}/bin/xmlstarlet ed -L \
+      -d '/NetworkConfiguration/LocalNetworkAddresses/*' \
+      -s '/NetworkConfiguration/LocalNetworkAddresses' -t elem -n string -v 127.0.0.1 \
+      "$f"
+  '';
 
   # Login des *arr remplacé par le portail Authelia (`import sso`). `External` désactive toute auth
   # applicative (même la clé d'API est servie par /initialize.json) : ils ne doivent écouter que
@@ -137,7 +148,9 @@ in
       import common_headers
       import internal
       import sso
-      # Caddy fournit le mot de passe RPC (caddy-transmission-env) : pas de second login.
+      # Caddy fournit le mot de passe RPC : pas de second login. caddy-transmission-env contient
+      # TRANSMISSION_BASIC_AUTH=<base64 de "gaugendre:<mot de passe>">, le même mot de passe que
+      # transmission-credentials : changer l'un, c'est changer l'autre.
       reverse_proxy localhost:${builtins.toString config.services.transmission.settings.rpc-port} {
         header_up Authorization "Basic {$TRANSMISSION_BASIC_AUTH}"
       }
