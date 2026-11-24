@@ -33,12 +33,14 @@ in
   # Jellyfin écoute sur toutes les interfaces par défaut, donc sur tout le tailnet (interface de
   # confiance) sans passer par Caddy. Le module n'a pas d'option : on impose l'adresse d'écoute
   # dans network.xml (que Jellyfin crée au premier démarrage) avant chaque lancement.
+  # Découverte automatique (UDP 7359) coupée aussi : Infuse passe par le domaine.
   systemd.services.jellyfin.serviceConfig.ExecStartPre = pkgs.writeShellScript "jellyfin-bind-localhost" ''
     f=${config.services.jellyfin.configDir}/network.xml
     [ -e "$f" ] || exit 0
     ${pkgs.xmlstarlet}/bin/xmlstarlet ed -L \
       -d '/NetworkConfiguration/LocalNetworkAddresses/*' \
       -s '/NetworkConfiguration/LocalNetworkAddresses' -t elem -n string -v 127.0.0.1 \
+      -u '/NetworkConfiguration/AutoDiscovery' -v false \
       "$f"
   '';
 
