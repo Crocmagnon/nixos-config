@@ -20,6 +20,8 @@
   # - SQLite, no barcode scanner/encryption/consume scripts: those v3 changes don't apply.
   # - OIDC (Authelia): v3 may fail the callback with `invalid_client` unless the provider sets
   #   `token_auth_method`; already set to client_secret_basic in paperless-env.
+  # - The Swift Paperless app logs in through OIDC from v3 (https://swift-paperless.app/oidc/):
+  #   read that page, it may need its own redirect URI on the Authelia `paperless` client.
   # - Search moves to Tantivy, the index is rebuilt on first start. A bare term no longer
   #   matches notes or custom fields (use notes.note: / custom_fields.value:); no saved view
   #   relies on that, and `created:[-3 month to now]` is still valid syntax.
