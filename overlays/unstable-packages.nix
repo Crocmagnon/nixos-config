@@ -15,6 +15,7 @@ in
     prek
     gh
     mise
+    readeck # 0.23 : connexion OIDC (Authelia)
     ;
 
   # The unstable package sets RUSTONIG_SYSTEM_LIBONIG (link the system
