@@ -135,12 +135,19 @@ in
     "net.ipv4.ip_nonlocal_bind" = 1;
     "net.ipv6.ip_nonlocal_bind" = 1;
   };
-  systemd.services.caddy = {
-    after = [ "tailscaled.service" ];
-    wants = [ "tailscaled.service" ];
-    serviceConfig.EnvironmentFile = [
-      config.age.secrets."ovh-keys".path
-      config.age.secrets."caddy-transmission-env".path
-    ];
-  };
+  systemd.services.caddy =
+    let
+      envSecrets = [
+        "ovh-keys"
+        "caddy-transmission-env"
+      ];
+    in
+    {
+      after = [ "tailscaled.service" ];
+      wants = [ "tailscaled.service" ];
+      serviceConfig.EnvironmentFile = map (name: config.age.secrets.${name}.path) envSecrets;
+      # Le chemin /run/agenix/… ne change pas avec le secret : sans ça Caddy garde l'ancienne
+      # valeur jusqu'au prochain redémarrage. Empreinte du .age, pas son chemin (tout le dépôt).
+      restartTriggers = map (name: builtins.hashFile "sha256" config.age.secrets.${name}.file) envSecrets;
+    };
 }
