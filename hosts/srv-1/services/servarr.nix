@@ -31,22 +31,27 @@ in
     group = "media";
   };
 
-  # Login des *arr remplacé par le portail Authelia (`import sso`) ; leur API exige toujours sa clé.
+  # Login des *arr remplacé par le portail Authelia (`import sso`). `External` désactive toute auth
+  # applicative (même la clé d'API est servie par /initialize.json) : ils ne doivent écouter que
+  # sur localhost, sinon tout le tailnet (trustedInterfaces) les atteint sans portail.
   services.prowlarr = {
     enable = true;
     settings.auth.method = "External";
+    settings.server.bindaddress = "127.0.0.1";
     # group = "media"; # this setting doesn't exist
   };
 
   services.sonarr = {
     enable = true;
     settings.auth.method = "External";
+    settings.server.bindaddress = "127.0.0.1";
     group = "media";
   };
 
   services.radarr = {
     enable = true;
     settings.auth.method = "External";
+    settings.server.bindaddress = "127.0.0.1";
     group = "media";
   };
 
