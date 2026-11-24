@@ -33,7 +33,8 @@
               "admin"
             ]
           ];
-          # Rattache le compte existant (username ou email) sans en créer de nouveau.
+          # Rattache le compte existant (username ou email) sans en créer de nouveau. À chaque
+          # connexion, Readeck réécrit aussi username et email depuis Authelia.
           provisioning = false;
         }
       ];

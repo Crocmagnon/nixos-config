@@ -151,8 +151,9 @@ in
       # Caddy fournit le mot de passe RPC : pas de second login. caddy-transmission-env contient
       # TRANSMISSION_BASIC_AUTH=<base64 de "gaugendre:<mot de passe>">, le même mot de passe que
       # transmission-credentials : changer l'un, c'est changer l'autre.
+      # {env.…} est lu à chaque requête : la valeur n'apparaît pas dans l'admin API de Caddy.
       reverse_proxy localhost:${builtins.toString config.services.transmission.settings.rpc-port} {
-        header_up Authorization "Basic {$TRANSMISSION_BASIC_AUTH}"
+        header_up Authorization "Basic {env.TRANSMISSION_BASIC_AUTH}"
       }
     '';
   };

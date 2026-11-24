@@ -15,9 +15,11 @@
 #      UPDATE "user" SET ext_id = NULL, ext_info = NULL; sur la base PostgreSQL de Readeck.
 #      Garder readeck d'unstable : redescendre en 0.22 après les migrations 0.23 n'est pas sûr.
 #   3. calibre-web.nix : retirer reverseProxyAuth (le module remet le réglage à 0 en base).
+#      paperless.nix : retirer les PAPERLESS_* du SSO et le blocage de /admin/login/, et
+#      PAPERLESS_SOCIALACCOUNT_PROVIDERS de paperless-env (comptes et mots de passe inchangés).
 #   4. servarr.nix : retirer `settings.auth.method = "External"` (le login Forms des *arr revient)
 #      et le `header_up Authorization` de Transmission (sa demande de mot de passe revient).
-#   5. Retirer les `import sso`, le snippet (sso) de caddy.nix, ce fichier, son import dans
+#   5. Retirer les `import sso`, ce fichier (et avec lui le snippet (sso)), son import dans
 #      default.nix, le chemin restic, les secrets authelia-* et caddy-transmission-env
 #      (agenix-rules.nix, default.nix, EnvironmentFile de caddy.nix).
 #   6. Facultatif : rm -rf /var/lib/authelia-main sur srv-1. Rien à faire côté DNS.
@@ -28,15 +30,6 @@ let
   secret = name: config.age.secrets."authelia-${name}".path;
   stateDir = "/var/lib/authelia-main";
   port = 9092; # 9091 est pris par le RPC de Transmission
-  adminsOneFactor = {
-    default_policy = "deny";
-    rules = [
-      {
-        policy = "one_factor";
-        subject = "group:admins";
-      }
-    ];
-  };
 in
 {
   services.authelia.instances.main = {
@@ -98,7 +91,30 @@ in
       };
 
       identity_providers.oidc = {
-        authorization_policies.admins_one_factor = adminsOneFactor;
+        authorization_policies = {
+          admins_one_factor = {
+            default_policy = "deny";
+            rules = [
+              {
+                policy = "one_factor";
+                subject = "group:admins";
+              }
+            ];
+          };
+          # Paperless : le seul service ouvert au groupe famille (Claire).
+          paperless = {
+            default_policy = "deny";
+            rules = [
+              {
+                policy = "one_factor";
+                subject = [
+                  "group:admins"
+                  "group:famille"
+                ];
+              }
+            ];
+          };
+        };
         clients = [
           {
             client_id = "readeck";
@@ -131,6 +147,21 @@ in
             ];
             token_endpoint_auth_method = "client_secret_basic";
           }
+          {
+            client_id = "paperless";
+            client_name = "Paperless";
+            client_secret = "$pbkdf2-sha512$310000$njU3whPMnNU4V5UGSSUkLw$gWhmHruh4Ba41pNdRUtYpnAXFB0fswLh9UdYVCkhX/8P3y88Yg3XL4.ec9r9xEErog//yDJrswmRd4kqRnUvJg";
+            authorization_policy = "paperless";
+            consent_mode = "implicit";
+            # provider_id "authelia" dans PAPERLESS_SOCIALACCOUNT_PROVIDERS (paperless-env).
+            redirect_uris = [ "https://paperless.augendre.info/accounts/oidc/authelia/login/callback/" ];
+            scopes = [
+              "openid"
+              "email"
+              "profile"
+            ];
+            token_endpoint_auth_method = "client_secret_basic";
+          }
         ];
       };
     };
@@ -142,6 +173,17 @@ in
   systemd.services.authelia-main.restartTriggers = [
     (builtins.hashFile "sha256" config.age.secrets."authelia-users".file)
   ];
+
+  # Portail Authelia (`import sso`), en plus de `import internal`. Caddy retire de lui-même
+  # les en-têtes Remote-* envoyés par le client avant de copier ceux d'Authelia.
+  services.caddy.extraConfig = ''
+    (sso) {
+      forward_auth 127.0.0.1:${toString port} {
+        uri /api/authz/forward-auth
+        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+      }
+    }
+  '';
 
   services.caddy.virtualHosts."auth.srv-1.augendre.info".extraConfig = ''
     import common_headers
