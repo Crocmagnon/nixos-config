@@ -19,7 +19,7 @@
 #      PAPERLESS_SOCIALACCOUNT_PROVIDERS de paperless-env (comptes et mots de passe inchangés).
 #   4. servarr.nix : retirer `settings.auth.method = "External"` (le login Forms des *arr revient)
 #      et le `header_up Authorization` de Transmission (sa demande de mot de passe revient).
-#   5. Retirer les `import sso`, le snippet (sso) de caddy.nix, ce fichier, son import dans
+#   5. Retirer les `import sso`, ce fichier (et avec lui le snippet (sso)), son import dans
 #      default.nix, le chemin restic, les secrets authelia-* et caddy-transmission-env
 #      (agenix-rules.nix, default.nix, EnvironmentFile de caddy.nix).
 #   6. Facultatif : rm -rf /var/lib/authelia-main sur srv-1. Rien à faire côté DNS.
@@ -30,15 +30,6 @@ let
   secret = name: config.age.secrets."authelia-${name}".path;
   stateDir = "/var/lib/authelia-main";
   port = 9092; # 9091 est pris par le RPC de Transmission
-  adminsOneFactor = {
-    default_policy = "deny";
-    rules = [
-      {
-        policy = "one_factor";
-        subject = "group:admins";
-      }
-    ];
-  };
 in
 {
   services.authelia.instances.main = {
@@ -101,7 +92,15 @@ in
 
       identity_providers.oidc = {
         authorization_policies = {
-          admins_one_factor = adminsOneFactor;
+          admins_one_factor = {
+            default_policy = "deny";
+            rules = [
+              {
+                policy = "one_factor";
+                subject = "group:admins";
+              }
+            ];
+          };
           # Paperless : le seul service ouvert au groupe famille (Claire).
           paperless = {
             default_policy = "deny";
@@ -174,6 +173,17 @@ in
   systemd.services.authelia-main.restartTriggers = [
     (builtins.hashFile "sha256" config.age.secrets."authelia-users".file)
   ];
+
+  # Portail Authelia (`import sso`), en plus de `import internal`. Caddy retire de lui-même
+  # les en-têtes Remote-* envoyés par le client avant de copier ceux d'Authelia.
+  services.caddy.extraConfig = ''
+    (sso) {
+      forward_auth 127.0.0.1:${toString port} {
+        uri /api/authz/forward-auth
+        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+      }
+    }
+  '';
 
   services.caddy.virtualHosts."auth.srv-1.augendre.info".extraConfig = ''
     import common_headers

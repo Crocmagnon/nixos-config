@@ -69,15 +69,6 @@ in
           resolvers 1.1.1.1 1.0.0.1
         }
       }
-
-      # Portail Authelia (authelia.nix), en plus de `import internal`. Caddy retire de lui-même
-      # les en-têtes Remote-* envoyés par le client avant de copier ceux d'Authelia.
-      (sso) {
-        forward_auth 127.0.0.1:9092 {
-          uri /api/authz/forward-auth
-          copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-        }
-      }
     '';
     virtualHosts = {
       "g4b.ovh".extraConfig = ''
