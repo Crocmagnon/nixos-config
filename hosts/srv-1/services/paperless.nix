@@ -13,7 +13,9 @@
 
   # TODO(26.11): NixOS 26.11 ships paperless-ngx 3.0 (https://docs.paperless-ngx.com/migration-v3/, reviewed
   # 2026-11). Upgrading requires 2.20.15, which 26.05 runs. Beyond the inline notes below:
-  # - SQLite, no barcode scanner/encryption/consume scripts/OIDC: those v3 changes don't apply.
+  # - SQLite, no barcode scanner/encryption/consume scripts: those v3 changes don't apply.
+  # - OIDC (Authelia): v3 may fail the callback with `invalid_client` unless the provider sets
+  #   `token_auth_method`; already set to client_secret_basic in paperless-env.
   # - Search moves to Tantivy, the index is rebuilt on first start. A bare term no longer
   #   matches notes or custom fields (use notes.note: / custom_fields.value:); no saved view
   #   relies on that, and `created:[-3 month to now]` is still valid syntax.
@@ -77,6 +79,13 @@
       # Juliette) and job start dates (OVH, Ax'home).
       PAPERLESS_IGNORE_DATES = "1995-10-24,1995-10-16,2025-08-02,2023-04-03,2026-01-05";
       PAPERLESS_CONVERT_MEMORY_LIMIT = 32;
+      # Connexion OIDC via Authelia (authelia.nix). Le provider, secret compris, est dans paperless-env :
+      # PAPERLESS_SOCIALACCOUNT_PROVIDERS='{"openid_connect":{"APPS":[{"provider_id":"authelia",
+      #   "name":"Authelia","client_id":"paperless","secret":"…","settings":{"server_url":
+      #   "https://auth.srv-1.augendre.info","token_auth_method":"client_secret_basic"}}]}}'
+      # Rattacher un compte existant : « Mon profil » → connecter Authelia. Pas de création de compte.
+      PAPERLESS_APPS = "allauth.socialaccount.providers.openid_connect";
+      PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS = false;
     };
   };
 }
