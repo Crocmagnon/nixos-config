@@ -95,6 +95,7 @@ in
             client_name = "Readeck";
             client_secret = "$pbkdf2-sha512$310000$E/1jGuUBjdUidFoQcRqf4Q$vrrGGVANn1li9EqUvEK/MZNmduRROxjoqDp0nwe7GngLRz.HTjz.59MCuKjRkyhcliTrgTq5CpzMbEpEuYyVkQ";
             authorization_policy = "admins_one_factor";
+            consent_mode = "implicit"; # nos propres apps : pas d'écran de consentement
             redirect_uris = [ "https://readeck.augendre.info/login/oidc" ];
             scopes = [
               "openid"
@@ -111,6 +112,7 @@ in
             client_name = "Miniflux";
             client_secret = "$pbkdf2-sha512$310000$myTRgc3WbJCoTid5Afv9qQ$xVgyegwRRAzAPtzI6eyr0dMdId2DhsB8VLF7TMXDB2hgnhdbniK6ONb8OZ1hR/j0jYYSCZcTkhGDps8Fc1pnsg";
             authorization_policy = "admins_one_factor";
+            consent_mode = "implicit"; # nos propres apps : pas d'écran de consentement
             redirect_uris = [ "https://reader.augendre.info/oauth2/oidc/callback" ];
             scopes = [
               "openid"
