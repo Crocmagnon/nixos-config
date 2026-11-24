@@ -1,5 +1,5 @@
 # Authelia : une seule connexion (passkey) pour les services internes.
-# Conception : docs/superpowers/specs/2026-11-24-sso-authelia-design.md
+# Conception : dans l'historique git, docs/superpowers/specs/2026-11-24-sso-{authelia,paperless}-design.md
 #
 # - Portail et fournisseur OIDC sur auth.srv-1.augendre.info (wildcard DNS *.srv-1 → Tailscale).
 # - Clients OIDC : readeck, miniflux. Derrière le portail (`import sso`) : calibre-web, stirling,

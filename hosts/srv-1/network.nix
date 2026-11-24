@@ -5,6 +5,13 @@ in
 {
   services.openssh.enable = true;
 
+  # Résolution de noms « sans DNS » (LLMNR, mDNS) : inutile sur un serveur, et LLMNR fait confiance
+  # à n'importe quel voisin du réseau OVH. Le device builder ESPHome a son propre mDNS.
+  services.resolved.settings.Resolve = {
+    LLMNR = false;
+    MulticastDNS = false;
+  };
+
   networking = {
     hostName = "srv-1";
     enableIPv6 = true;
