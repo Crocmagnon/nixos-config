@@ -78,6 +78,12 @@ in
             policy = "one_factor";
             subject = "group:admins";
           }
+          {
+            # Sans aucune règle two_factor, Authelia masque l'enregistrement des passkeys.
+            # Ce domaine ne sert à rien d'autre (rien n'y répond).
+            domain = "enable-passkeys.srv-1.augendre.info";
+            policy = "two_factor";
+          }
         ];
       };
 
