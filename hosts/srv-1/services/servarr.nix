@@ -31,18 +31,22 @@ in
     group = "media";
   };
 
+  # Login des *arr remplacé par le portail Authelia (`import sso`) ; leur API exige toujours sa clé.
   services.prowlarr = {
     enable = true;
+    settings.auth.method = "External";
     # group = "media"; # this setting doesn't exist
   };
 
   services.sonarr = {
     enable = true;
+    settings.auth.method = "External";
     group = "media";
   };
 
   services.radarr = {
     enable = true;
+    settings.auth.method = "External";
     group = "media";
   };
 
@@ -106,25 +110,32 @@ in
     "prowlarr.srv-1.augendre.info".extraConfig = ''
       import common_headers
       import internal
+      import sso
       reverse_proxy localhost:${builtins.toString config.services.prowlarr.settings.server.port}
     '';
 
     "sonarr.srv-1.augendre.info".extraConfig = ''
       import common_headers
       import internal
+      import sso
       reverse_proxy localhost:${builtins.toString config.services.sonarr.settings.server.port}
     '';
 
     "radarr.srv-1.augendre.info".extraConfig = ''
       import common_headers
       import internal
+      import sso
       reverse_proxy localhost:${builtins.toString config.services.radarr.settings.server.port}
     '';
 
     "transmission.srv-1.augendre.info".extraConfig = ''
       import common_headers
       import internal
-      reverse_proxy localhost:${builtins.toString config.services.transmission.settings.rpc-port}
+      import sso
+      # Caddy fournit le mot de passe RPC (caddy-transmission-env) : pas de second login.
+      reverse_proxy localhost:${builtins.toString config.services.transmission.settings.rpc-port} {
+        header_up Authorization "Basic {$TRANSMISSION_BASIC_AUTH}"
+      }
     '';
   };
 }

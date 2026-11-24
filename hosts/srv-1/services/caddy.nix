@@ -138,6 +138,9 @@ in
   systemd.services.caddy = {
     after = [ "tailscaled.service" ];
     wants = [ "tailscaled.service" ];
-    serviceConfig.EnvironmentFile = [ config.age.secrets."ovh-keys".path ];
+    serviceConfig.EnvironmentFile = [
+      config.age.secrets."ovh-keys".path
+      config.age.secrets."caddy-transmission-env".path
+    ];
   };
 }

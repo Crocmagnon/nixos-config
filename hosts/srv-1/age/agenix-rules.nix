@@ -31,4 +31,5 @@ in
   "authelia-oidc-hmac.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "authelia-oidc-jwk.age".publicKeys = allUsers ++ [ systems.srv-1 ];
   "authelia-users.age".publicKeys = allUsers ++ [ systems.srv-1 ];
+  "caddy-transmission-env.age".publicKeys = allUsers ++ [ systems.srv-1 ];
 }
