@@ -8,9 +8,29 @@ description = "deploy to server: srv-1 fetches the pushed current branch from Gi
 # deployed, hence the check for unpushed commits. The current branch is deployed, so a feature
 # branch can be tried on the server before it is merged -- until the nightly auto-upgrade puts
 # main back (hosts/srv-1/auto-upgrade.nix).
+# nixos-rebuild runs in its own systemd unit, not in the SSH session: a switch that restarts
+# tailscaled drops the SSH connection, which used to kill the activation halfway, after it had
+# stopped the services and before it started them again. The unit survives that (and Ctrl-C);
+# the SSH side only follows its journal. If the connection drops, keep following with
+# `ssh srv-1 journalctl -fu nixos-rebuild-manual`.
 run = [
   "test -z \"$(git log --oneline @{u}..)\" || { echo 'unpushed commits: git push first' >&2; exit 1; }",
-  "ref=$(git branch --show-current) && test -n \"$ref\" || { echo 'detached HEAD: check out a branch' >&2; exit 1; }; ssh -t gaugendre@srv-1 sudo nixos-rebuild switch --refresh --flake \"git+https://github.com/Crocmagnon/nixos-config?ref=$ref#srv-1\"",
+  '''
+ref=$(git branch --show-current) && test -n "$ref" || { echo 'detached HEAD: check out a branch' >&2; exit 1; }
+ssh gaugendre@srv-1 bash -s -- "git+https://github.com/Crocmagnon/nixos-config?ref=$ref#srv-1" <<'EOF'
+unit=nixos-rebuild-manual
+sudo journalctl -fqn0 -o cat -u "$unit" &
+follow=$!
+# --wait returns the unit's exit status.
+sudo systemd-run --unit="$unit" --collect --wait --quiet \
+  --setenv=PATH=/run/wrappers/bin:/run/current-system/sw/bin \
+  nixos-rebuild switch --refresh --flake "$1"
+status=$?
+sleep 1
+sudo kill "$follow"
+exit "$status"
+EOF
+''',
 ]
 
 [tasks.initial-srv-1]
