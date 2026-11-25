@@ -37,8 +37,10 @@
 #      (mDNS ne traverse pas Tailscale, la découverte automatique ne verra rien)
 # La fenêtre dure 15 min ; passé ce délai le process sort et le conteneur
 # redémarre, ce qui régénère une NOUVELLE clé.
-{ ... }:
+{ config, lib, ... }:
 let
+  # Les HA se sont appairés en IPv4 : seul le port v4 est publié.
+  tailscaleIp4 = builtins.head (lib.splitString " " config.host.network.tailscaleIp);
   # stateDir contient l'identité peer-link et l'état de build : il doit rester
   # persistant, sinon l'appairage est à refaire. Monté au même chemin dans le
   # conteneur pour que les chemins de cache restent lisibles entre l'hôte et
@@ -53,11 +55,10 @@ let
 
     cmd = [
       "--remote-build-only"
-      # Accepte un nom d'interface : le peer-link n'écoute que sur le tailnet.
-      # En réseau host, le firewall NixOS s'applique normalement — un port
-      # publié par Docker, lui, contournerait allowedTCPPorts.
+      # Dans le conteneur ; c'est la publication du port (ci-dessous) qui le
+      # limite à l'IP Tailscale de srv-1.
       "--remote-build-host"
-      "tailscale0"
+      "0.0.0.0"
       # Explicite : si le port est pris, le builder en choisit un autre
       # silencieusement, et l'appairage viserait le mauvais.
       "--remote-build-port"
@@ -65,10 +66,14 @@ let
       stateDir
     ];
 
+    # Réseau bridge, pas host : le builder exécute du code venu des HA (scripts
+    # PlatformIO, external_components). En réseau host, il atteindrait le
+    # localhost de srv-1, où les *arr, Calibre-web et l'admin API de Caddy ne
+    # demandent rien. Publié sur l'IP Tailscale seulement (le bind avant que
+    # tailscale0 ait son IP passe grâce à net.ipv4.ip_nonlocal_bind, cf. caddy.nix).
+    ports = [ "${tailscaleIp4}:${toString port}:${toString port}" ];
+
     extraOptions = [
-      # Réseau host : le conteneur voit tailscale0 directement, donc pas de
-      # mapping de ports à publier et pas de contournement du firewall.
-      "--network=host"
       # L'entrypoint de l'image est `esphome` (le CLI) : sans override, cmd est
       # interprété comme une sous-commande esphome et le conteneur meurt sur
       # "invalid choice". Le device-builder a son propre binaire.
@@ -79,8 +84,9 @@ in
 {
   # TODO(26.11): Podman 6 drops BoltDB and iptables; upstream advises `nixos-rebuild boot` and a
   # reboot to finish the migration. auto-upgrade boots first, but only reboots on a kernel/initrd
-  # change: if that release doesn't bring one, reboot by hand. --network=host, so the new podman
-  # DNS/firewall handling doesn't matter here.
+  # change: if that release doesn't bring one, reboot by hand. The builders use the bridge network
+  # with a published port: after the migration, check both HA still reach them (peer-link on
+  # 6055/6056) and a build still downloads its toolchain (DNS and outbound NAT).
   virtualisation.oci-containers.containers = {
     esphome = builder "/var/lib/esphome" 6055;
     esphome-parents = builder "/var/lib/esphome-parents" 6056;
