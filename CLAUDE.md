@@ -105,6 +105,10 @@ reviewing release notes go there too, not in a separate checklist.
   (`main`, its committed `flake.lock`, never `--update-input`) every night at 04:00–04:30
   Europe/Paris, after a running restic. **Whatever is on `main` reaches production overnight.**
   A branch tried with `mise run srv-1` is replaced by `main` the next night.
+- `mise run srv-1` runs `nixos-rebuild` in a transient systemd unit (`nixos-rebuild-manual`) and only
+  follows its journal over SSH: a switch that restarts `tailscaled` drops the Tailscale SSH session,
+  and when the rebuild ran inside that session it was killed halfway through activation (services
+  stopped, never started again). If the connection drops, `ssh srv-1 journalctl -fu nixos-rebuild-manual`.
 - Reboots only when kernel, initrd or modules change, and only within 04:00–06:00. The module
   always runs `nixos-rebuild boot` first: outside the window (e.g. restic ran past 06:00) the new
   generation becomes the boot default but is **not activated**, and the unit still succeeds
