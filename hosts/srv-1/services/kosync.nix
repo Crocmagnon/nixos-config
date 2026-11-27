@@ -1,11 +1,14 @@
 # Serveur KOSync (progression de lecture des liseuses : Kobo/KOReader, Xteink X4 Pro/CrossPoint),
-# public sur kosync.srv-1-pub.augendre.info.
+# public sur kosync.srv-1-pub.augendre.info (protocole KOSync seul), complet sur le tailnet sur
+# kosync.srv-1.augendre.info pour l'app compagnon (iOS/Android : stats, OPDS, envoi à la X4 ;
+# elle exige /healthz et /api/v1, connexion avec le compte kosync).
 #
 # Pas le module NixOS du projet : il ouvre son port dans le pare-feu public. On reprend seulement
 # son paquet, et le service écoute sur 127.0.0.1 derrière Caddy.
 #
-# Comptes : l'inscription reste active côté application mais /users/create n'est pas publié.
-# Créer un compte depuis srv-1 (le mot de passe s'envoie haché en MD5, comme le fait KOSync) :
+# Comptes : inscription fermée (REGISTRATION_DISABLED), sinon tout le tailnet pourrait en créer.
+# Pour en créer un, retirer REGISTRATION_DISABLED le temps d'un déploiement, puis depuis srv-1
+# (le mot de passe s'envoie haché en MD5, comme le fait KOSync) :
 #   curl -X POST http://127.0.0.1:8010/users/create -H 'Content-Type: application/json' \
 #     -d "{\"username\":\"<nom>\",\"password\":\"$(printf %s '<mdp>' | md5sum | cut -d' ' -f1)\"}"
 # Base SQLite dans /var/lib/private/crosspoint-sync (DynamicUser), sauvegardée par restic.
@@ -30,6 +33,7 @@ in
       DATABASE_PATH = "/var/lib/crosspoint-sync/crosspoint.db";
       # Caddy remplace X-Forwarded-For par l'IP du client : limite d'inscription par IP fiable.
       TRUST_PROXY = "true";
+      REGISTRATION_DISABLED = "true";
     };
     serviceConfig = {
       ExecStart = lib.getExe crosspoint-sync;
@@ -44,6 +48,13 @@ in
     import common_headers
     @not_kosync not path /users/auth /syncs/progress /syncs/progress/*
     respond @not_kosync 404
+    reverse_proxy 127.0.0.1:${toString port}
+  '';
+
+  # Tailnet : tout le service, pour l'app compagnon.
+  services.caddy.virtualHosts."kosync.srv-1.augendre.info".extraConfig = ''
+    import common_headers
+    import internal
     reverse_proxy 127.0.0.1:${toString port}
   '';
 }
