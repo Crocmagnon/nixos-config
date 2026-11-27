@@ -171,6 +171,9 @@ Services that must be reachable without Tailscale but are not meant to be pretty
 `*.srv-1-pub.augendre.info` (public wildcard DNS, see terraform-ovh). Publish only the paths the
 clients need and answer 404 to the rest (`@x not path …` + `respond @x 404`: `respond` runs before
 `handle` here, see `order respond after header`). Example: `kosync.nix`.
+When the app's own login has no brute-force protection, check the credentials in Caddy instead
+(`basic_auth`, bcrypt hash from an agenix env file) and hand the app a fixed identity: see the
+public OPDS in `calibre-web.nix` (calibre-web 0.6.26 does not rate-limit OPDS Basic auth).
 
 ### SSO (Authelia, srv-1)
 

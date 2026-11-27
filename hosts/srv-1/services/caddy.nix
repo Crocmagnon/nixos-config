@@ -131,6 +131,7 @@ in
       envSecrets = [
         "ovh-keys"
         "caddy-transmission-env"
+        "caddy-opds-env"
       ];
     in
     {
