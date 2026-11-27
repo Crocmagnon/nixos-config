@@ -46,8 +46,10 @@ in
   # en 0.6.26 son auth Basic de l'OPDS n'a pas de limite de tentatives (`# limiter.check()` dans
   # cps/usermanagement.py), ce qui exposerait tous les comptes, admin compris. Caddy n'accepte
   # que `liseuses` (hash bcrypt dans caddy-opds-env, OPDS_LISEUSES_HASH, cf. `caddy hash-password`)
-  # puis se présente à calibre-web comme l'utilisateur `liseuses` (téléchargement seul, à créer
-  # dans l'UI) : calibre-web ne lit Remote-User que sans en-tête Authorization, d'où son retrait.
+  # puis se présente à calibre-web comme `gaugendre` : les liseuses voient ses étagères, son statut
+  # « lu » et ses rubriques. Le mot de passe calibre-web n'est jamais vérifié depuis Internet, et
+  # l'OPDS ne fait que lire et télécharger. calibre-web ne lit Remote-User que sans en-tête
+  # Authorization, d'où son retrait.
   services.caddy.virtualHosts."books.srv-1-pub.augendre.info".extraConfig = ''
     import common_headers
     @not_opds not path /opds /opds/*
@@ -57,7 +59,7 @@ in
     }
     reverse_proxy localhost:${port} {
       header_up -Authorization
-      header_up Remote-User liseuses
+      header_up Remote-User gaugendre
     }
   '';
 }
