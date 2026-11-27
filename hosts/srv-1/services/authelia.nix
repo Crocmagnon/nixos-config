@@ -60,14 +60,12 @@ in
 
       webauthn.enable_passkey_login = true;
 
-      # Portail public : limite les essais de mot de passe. Par utilisateur (défaut) et par IP, pour
-      # qu'une même machine ne puisse pas tester plusieurs comptes. Caddy remplace X-Forwarded-For
-      # par l'IP réelle du client (aucun trusted_proxies), l'IP vue ici n'est donc pas falsifiable.
+      # Portail public : limite les essais de mot de passe, par utilisateur seulement. Pas de mode
+      # "ip" : iCloud Private Relay fait sortir les iPhone par des IP Cloudflare partagées
+      # (2a09:bac2::/32), dont le bannissement bloquait nos propres appareils, même via le tailnet.
+      # Lever un bannissement : `authelia storage bans {user,ip} list|revoke` en SSH.
       regulation = {
-        modes = [
-          "user"
-          "ip"
-        ];
+        modes = [ "user" ];
         max_retries = 3;
         find_time = "10m";
         ban_time = "1h";
