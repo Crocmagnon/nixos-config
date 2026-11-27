@@ -14,6 +14,8 @@ let
     "transmission.service"
     # Calibre
     "calibre-web.service"
+    # KOSync (SQLite)
+    "crosspoint-sync.service"
   ];
 in
 {

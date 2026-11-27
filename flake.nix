@@ -29,6 +29,12 @@
       url = "github:Crocmagnon/readlist-tagger";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Serveur KOSync (hosts/srv-1/services/kosync.nix). Épinglé sur une version : seul son
+    # nix/package.nix sert, construit avec notre nixpkgs. Monter le tag à la main.
+    crosspoint-sync = {
+      url = "github:crosspoint-reader/crosspoint-sync/v0.3.0";
+      flake = false;
+    };
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";

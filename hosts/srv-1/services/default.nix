@@ -16,6 +16,7 @@
     ./galene.nix
     ./stirling-pdf.nix
     ./calibre-web.nix
+    ./kosync.nix
     ./esphome.nix
     ./recettes-cabas.nix
     # ./ftp.nix
