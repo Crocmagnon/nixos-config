@@ -1,7 +1,9 @@
 # Authelia : une seule connexion (passkey) pour les services internes.
 # Conception : dans l'historique git, docs/superpowers/specs/2026-11-24-sso-{authelia,paperless}-design.md
 #
-# - Portail et fournisseur OIDC sur auth.srv-1.augendre.info (wildcard DNS *.srv-1 → Tailscale).
+# - Portail et fournisseur OIDC sur auth.srv-1.augendre.info, public : un enregistrement DNS
+#   explicite prend le pas sur le wildcard *.srv-1 → Tailscale, pour se connecter à Readeck et
+#   Miniflux (publics eux aussi) hors tailnet. Les vhosts `import sso` restent sur le tailnet.
 # - Clients OIDC : readeck, miniflux, paperless. Derrière le portail (`import sso`) : calibre-web, stirling,
 #   prowlarr, radarr, sonarr, transmission.
 # - Ajouter un utilisateur : éditer authelia-users.age (hash : `authelia crypto hash generate argon2`),
@@ -57,6 +59,19 @@ in
       };
 
       webauthn.enable_passkey_login = true;
+
+      # Portail public : limite les essais de mot de passe. Par utilisateur (défaut) et par IP, pour
+      # qu'une même machine ne puisse pas tester plusieurs comptes. Caddy remplace X-Forwarded-For
+      # par l'IP réelle du client (aucun trusted_proxies), l'IP vue ici n'est donc pas falsifiable.
+      regulation = {
+        modes = [
+          "user"
+          "ip"
+        ];
+        max_retries = 3;
+        find_time = "10m";
+        ban_time = "1h";
+      };
 
       session.cookies = [
         {
@@ -182,9 +197,9 @@ in
     }
   '';
 
+  # Public, comme Readeck et Miniflux qui en dépendent pour leur connexion.
   services.caddy.virtualHosts."auth.srv-1.augendre.info".extraConfig = ''
     import common_headers
-    import internal
     reverse_proxy 127.0.0.1:${toString port}
   '';
 }

@@ -1,8 +1,17 @@
 { config, ... }:
 {
+  # Public (pas d'`import internal`) : lecture et partage hors tailnet, liseuses sans Tailscale.
+  # Readeck n'a pas d'option pour couper la connexion par mot de passe, et elle marche encore pour
+  # les comptes rattachés à l'OIDC qui ont gardé leur ancien mot de passe : on la bloque ici, pour
+  # tout le monde. GET /login reste (bouton Authelia), /login/oidc aussi. Secours : `readeck user` en SSH.
   services.caddy.virtualHosts."readeck.augendre.info".extraConfig = ''
     import common_headers
-    import internal
+    @password_login {
+      method POST
+      path /login /login/
+    }
+    respond @password_login "Password login is disabled, sign in with Authelia." 403
+    respond /login/mfa* 403
     reverse_proxy localhost:8006
   '';
 
