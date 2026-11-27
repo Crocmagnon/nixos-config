@@ -1,8 +1,9 @@
 { config, ... }:
 {
+  # Public (pas d'`import internal`) : lecture et partage hors tailnet, liseuses sans Tailscale.
+  # Sûr parce que DISABLE_LOCAL_AUTH coupe le mot de passe (UI et Basic auth de l'API) : OIDC ou token.
   services.caddy.virtualHosts."reader.augendre.info".extraConfig = ''
     import common_headers
-    import internal
     reverse_proxy localhost:8001
   '';
 
