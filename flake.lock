@@ -39,6 +39,23 @@
         "type": "github"
       }
     },
+    "crosspoint-sync": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795572514,
+        "narHash": "sha256-255WT8p3hMRyRD8cttDACdZ/OPH+Z8WpQ0KKLPFm6SE=",
+        "owner": "crosspoint-reader",
+        "repo": "crosspoint-sync",
+        "rev": "2aa24157846ddd84b527be098eac99ddf63243ca",
+        "type": "github"
+      },
+      "original": {
+        "owner": "crosspoint-reader",
+        "ref": "v0.3.0",
+        "repo": "crosspoint-sync",
+        "type": "github"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -206,6 +223,7 @@
       "inputs": {
         "agenix": "agenix",
         "catppuccin": "catppuccin",
+        "crosspoint-sync": "crosspoint-sync",
         "disko": "disko",
         "downloader": "downloader",
         "home-manager": "home-manager",

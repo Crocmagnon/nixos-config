@@ -165,6 +165,13 @@ To restrict a Caddy virtualHost to internal/Tailscale access, `import internal` 
 
 Both are required: without `bind`, Caddy still listens on all interfaces even though the IP filter would reject external requests. Both live in the snippet so a vhost cannot import only one half.
 
+### Public vhosts for "internal" services (srv-1)
+
+Services that must be reachable without Tailscale but are not meant to be pretty URLs live under
+`*.srv-1-pub.augendre.info` (public wildcard DNS, see terraform-ovh). Publish only the paths the
+clients need and answer 404 to the rest (`@x not path …` + `respond @x 404`: `respond` runs before
+`handle` here, see `order respond after header`). Example: `kosync.nix`.
+
 ### SSO (Authelia, srv-1)
 
 `hosts/srv-1/services/authelia.nix` runs Authelia on `auth.srv-1.augendre.info` (portal + OIDC provider). It is **public**, like Readeck and Miniflux that sign in through it: an explicit public DNS record overrides the wildcard `*.srv-1.augendre.info`, which points at srv-1's Tailscale IP for everything else. Password attempts are limited by `regulation`, per user only: per-IP bans hit the shared iCloud Private Relay egress IPs our iPhones go out through (even on the tailnet, since the DNS is public). One passkey logs into every service below. Its header comment holds the removal procedure. Design: git history, `git log -- docs/superpowers/specs/2026-11-24-sso-authelia-design.md` (and `…-sso-paperless-design.md`).
