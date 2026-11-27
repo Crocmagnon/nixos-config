@@ -43,10 +43,12 @@ in
     };
   };
 
-  # Public, mais seulement le protocole KOSync : ni l'app web, ni les connecteurs, ni l'inscription.
+  # Public, mais seulement le protocole KOSync et ce qu'envoie le plugin KOReader crosspoint.koplugin
+  # (stats de lecture, surlignages, marque-pages ; cf. son worker.lua) : ni l'app web, ni les
+  # connecteurs, ni l'inscription. Tout est authentifié par le compte kosync.
   services.caddy.virtualHosts."kosync.srv-1-pub.augendre.info".extraConfig = ''
     import common_headers
-    @not_kosync not path /users/auth /syncs/progress /syncs/progress/*
+    @not_kosync not path /users/auth /syncs/progress /syncs/progress/* /api/v1/stats/koreader /api/v1/clippings/* /api/v1/bookmarks/*
     respond @not_kosync 404
     reverse_proxy 127.0.0.1:${toString port}
   '';
